@@ -126,7 +126,7 @@ const SignUpPage = () => {
         </form>
         <p className="text-center mt-6 text-gray-600">
           Already have an account?{' '}
-          <a href="*" className="text-indigo-600">
+          <a href="/" className="text-indigo-600">
             Sign In
           </a>
         </p>

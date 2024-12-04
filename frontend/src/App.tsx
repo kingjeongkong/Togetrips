@@ -1,8 +1,23 @@
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider
+} from 'react-router-dom';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 
 function App() {
-  return <SignInPage />;
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route path="/" element={<SignInPage />} />,
+        <Route path="/sign-up" element={<SignUpPage />} />
+      </>
+    )
+  );
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;

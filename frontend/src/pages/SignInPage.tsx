@@ -81,7 +81,7 @@ const SignInPage = () => {
           <a href="#" className="text-indigo-600 hover:underline">
             Forgot password?
           </a>
-          <a href="#" className="text-indigo-600 hover:underline">
+          <a href="/sign-up" className="text-indigo-600 hover:underline">
             Don't have an account?
           </a>
         </div>
