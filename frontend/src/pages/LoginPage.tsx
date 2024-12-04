@@ -68,7 +68,7 @@ const LoginPage = () => {
             }`}
           />
           {passwordError && (
-            <p className="text-red-500 text-sm mb-2 pl-1">{passwordError}</p>
+            <p className="text-red-500 text-sm mb-4 pl-1">{passwordError}</p>
           )}
           <button
             type="submit"
