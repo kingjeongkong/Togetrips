@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
+import SubmitButton from '../../components/Auth/SubmitButton';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');
@@ -58,12 +59,7 @@ const SignInPage = () => {
           onChange={(e) => setPassword(e.target.value)}
           error={passwordError}
         />
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
-        >
-          Sign in
-        </button>
+        <SubmitButton title="Sign In" />
       </form>
       <div className="flex items-center justify-between mt-6">
         <a href="#" className="text-indigo-600 hover:underline">

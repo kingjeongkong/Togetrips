@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
+import SubmitButton from '../../components/Auth/SubmitButton';
 
 const SignUpPage = () => {
   const [name, setName] = useState('');
@@ -93,12 +94,7 @@ const SignUpPage = () => {
           onChange={(e) => setConfirmPassword(e.target.value)}
           error={confirmPasswordError}
         />
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
-        >
-          Sign Up
-        </button>
+        <SubmitButton title="Sign Up" />
       </form>
       <p className="text-center mt-6 text-gray-600">
         Already have an account?{' '}
