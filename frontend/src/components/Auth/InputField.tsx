@@ -22,7 +22,7 @@ const InputField = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`block p-2 w-full border border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+        className={`block p-2 w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
           error ? 'border-red-500' : 'border-gray-400 mb-2'
         }`}
       />

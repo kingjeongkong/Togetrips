@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
 import SubmitButton from '../../components/Auth/SubmitButton';
+import { Link } from 'react-router-dom';
 
 const SignUpPage = () => {
   const [name, setName] = useState('');
@@ -96,11 +97,12 @@ const SignUpPage = () => {
         />
         <SubmitButton title="Sign Up" />
       </form>
+
       <p className="text-center mt-6 text-gray-600">
-        Already have an account?{' '}
-        <a href="/" className="text-indigo-600">
+        Already have an account?
+        <Link to="/" className="text-indigo-600 ml-4">
           Sign In
-        </a>
+        </Link>
       </p>
     </AuthLayout>
   );

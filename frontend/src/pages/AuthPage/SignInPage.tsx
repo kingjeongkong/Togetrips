@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
 import SubmitButton from '../../components/Auth/SubmitButton';
+import { Link } from 'react-router-dom';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');
@@ -61,13 +62,14 @@ const SignInPage = () => {
         />
         <SubmitButton title="Sign In" />
       </form>
+
       <div className="flex items-center justify-between mt-6">
-        <a href="#" className="text-indigo-600 hover:underline">
+        <Link to="#" className="text-indigo-600 hover:underline">
           Forgot password?
-        </a>
-        <a href="/sign-up" className="text-indigo-600 hover:underline">
+        </Link>
+        <Link to="/sign-up" className="text-indigo-600 hover:underline">
           Don't have an account?
-        </a>
+        </Link>
       </div>
     </AuthLayout>
   );
