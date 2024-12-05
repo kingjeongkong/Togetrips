@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AuthLayout from '../../components/Auth/AuthLayout';
+import InputField from '../../components/Auth/InputField';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');
@@ -43,30 +44,20 @@ const SignInPage = () => {
   return (
     <AuthLayout title="Sign in">
       <form onSubmit={handleSubmit}>
-        <input
+        <InputField
           type="email"
-          placeholder="Email address"
+          placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={`block p-2 w-full border border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-            emailError ? 'border-red-500' : 'border-gray-400 mb-2'
-          }`}
+          error={emailError}
         />
-        {emailError && (
-          <p className="text-red-500 text-sm mb-1 pl-1">{emailError}</p>
-        )}
-        <input
+        <InputField
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`block p-2 w-full border border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-            passwordError ? 'border-red-500' : 'border-gray-400 mb-6'
-          }`}
+          error={passwordError}
         />
-        {passwordError && (
-          <p className="text-red-500 text-sm mb-4 pl-1">{passwordError}</p>
-        )}
         <button
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"

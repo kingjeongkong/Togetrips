@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AuthLayout from '../../components/Auth/AuthLayout';
+import InputField from '../../components/Auth/InputField';
 
 const SignUpPage = () => {
   const [name, setName] = useState('');
@@ -64,56 +65,34 @@ const SignUpPage = () => {
   return (
     <AuthLayout title="Sign Up">
       <form onSubmit={handleSubmit}>
-        <input
+        <InputField
           type="text"
           placeholder="Full Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className={`block w-full p-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-            nameError ? 'border-red-500' : 'border-gray-400 mb-2'
-          }`}
+          error={nameError}
         />
-        {nameError && (
-          <p className="text-red-500 text-sm mb-1 pl-1">{nameError}</p>
-        )}
-        <input
+        <InputField
           type="email"
           placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={`block w-full p-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-            emailError ? 'border-red-500' : 'border-gray-400 mb-2'
-          }`}
+          error={emailError}
         />
-        {emailError && (
-          <p className="text-red-500 text-sm mb-1 pl-1">{emailError}</p>
-        )}
-        <input
+        <InputField
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`block w-full p-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-            passwordError ? 'border-red-500' : 'border-gray-400 mb-2'
-          }`}
+          error={passwordError}
         />
-        {passwordError && (
-          <p className="text-red-500 text-sm mb-1 pl-1">{passwordError}</p>
-        )}
-        <input
+        <InputField
           type="password"
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className={`block w-full p-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-            confirmPasswordError ? 'border-red-500' : 'border-gray-400 mb-6'
-          }`}
+          error={confirmPasswordError}
         />
-        {confirmPasswordError && (
-          <p className="text-red-500 text-sm mb-4 pl-1">
-            {confirmPasswordError}
-          </p>
-        )}
         <button
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
