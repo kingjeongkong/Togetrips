@@ -5,7 +5,9 @@ interface InputFieldProps {
   placeholder: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
+  fieldError?: string;
+  authError?: string;
+  isLast?: boolean;
 }
 
 const InputField = ({
@@ -13,8 +15,16 @@ const InputField = ({
   placeholder,
   value,
   onChange,
-  error
+  fieldError,
+  authError,
+  isLast
 }: InputFieldProps) => {
+  const getInputMarginClass = () => {
+    if (fieldError) return;
+    if (isLast && authError) return;
+    return 'mb-4';
+  };
+
   return (
     <>
       <input
@@ -22,11 +32,13 @@ const InputField = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`block p-2 w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
-          error ? 'border-red-500' : 'border-gray-400 mb-2'
+        className={`block p-2 w-full border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${getInputMarginClass()} ${
+          fieldError || authError ? 'border-red-500' : 'border-gray-400'
         }`}
       />
-      {error && <p className="text-red-500 text-sm mb-1 pl-1">{error}</p>}
+      {fieldError && (
+        <p className="text-red-500 text-sm mb-2 pl-1">{fieldError}</p>
+      )}
     </>
   );
 };

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { signInWithEmailAndPassword } from '@firebase/auth';
+import { auth } from '../../config/firebase';
+
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
 import SubmitButton from '../../components/Auth/SubmitButton';
-import { Link } from 'react-router-dom';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [authError, setAuthError] = useState('');
 
   const validationForm = (): boolean => {
     let isValid = true;
@@ -36,10 +40,27 @@ const SignInPage = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validationForm()) {
-      console.log('Login attempt with', { email, password });
+      try {
+        console.log('Sign in attempt with email:', email);
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        console.log('Successfully signed in:', userCredential.user);
+      } catch (error: any) {
+        console.log('Error code:', error.code); // Add this log
+        console.log('Error message:', error.message); // Add this log
+
+        if (error.code === 'auth/invalid-credential') {
+          setAuthError('Invalid email or password');
+        } else {
+          setAuthError('An error occurred. Please try again.');
+        }
+      }
     }
   };
 
@@ -51,15 +72,21 @@ const SignInPage = () => {
           placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          error={emailError}
+          fieldError={emailError}
+          authError={authError}
         />
         <InputField
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={passwordError}
+          fieldError={passwordError}
+          authError={authError}
+          isLast={true}
         />
+        {authError && (
+          <p className="text-red-500 text-sm mb-1 pl-1">{authError}</p>
+        )}
         <SubmitButton title="Sign In" />
       </form>
 
