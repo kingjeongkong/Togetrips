@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from '@firebase/auth';
-import { auth } from '../../config/firebase';
+import { auth, db } from '../../config/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
@@ -77,6 +78,12 @@ const SignUpPage = () => {
           email,
           password
         );
+
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          name,
+          email
+        });
+
         console.log('Successfully signed up:', userCredential.user);
         navigate('/');
       } catch (error: any) {
