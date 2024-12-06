@@ -9,6 +9,7 @@ import SubmitButton from '../../components/Auth/SubmitButton';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -65,7 +66,11 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError('');
+
     if (validationForm()) {
+      setIsLoading(true);
+
       try {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
@@ -86,6 +91,8 @@ const SignUpPage = () => {
             setAuthError('An error occurred. Please try again.');
             break;
         }
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -125,10 +132,10 @@ const SignUpPage = () => {
           authError={authError}
           isLast={true}
         />
-        { authError && (
+        {authError && (
           <p className="text-red-500 text-sm mb-2 pl-1">{authError}</p>
         )}
-        <SubmitButton title="Sign Up" />
+        <SubmitButton title="Sign Up" isLoading={isLoading} />
       </form>
 
       <p className="text-center mt-6 text-gray-600">

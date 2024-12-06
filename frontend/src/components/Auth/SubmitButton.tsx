@@ -1,14 +1,18 @@
 interface SubmitButtonProps {
   title: string;
+  isLoading?: boolean;
 }
 
-const SubmitButton = ({ title }: SubmitButtonProps) => {
+const SubmitButton = ({ title, isLoading }: SubmitButtonProps) => {
   return (
     <button
       type="submit"
-      className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+      disabled={isLoading}
+      className={`w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+        isLoading ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
     >
-      {title}
+      {isLoading ? 'Creating...' : title}
     </button>
   );
 };
