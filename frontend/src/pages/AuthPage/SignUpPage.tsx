@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { createUserWithEmailAndPassword } from '@firebase/auth';
+import { auth } from '../../config/firebase';
+
 import AuthLayout from '../../components/Auth/AuthLayout';
 import InputField from '../../components/Auth/InputField';
 import SubmitButton from '../../components/Auth/SubmitButton';
-import { Link } from 'react-router-dom';
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +19,7 @@ const SignUpPage = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [authError, setAuthError] = useState('');
 
   const validationForm = (): boolean => {
     let isValid = true;
@@ -57,10 +63,30 @@ const SignUpPage = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validationForm()) {
-      console.log('Sign up attempt');
+      try {
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        console.log('Successfully signed up:', userCredential.user);
+        navigate('/');
+      } catch (error: any) {
+        console.log('Error code:', error.code);
+        console.log('Error message:', error.message);
+
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            setAuthError('Email already in use');
+            break;
+          default:
+            setAuthError('An error occurred. Please try again.');
+            break;
+        }
+      }
     }
   };
 
@@ -72,29 +98,36 @@ const SignUpPage = () => {
           placeholder="Full Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          error={nameError}
+          fieldError={nameError}
         />
         <InputField
           type="email"
           placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          error={emailError}
+          fieldError={emailError}
+          authError={authError}
         />
         <InputField
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={passwordError}
+          fieldError={passwordError}
+          authError={authError}
         />
         <InputField
           type="password"
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          error={confirmPasswordError}
+          fieldError={confirmPasswordError}
+          authError={authError}
+          isLast={true}
         />
+        { authError && (
+          <p className="text-red-500 text-sm mb-2 pl-1">{authError}</p>
+        )}
         <SubmitButton title="Sign Up" />
       </form>
 
