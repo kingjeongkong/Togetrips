@@ -62,11 +62,7 @@ export const authService = {
 
   async signIn({ email, password }: AuthFormData): Promise<AuthResponse> {
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(auth, email, password);
 
       return {
         success: true
