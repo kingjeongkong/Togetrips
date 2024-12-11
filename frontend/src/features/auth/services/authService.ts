@@ -17,6 +17,17 @@ interface AuthResponse {
   };
 }
 
+const getErrorMessage = (code: string): string => {
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'Email already in use';
+    case 'auth/invalid-credential':
+      return 'Invalid email or password';
+    default:
+      return 'An error occurred. Please try again.';
+  }
+};
+
 export const authService = {
   async signUp({
     name,
@@ -46,10 +57,7 @@ export const authService = {
         success: false,
         error: {
           code: error.code,
-          message:
-            error.code === 'auth/email-already-in-use'
-              ? 'Email already in use'
-              : 'An error occurred during sign up'
+          message: getErrorMessage(error.code)
         }
       };
     }
@@ -72,10 +80,7 @@ export const authService = {
         success: false,
         error: {
           code: error.code,
-          message:
-            error.code === 'auth/invalid-credential'
-              ? 'Invalid email or password'
-              : 'An error occurred during sign in'
+          message: getErrorMessage(error.code)
         }
       };
     }
