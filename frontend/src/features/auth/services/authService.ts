@@ -1,16 +1,14 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  UserCredential
+  signOut as firebaseSignOut
 } from '@firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../../config/firebase';
-import { SignUpFormData, AuthFormData } from '../types/auth.types';
+import { SignUpFormData, AuthFormData } from '../types/authTypes';
 
 interface AuthResponse {
   success: boolean;
-  user?: UserCredential['user'];
   error?: {
     code: string;
     message: string;
@@ -49,8 +47,7 @@ export const authService = {
       });
 
       return {
-        success: true,
-        user: userCredential.user
+        success: true
       };
     } catch (error: any) {
       return {
@@ -72,8 +69,7 @@ export const authService = {
       );
 
       return {
-        success: true,
-        user: userCredential.user
+        success: true
       };
     } catch (error: any) {
       return {

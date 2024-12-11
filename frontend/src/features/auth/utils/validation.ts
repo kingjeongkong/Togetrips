@@ -1,4 +1,4 @@
-import { AuthFormData, FormErrors, SignUpFormData } from '../types/auth.types';
+import { AuthFormData, FormErrors, SignUpFormData } from '../types/authTypes';
 
 const validateEmail = (email: string): string | undefined => {
   if (!email) {

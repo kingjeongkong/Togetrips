@@ -4,9 +4,9 @@ import { createUserWithEmailAndPassword } from '@firebase/auth';
 import { auth, db } from '../../config/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
-import AuthLayout from '../../components/Auth/AuthLayout';
-import InputField from '../../components/Auth/InputField';
-import SubmitButton from '../../components/Auth/SubmitButton';
+import AuthLayout from '../../features/auth/components/Auth/AuthLayout';
+import InputField from '../../features/auth/components/Auth/InputField';
+import SubmitButton from '../../features/auth/components/Auth/SubmitButton';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
