@@ -4,8 +4,10 @@ import {
   Route,
   RouterProvider
 } from 'react-router-dom';
-import SignInPage from './pages/AuthPage/SignInPage';
-import SignUpPage from './pages/AuthPage/SignUpPage';
+import SignInPage from './pages/Auth/SignIn';
+import SignUpPage from './pages/Auth/SignUp';
+import ProtectedRoute from './features/auth/components/Auth/ProtectedRoute';
+import Home from './pages/Main/Home';
 
 function App() {
   const router = createBrowserRouter(
@@ -13,6 +15,9 @@ function App() {
       <>
         <Route path="/" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+        </Route>
       </>
     )
   );
