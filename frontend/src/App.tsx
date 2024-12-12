@@ -7,7 +7,10 @@ import {
 import SignInPage from './pages/Auth/SignIn';
 import SignUpPage from './pages/Auth/SignUp';
 import ProtectedRoute from './features/Auth/components/ProtectedRoute';
-import Home from './pages/Main/Home/Home';
+import Home from './pages/Main/Home';
+import Chat from './pages/Main/Chat';
+import Requests from './pages/Main/Requests';
+import Profile from './pages/Main/Profile';
 
 function App() {
   const router = createBrowserRouter(
@@ -17,6 +20,9 @@ function App() {
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/requests" element={<Requests />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </>
     )
