@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthFormData, FormErrors } from '../../features/auth/types/authTypes';
 import { validateSignInForm } from '../../features/auth/utils/validation';
+import { authService } from '../../features/auth/services/authService';
 
 import AuthLayout from '../../features/auth/components/Auth/AuthLayout';
 import InputField from '../../features/auth/components/Auth/InputField';
 import SubmitButton from '../../features/auth/components/Auth/SubmitButton';
-import { authService } from '../../features/auth/services/authService';
+import googleLogo from '../../assets/google-logo.png';
 
 const SignInPage = () => {
   const navigate = useNavigate();
@@ -16,13 +17,14 @@ const SignInPage = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [authError, setAuthError] = useState('');
+  const [oAuthError, setOAuthError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     setAuthError('');
 
-    const formData: AuthFormData = {email, password};
+    const formData: AuthFormData = { email, password };
     const validationErrors = validateSignInForm(formData);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -36,6 +38,17 @@ const SignInPage = () => {
 
     if (!response.success) {
       setAuthError(response.error?.message || 'An error occurred.');
+      return;
+    }
+
+    navigate('/home');
+  };
+
+  const handleGoogleSignIn = async () => {
+    const response = await authService.signInWithGoogle();
+
+    if (!response.success) {
+      setOAuthError(response.error?.message || 'An error occurred.');
       return;
     }
 
@@ -75,6 +88,24 @@ const SignInPage = () => {
         <Link to="/sign-up" className="text-indigo-600 hover:underline">
           Don't have an account?
         </Link>
+      </div>
+
+      <div className="mt-6">
+        <button
+          onClick={handleGoogleSignIn}
+          className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50"
+          disabled={isLoading}
+        >
+          <img
+            src={googleLogo}
+            alt="Google"
+            className='w-6 h-6'
+          />
+          Continue with Google
+        </button>
+        <p className='text-red-500 text-sm mt-2 pl-2'>
+          {oAuthError || ''}
+        </p>
       </div>
     </AuthLayout>
   );
