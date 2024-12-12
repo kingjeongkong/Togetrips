@@ -6,8 +6,8 @@ import {
 } from 'react-router-dom';
 import SignInPage from './pages/Auth/SignIn';
 import SignUpPage from './pages/Auth/SignUp';
-import ProtectedRoute from './features/auth/components/Auth/ProtectedRoute';
-import Home from './pages/Main/Home';
+import ProtectedRoute from './features/Auth/components/ProtectedRoute';
+import Home from './pages/Main/Home/Home';
 
 function App() {
   const router = createBrowserRouter(
