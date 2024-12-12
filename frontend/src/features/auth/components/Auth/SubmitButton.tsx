@@ -1,9 +1,10 @@
 interface SubmitButtonProps {
   title: string;
+  loadingTitle?: string;
   isLoading?: boolean;
 }
 
-const SubmitButton = ({ title, isLoading }: SubmitButtonProps) => {
+const SubmitButton = ({ title, loadingTitle, isLoading }: SubmitButtonProps) => {
   return (
     <button
       type="submit"
@@ -12,7 +13,7 @@ const SubmitButton = ({ title, isLoading }: SubmitButtonProps) => {
         isLoading ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
-      {isLoading ? 'Creating...' : title}
+      {isLoading ? loadingTitle : title}
     </button>
   );
 };
