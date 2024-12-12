@@ -20,7 +20,7 @@ const SidebarItem = ({ title, icon: Icon, to }: SidebarItemProps) => {
       }
     >
       <Icon className="text-lg mr-2" />
-      <span>{title}</span>
+      <span className="hidden md:inline">{title}</span>
     </NavLink>
   );
 };
