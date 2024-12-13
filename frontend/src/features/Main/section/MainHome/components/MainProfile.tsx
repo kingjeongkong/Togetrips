@@ -47,7 +47,7 @@ const MainProfile = () => {
 
       <Link
         to="/profile"
-        className="flex-shrink-0 ml-3 border border-gray-500 shadow-sm rounded-2xl  hover:bg-sky-100 hover:shadow-md
+        className="flex-shrink-0 ml-3 border border-gray-500 shadow-sm rounded-2xl  hover:bg-sky-100 hover:shadow-md bg-white
         text-xs px-2 py-1
         md:text-base md:px-4 md:py-2"
       >
