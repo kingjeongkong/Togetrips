@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import AuthLayout from '../../features/auth/components/Auth/AuthLayout';
-import InputField from '../../features/auth/components/Auth/InputField';
-import SubmitButton from '../../features/auth/components/Auth/SubmitButton';
-import { FormErrors, SignUpFormData } from '../../features/auth/types/authTypes';
-import { validateSignUpForm } from '../../features/auth/utils/validation';
-import { authService } from '../../features/auth/services/authService';
+import AuthLayout from '../../features/Auth/components/AuthLayout';
+import InputField from '../../features/Auth/components/InputField';
+import SubmitButton from '../../features/Auth/components/SubmitButton';
+import { FormErrors, SignUpFormData } from '../../features/Auth/types/authTypes';
+import { validateSignUpForm } from '../../features/Auth/utils/validation';
+import { authService } from '../../features/Auth/services/authService';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
