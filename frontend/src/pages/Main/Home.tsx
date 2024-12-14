@@ -6,7 +6,7 @@ import TravelerCardList from '../../features/Main/section/MainHome/components/Tr
 
 const Home = () => {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
       <main className="flex-1 flex flex-col pt-16 md:pt-5 md:pl-60 space-y-10">
         <HomeProfile />

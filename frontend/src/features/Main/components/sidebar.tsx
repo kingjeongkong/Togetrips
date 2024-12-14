@@ -21,8 +21,8 @@ const Sidebar = () => {
     <>
       <div
         className="flex fixed items-center top-0 left-0 shadow-sm z-20 
-        w-full justify-start pl-4
-        md:w-60 md:justify-center md:pl-0"
+        w-full justify-start pl-4 bg-gray-100
+        md:w-60 md:justify-center md:pl-0 md:bg-transparent"
       >
         <p className="font-bold text-xl py-3 md:text-2xl md:py-5">
           Travel Together
