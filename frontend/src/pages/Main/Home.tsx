@@ -1,6 +1,6 @@
 import React from 'react';
 import Sidebar from '../../features/Main/components/Sidebar';
-import MainProfile from '../../features/Main/section/MainHome/components/MainProfile';
+import HomeProfile from '../../features/Main/section/MainHome/components/HomeProfile';
 import CurrentLocationMap from '../../features/Main/section/MainHome/components/CurrentLocationMap';
 
 const Home = () => {
@@ -8,7 +8,7 @@ const Home = () => {
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
       <main className="flex-1 flex flex-col pt-16 md:pt-5 md:pl-60 space-y-10">
-        <MainProfile />
+        <HomeProfile />
         <CurrentLocationMap />
       </main>
     </div>

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import googleLogo from '../../../../../assets/google-logo.png';
 import { useEffect, useState } from 'react';
 
-const MainProfile = () => {
+const HomeProfile = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [maxLength, setMaxLength] = useState(200);
   const description =
@@ -57,4 +57,4 @@ const MainProfile = () => {
   );
 };
 
-export default MainProfile;
+export default HomeProfile;
