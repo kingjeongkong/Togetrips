@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from '@firebase/auth';
 import { auth } from '../config/firebase';
 
+// TODO: useAuth 전역 상태 관리로 리팩토링
 const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
