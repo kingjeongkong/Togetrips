@@ -12,4 +12,4 @@ export interface UserProfile {
 export type EditableProfileFields = Pick<
   UserProfile,
   'name' | 'photoURL' | 'tags' | 'bio'
->;
+> & { photoFile?: File };

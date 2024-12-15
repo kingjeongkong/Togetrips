@@ -9,8 +9,7 @@ const MainProfile = () => {
   const { profile, updateProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
 
-  const tagString = '#camping #fishing#hiking#camping';
-  const tags = tagString.split('#').filter((tag) => tag.trim() !== '');
+  const tags = profile?.tags?.split('#').filter((tag) => tag.trim() !== '');
 
   const handleSubmit = async (data: EditableProfileFields) => {
     try {
@@ -37,17 +36,15 @@ const MainProfile = () => {
       ) : (
         <>
           <img
-            src={googleLogo}
-            alt="google-logo"
+            src={profile?.photoURL || ''}
+            alt="profile image"
             className="w-40 h-40 md:w-52 md:h-52 rounded-full"
           />
 
-          <p className="text-2xl md:text-3xl font-semibold">
-            Alexander Kurniawan
-          </p>
+          <p className="text-2xl md:text-3xl font-semibold">{profile?.name}</p>
 
           <div className="flex flex-wrap justify-center gap-2 w-4/5 md:w-2/5">
-            {tags.map((tag, index) => (
+            {tags?.map((tag, index) => (
               <span
                 key={index}
                 className="px-3 py-1 text-white bg-orange-400 rounded-3xl text-sm md:text-base"
@@ -58,10 +55,7 @@ const MainProfile = () => {
           </div>
 
           <p className="text-center text-gray-600 w-4/5 text-base md:w-1/2 md:text-lg">
-            I love hiking and exploring places!I love hiking and exploring
-            places!I love hiking and exploring places! I love hiking and
-            exploring places!I love hiking and exploring places!I love hiking
-            and exploring places!
+            {profile?.bio}
           </p>
 
           <button

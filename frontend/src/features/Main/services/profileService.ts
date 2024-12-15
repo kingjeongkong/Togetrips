@@ -1,6 +1,7 @@
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { UserProfile } from '../types/profileTypes';
-import { db } from '../../../config/firebase';
+import { db, storage } from '../../../config/firebase';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export const profileService = {
   async getProfile(uid: string): Promise<UserProfile | null> {
@@ -27,6 +28,19 @@ export const profileService = {
     } catch (error) {
       // TODO: 에러 처리
       console.error('Error updating profile:', error);
+      throw error;
+    }
+  },
+
+  async uploadProfileImage(uid: string, file: File): Promise<string> {
+    try {
+      const storageRef = ref(storage, `profiles/${uid}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      // TODO: 에러 처리
+      console.error('Error uploading profile image:', error);
       throw error;
     }
   }

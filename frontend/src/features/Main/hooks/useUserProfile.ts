@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import useAuth from '../../../hooks/useAuth';
-import { UserProfile } from '../types/profileTypes';
+import { EditableProfileFields, UserProfile } from '../types/profileTypes';
 import { profileService } from '../services/profileService';
 
 export const useUserProfile = () => {
@@ -26,14 +26,22 @@ export const useUserProfile = () => {
     fetchProfile();
   }, [user]);
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: EditableProfileFields) => {
     if (!user?.uid || !profile) return;
 
     try {
-      await profileService.updateProfile(user.uid, updates);
-      setProfile({ ...profile, ...updates });
+      const photoURL = updates.photoFile
+        ? await profileService.uploadProfileImage(user.uid, updates.photoFile)
+        : profile.photoURL;
+
+      const { photoFile, ...updateData } = updates;
+      const dataToUpdate = { ...updateData, photoURL };
+
+      await profileService.updateProfile(user.uid, dataToUpdate);
+      setProfile({ ...profile, ...dataToUpdate });
     } catch (error) {
       setError('Failed to update profile');
+      throw error;
     }
   };
 
