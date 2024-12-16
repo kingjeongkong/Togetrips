@@ -1,5 +1,4 @@
 import { FiEdit, FiSettings } from 'react-icons/fi';
-import googleLogo from '../../../../../assets/google-logo.png';
 import { useState } from 'react';
 import EditProfileForm from './EditProfileForm';
 import { useUserProfile } from '../../../hooks/useUserProfile';
@@ -37,8 +36,9 @@ const MainProfile = () => {
         <>
           <img
             src={profile?.photoURL || ''}
-            alt="profile image"
-            className="w-40 h-40 md:w-52 md:h-52 rounded-full"
+            className={`w-40 h-40 md:w-52 md:h-52 rounded-full ${
+              profile?.photoURL ? '' : 'border border-gray-400'
+            }`}
           />
 
           <p className="text-2xl md:text-3xl font-semibold">{profile?.name}</p>

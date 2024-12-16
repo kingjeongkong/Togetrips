@@ -1,49 +1,35 @@
-import { useEffect, useState } from 'react';
 import useAuth from '../../../hooks/useAuth';
-import { EditableProfileFields, UserProfile } from '../types/profileTypes';
+import { EditableProfileFields } from '../types/profileTypes';
 import { profileService } from '../services/profileService';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useUserProfile = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user?.uid) return;
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile', user?.uid],
+    queryFn: () => (user?.uid ? profileService.getProfile(user.uid) : null),
+    enabled: !!user?.uid
+  });
 
-      try {
-        const profileData = await profileService.getProfile(user.uid);
-        setProfile(profileData);
-      } catch (error) {
-        setError('Failed to fetch profile');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { mutate: updateProfile } = useMutation({
+    mutationFn: async (updates: EditableProfileFields) => {
+      if (!user?.uid) throw new Error('No user');
 
-    fetchProfile();
-  }, [user]);
-
-  const updateProfile = async (updates: EditableProfileFields) => {
-    if (!user?.uid || !profile) return;
-
-    try {
       const photoURL = updates.photoFile
         ? await profileService.uploadProfileImage(user.uid, updates.photoFile)
-        : profile.photoURL;
+        : updates.photoURL;
 
       const { photoFile, ...updateData } = updates;
       const dataToUpdate = { ...updateData, photoURL };
 
-      await profileService.updateProfile(user.uid, dataToUpdate);
-      setProfile({ ...profile, ...dataToUpdate });
-    } catch (error) {
-      setError('Failed to update profile');
-      throw error;
+      return profileService.updateProfile(user.uid, dataToUpdate);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.uid] });
     }
-  };
+  });
 
-  return { profile, loading, error, updateProfile };
+  return { profile, isLoading, updateProfile };
 };

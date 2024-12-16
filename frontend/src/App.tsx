@@ -11,8 +11,11 @@ import Home from './pages/Main/Home';
 import Chat from './pages/Main/Chat';
 import Requests from './pages/Main/Requests';
 import Profile from './pages/Main/Profile';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function App() {
+  const queryClient = new QueryClient();
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
@@ -28,7 +31,11 @@ function App() {
     )
   );
 
-  return <RouterProvider router={router} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;
