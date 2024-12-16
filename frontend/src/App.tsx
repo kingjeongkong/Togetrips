@@ -6,13 +6,16 @@ import {
 } from 'react-router-dom';
 import SignInPage from './pages/Auth/SignIn';
 import SignUpPage from './pages/Auth/SignUp';
-import ProtectedRoute from './features/Auth/components/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Main/Home';
 import Chat from './pages/Main/Chat';
 import Requests from './pages/Main/Requests';
 import Profile from './pages/Main/Profile';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function App() {
+  const queryClient = new QueryClient();
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
@@ -28,7 +31,11 @@ function App() {
     )
   );
 
-  return <RouterProvider router={router} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;

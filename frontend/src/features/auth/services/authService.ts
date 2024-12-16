@@ -50,6 +50,9 @@ export const authService = {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name,
         email,
+        photoURL: '',
+        tags: '',
+        bio: '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -97,6 +100,9 @@ export const authService = {
         {
           name: result.user.displayName,
           email: result.user.email,
+          photoURL: result.user.photoURL || '',
+          tags: '',
+          bio: '',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         },
