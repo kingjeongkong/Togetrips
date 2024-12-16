@@ -1,11 +1,12 @@
-import googleLogo from '../../../../../assets/google-logo.png';
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '../../../hooks/useUserProfile';
+import { formatHashTags } from '../../../utils/HashTags';
 
 const HomeProfile = () => {
   const { profile } = useUserProfile();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [maxLength, setMaxLength] = useState(200);
+  const shouldShowMoreButton = profile?.bio && profile.bio.length > maxLength;
 
   useEffect(() => {
     const updateMaxLength = () => {
@@ -28,13 +29,15 @@ const HomeProfile = () => {
 
       <div className="flex flex-col justify-center ml-6 flex-grow">
         <h1 className="text-lg font-medium md:text-2xl">{profile?.name}</h1>
-        <p className="text-sm md:text-base text-orange-400">{profile?.tags}</p>
+        <p className="text-sm md:text-base text-orange-400">
+          {formatHashTags(profile?.tags || '')}
+        </p>
         <p className="text-sm md:text-base">
           {showFullDescription
             ? profile?.bio
             : `${profile?.bio.slice(0, maxLength)}`}
 
-          {profile?.bio && profile?.bio.length > maxLength && (
+          {shouldShowMoreButton && (
             <button
               onClick={() => setShowFullDescription((prev) => !prev)}
               className="ml-2 text-blue-500 hover:underline"

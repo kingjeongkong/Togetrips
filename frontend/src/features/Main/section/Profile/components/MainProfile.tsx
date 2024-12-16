@@ -3,12 +3,11 @@ import { useState } from 'react';
 import EditProfileForm from './EditProfileForm';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { EditableProfileFields } from '../../../types/profileTypes';
+import { splitHashTags } from '../../../utils/HashTags';
 
 const MainProfile = () => {
   const { profile, updateProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
-
-  const tags = profile?.tags?.split('#').filter((tag) => tag.trim() !== '');
 
   const handleSubmit = async (data: EditableProfileFields) => {
     try {
@@ -44,7 +43,7 @@ const MainProfile = () => {
           <p className="text-2xl md:text-3xl font-semibold">{profile?.name}</p>
 
           <div className="flex flex-wrap justify-center gap-2 w-4/5 md:w-2/5">
-            {tags?.map((tag, index) => (
+            {splitHashTags(profile?.tags || '').map((tag, index) => (
               <span
                 key={index}
                 className="px-3 py-1 text-white bg-orange-400 rounded-3xl text-sm md:text-base"
