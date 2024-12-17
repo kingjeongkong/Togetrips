@@ -1,49 +1,23 @@
 import { GoogleMap } from '@react-google-maps/api';
-import { useEffect, useState } from 'react';
 import { FaMapMarkerAlt } from 'react-icons/fa';
-import { getCurrentLocationData } from '../utils/location';
-import useAuth from '../../../../../hooks/useAuth';
-import { locationService } from '../service/locationService';
 
-const CurrentLocationMap = () => {
-  const { user } = useAuth();
-  const [currentLocation, setCurrentLocation] = useState({
-    lat: 0,
-    lng: 0
-  });
-  const [cityName, setCityName] = useState('');
-  const [loading, setLoading] = useState(true);
+interface CurrentLocationMapProps {
+  currentLocation: { lat: number; lng: number };
+  cityName: string;
+  updateLocation: () => void;
+  loading: boolean;
+}
+
+const CurrentLocationMap = ({
+  currentLocation,
+  cityName,
+  updateLocation,
+  loading
+}: CurrentLocationMapProps) => {
   const mapContainerStyle = {
     width: '100%',
     height: '400px'
   };
-
-  const updateLocation = async () => {
-    try {
-      const { currentLocation, cityName, stateName } =
-        await getCurrentLocationData();
-      setCurrentLocation(currentLocation);
-      setCityName(cityName);
-
-      if (user?.uid) {
-        await locationService.updateUserLocationDB(
-          user?.uid,
-          cityName,
-          stateName
-        );
-      }
-    } catch (error) {
-      console.error('Error updating location:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.uid) {
-      updateLocation();
-    }
-  }, [user]);
 
   return (
     <div className="flex flex-col  px-6">
@@ -74,9 +48,7 @@ const CurrentLocationMap = () => {
         />
       </div>
 
-      <p className="pt-3 text-lg text-gray-500">
-        Only same city travelers are available
-      </p>
+      <p className="pt-3 text-lg text-gray-500">Only same city travelers are available</p>
     </div>
   );
 };
