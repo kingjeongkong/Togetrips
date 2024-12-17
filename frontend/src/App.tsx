@@ -4,6 +4,7 @@ import {
   Route,
   RouterProvider
 } from 'react-router-dom';
+import { LoadScript } from '@react-google-maps/api';
 import SignInPage from './pages/Auth/SignIn';
 import SignUpPage from './pages/Auth/SignUp';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -33,7 +34,9 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+        <RouterProvider router={router} />
+      </LoadScript>
     </QueryClientProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap } from '@react-google-maps/api';
 import { useEffect, useState } from 'react';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { getCurrentLocationData } from '../utils/location';
@@ -53,13 +53,11 @@ const CurrentLocationMap = () => {
       </div>
 
       <div className="pt-4">
-        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={currentLocation}
-            zoom={15}
-          />
-        </LoadScript>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={currentLocation}
+          zoom={15}
+        />
       </div>
 
       <p className="pt-3 text-lg text-gray-500">
