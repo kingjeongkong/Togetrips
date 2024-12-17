@@ -2,8 +2,11 @@ import { GoogleMap } from '@react-google-maps/api';
 import { useEffect, useState } from 'react';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { getCurrentLocationData } from '../utils/location';
+import useAuth from '../../../../../hooks/useAuth';
+import { locationService } from '../service/locationService';
 
 const CurrentLocationMap = () => {
+  const { user } = useAuth();
   const [currentLocation, setCurrentLocation] = useState({
     lat: 0,
     lng: 0
@@ -17,9 +20,18 @@ const CurrentLocationMap = () => {
 
   const updateLocation = async () => {
     try {
-      const { currentLocation, cityName } = await getCurrentLocationData();
+      const { currentLocation, cityName, stateName } =
+        await getCurrentLocationData();
       setCurrentLocation(currentLocation);
       setCityName(cityName);
+
+      if (user?.uid) {
+        await locationService.updateUserLocationDB(
+          user?.uid,
+          cityName,
+          stateName
+        );
+      }
     } catch (error) {
       console.error('Error updating location:', error);
     } finally {

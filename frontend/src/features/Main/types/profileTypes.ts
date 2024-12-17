@@ -1,3 +1,8 @@
+export interface Location {
+  city: string;
+  state: string;
+}
+
 export interface UserProfile {
   uid: string;
   name: string;
@@ -5,6 +10,7 @@ export interface UserProfile {
   photoURL: string;
   tags: string;
   bio: string;
+  location: Location;
   createdAt: string;
   updatedAt: string;
 }

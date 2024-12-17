@@ -53,6 +53,10 @@ export const authService = {
         photoURL: '',
         tags: '',
         bio: '',
+        location: {
+          city: '',
+          state: ''
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -103,6 +107,10 @@ export const authService = {
           photoURL: result.user.photoURL || '',
           tags: '',
           bio: '',
+          location: {
+            city: '',
+            state: ''
+          },
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         },

@@ -6,6 +6,7 @@ interface Location {
 interface LocationData {
   currentLocation: Location;
   cityName: string;
+  stateName: string;
 }
 
 export const getCurrentLocationData = async () => {
@@ -35,11 +36,18 @@ export const getCurrentLocationData = async () => {
         const cityResult = data.results.find((result: any) =>
           result.types.includes('locality')
         );
+        const stateResult = data.results.find((result: any) =>
+          result.types.includes('administrative_area_level_1')
+        );
+
         const cityName = cityResult
           ? cityResult.address_components[0].long_name
           : 'Unknown';
+        const stateName = stateResult
+          ? stateResult.address_components[0].long_name
+          : 'Unknown';
 
-        resolve({ currentLocation: location, cityName });
+        resolve({ currentLocation: location, cityName, stateName });
       } catch (error) {
         console.error('Error getting location:', error);
         reject(new Error('Failed to retrieve location.'));
