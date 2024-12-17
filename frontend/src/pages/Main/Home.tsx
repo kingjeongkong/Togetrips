@@ -1,4 +1,3 @@
-import React from 'react';
 import Sidebar from '../../features/Main/components/Sidebar';
 import HomeProfile from '../../features/Main/section/MainHome/components/HomeProfile';
 import CurrentLocationMap from '../../features/Main/section/MainHome/components/CurrentLocationMap';
@@ -21,7 +20,7 @@ const Home = () => {
           updateLocation={updateLocation}
           loading={loading}
         />
-        <TravelerCardList />
+        <TravelerCardList nearbyUsers={nearbyUsers} />
       </main>
     </div>
   );
