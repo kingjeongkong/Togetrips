@@ -40,8 +40,10 @@ const CurrentLocationMap = () => {
   };
 
   useEffect(() => {
-    updateLocation();
-  }, []);
+    if (user?.uid) {
+      updateLocation();
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col  px-6">
