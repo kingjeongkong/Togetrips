@@ -23,7 +23,7 @@ function App() {
   useEffect(() => {
     const unsubscribe = initialize();
     return () => unsubscribe();
-  }, [initialize]);
+  }, []);
 
   const router = createBrowserRouter(
     createRoutesFromElements(

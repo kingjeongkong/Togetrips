@@ -1,10 +1,10 @@
-import useAuth from '../../../hooks/useAuth';
 import { EditableProfileFields } from '../types/profileTypes';
 import { profileService } from '../services/profileService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 export const useUserProfile = () => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading } = useQuery({
