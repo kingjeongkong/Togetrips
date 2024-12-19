@@ -4,22 +4,22 @@ import { auth } from '../config/firebase';
 
 interface AuthState {
   user: User | null;
-  authLoading: boolean;
+  loading: boolean;
   isAuthenticated: boolean;
   setUser: (user: User | null) => void;
-  setAuthLoading: (loading: boolean) => void;
+  setLoading: (loading: boolean) => void;
   initialize: () => () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  authLoading: true,
+  loading: true,
   isAuthenticated: false,
   setUser: (user) => set({ user, isAuthenticated: !!user }),
-  setAuthLoading: (authLoading) => set({ authLoading }),
+  setLoading: (loading) => set({ loading }),
   initialize: () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      set({ user, authLoading: false, isAuthenticated: !!user });
+      set({ user, loading: false, isAuthenticated: !!user });
     });
     return unsubscribe;
   }

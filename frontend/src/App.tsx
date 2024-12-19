@@ -15,6 +15,7 @@ import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
+import LoadingIndicator from './components/LoadingIndicator';
 
 function App() {
   const queryClient = new QueryClient();

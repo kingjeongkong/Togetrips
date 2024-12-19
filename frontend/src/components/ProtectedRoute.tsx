@@ -4,9 +4,9 @@ import LoadingIndicator from './LoadingIndicator';
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const authLoading = useAuthStore((state) => state.authLoading);
+  const loading = useAuthStore((state) => state.loading);
 
-  if (authLoading) {
+  if (loading) {
     return <LoadingIndicator type="component" size="lg" />;
   }
 
