@@ -6,6 +6,7 @@ import { useAuthStore } from '../../../../../store/useAuthStore';
 export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
   const user = useAuthStore((state) => state.user);
   const [nearbyUsers, setNearbyUsers] = useState<UserProfile[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchNearbyUsers = async () => {
@@ -14,12 +15,13 @@ export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
           cityInfo.city,
           cityInfo.state
         );
-        setNearbyUsers(users.filter((u) => u.uid !== user.uid))
+        setNearbyUsers(users.filter((u) => u.uid !== user.uid));
+        setIsLoading(false);
       }
     };
 
     fetchNearbyUsers();
   }, [cityInfo.city, cityInfo.state, user?.uid]);
 
-  return nearbyUsers
+  return { nearbyUsers, isLoading };
 };

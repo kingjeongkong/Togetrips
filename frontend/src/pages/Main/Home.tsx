@@ -7,7 +7,7 @@ import { useNearbyUsers } from '../../features/Main/section/MainHome/hooks/userN
 
 const Home = () => {
   const { currentLocation, cityInfo, loading, updateLocation } = useUserLocation();
-  const nearbyUsers = useNearbyUsers(cityInfo);
+  const { nearbyUsers, isLoading } = useNearbyUsers(cityInfo);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -20,7 +20,7 @@ const Home = () => {
           updateLocation={updateLocation}
           loading={loading}
         />
-        <TravelerCardList nearbyUsers={nearbyUsers} />
+        <TravelerCardList nearbyUsers={nearbyUsers} isLoading={isLoading} />
       </main>
     </div>
   );

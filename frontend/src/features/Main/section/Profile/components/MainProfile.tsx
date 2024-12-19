@@ -20,6 +20,12 @@ const MainProfile = () => {
     }
   };
 
+  const loadingIndicator = (
+    <div className="w-full h-[400px] flex items-center justify-center">
+      <LoadingIndicator color="#6366f1" size={50} />
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-4 items-center md:pt-5">
       <button className="absolute top-16 right-4 md:top-7 md:right-7 p-2 rounded-full bg-indigo-500 hover:bg-indigo-600">
@@ -35,9 +41,7 @@ const MainProfile = () => {
       ) : (
         <>
           {isLoading ? (
-            <div className="w-full h-[400px] flex items-center justify-center">
-              <LoadingIndicator color="#6366f1" size={50} />
-            </div>
+            loadingIndicator
           ) : (
             <>
               <img
