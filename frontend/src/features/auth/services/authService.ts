@@ -4,7 +4,7 @@ import {
   signOut as firebaseSignOut,
   signInWithPopup
 } from '@firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../../config/firebase';
 import { SignUpFormData, AuthFormData } from '../types/authTypes';
 import { GoogleAuthProvider } from '@firebase/auth/internal';
@@ -99,24 +99,27 @@ export const authService = {
       const result = await signInWithPopup(auth, provider);
 
       const userDoc = doc(db, 'users', result.user.uid);
-      await setDoc(
-        userDoc,
-        {
-          name: result.user.displayName,
-          email: result.user.email,
-          photoURL: result.user.photoURL || '',
-          tags: '',
-          bio: '',
-          location: {
-            city: '',
-            state: ''
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        { merge: true }
-      );
+      const userSnapshot = await getDoc(userDoc);
 
+      if (!userSnapshot.exists()) {
+        await setDoc(
+          userDoc,
+          {
+            name: result.user.displayName,
+            email: result.user.email,
+            photoURL: result.user.photoURL || '',
+            tags: '',
+            bio: '',
+            location: {
+              city: '',
+              state: ''
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          { merge: true }
+        );
+      } 
       return { success: true };
     } catch (error: any) {
       return {
