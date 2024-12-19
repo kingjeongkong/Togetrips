@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import useAuth from '../../../../../hooks/useAuth';
 import { getCurrentLocationData } from '../utils/location';
 import { locationService } from '../service/locationService';
+import { useAuthStore } from '../../../../../store/useAuthStore';
 
 export const useUserLocation = () => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const [currentLocation, setCurrentLocation] = useState({
     lat: 0,
     lng: 0

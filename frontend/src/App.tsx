@@ -13,9 +13,17 @@ import Chat from './pages/Main/Chat';
 import Requests from './pages/Main/Requests';
 import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAuthStore } from './store/useAuthStore';
+import { useEffect } from 'react';
 
 function App() {
   const queryClient = new QueryClient();
+  const initialize = useAuthStore(state => state.initialize);
+
+  useEffect(() => {
+    const unsubscribe = initialize();
+    return () => unsubscribe();
+  }, []);
 
   const router = createBrowserRouter(
     createRoutesFromElements(

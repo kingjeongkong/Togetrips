@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import useAuth from '../../../../../hooks/useAuth';
 import { locationService } from '../service/locationService';
 import { UserProfile } from '../../../types/profileTypes';
+import { useAuthStore } from '../../../../../store/useAuthStore';
 
 export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const [nearbyUsers, setNearbyUsers] = useState<UserProfile[] | null>(null);
 
   useEffect(() => {
