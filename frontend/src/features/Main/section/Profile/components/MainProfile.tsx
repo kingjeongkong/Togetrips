@@ -4,9 +4,10 @@ import EditProfileForm from './EditProfileForm';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { EditableProfileFields } from '../../../types/profileTypes';
 import { splitHashTags } from '../../../utils/HashTags';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
 const MainProfile = () => {
-  const { profile, updateProfile } = useUserProfile();
+  const { profile, isLoading, updateProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = async (data: EditableProfileFields) => {
@@ -33,29 +34,37 @@ const MainProfile = () => {
         />
       ) : (
         <>
-          <img
-            src={profile?.photoURL || ''}
-            className={`w-40 h-40 md:w-52 md:h-52 rounded-full ${
-              profile?.photoURL ? '' : 'border border-gray-400'
-            }`}
-          />
+          {isLoading ? (
+            <div className="w-full h-[400px] flex items-center justify-center">
+              <LoadingIndicator color="#6366f1" size={50} />
+            </div>
+          ) : (
+            <>
+              <img
+                src={profile?.photoURL || ''}
+                className={`w-40 h-40 md:w-52 md:h-52 rounded-full ${
+                  profile?.photoURL ? '' : 'border border-gray-400'
+                }`}
+              />
 
-          <p className="text-2xl md:text-3xl font-semibold">{profile?.name}</p>
+              <p className="text-2xl md:text-3xl font-semibold">{profile?.name}</p>
 
-          <div className="flex flex-wrap justify-center gap-2 w-4/5 md:w-2/5">
-            {splitHashTags(profile?.tags || '').map((tag, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 text-white bg-orange-400 rounded-3xl text-sm md:text-base"
-              >
-                #{tag.trim()}
-              </span>
-            ))}
-          </div>
+              <div className="flex flex-wrap justify-center gap-2 w-4/5 md:w-2/5">
+                {splitHashTags(profile?.tags || '').map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 text-white bg-orange-400 rounded-3xl text-sm md:text-base"
+                  >
+                    #{tag.trim()}
+                  </span>
+                ))}
+              </div>
 
-          <p className="text-center text-gray-600 w-4/5 text-base md:w-1/2 md:text-lg">
-            {profile?.bio}
-          </p>
+              <p className="text-center text-gray-600 w-4/5 text-base md:w-1/2 md:text-lg">
+                {profile?.bio}
+              </p>
+            </>
+          )}
 
           <button
             onClick={() => setIsEditing(true)}

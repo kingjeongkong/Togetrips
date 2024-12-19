@@ -7,7 +7,11 @@ const ProtectedRoute = () => {
   const loading = useAuthStore((state) => state.loading);
 
   if (loading) {
-    return <LoadingIndicator color="#6366f1" size={50} />;
+    return (
+      <div className="flex justify-center items-center h-screen w-screen">
+        <LoadingIndicator color="#6366f1" size={70} />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

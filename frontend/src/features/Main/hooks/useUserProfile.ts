@@ -15,7 +15,7 @@ export const useUserProfile = () => {
     gcTime: 20 * 60 * 1000
   });
 
-  const { mutate: updateProfile } = useMutation({
+  const { mutateAsync: updateProfile } = useMutation({
     mutationFn: async (updates: EditableProfileFields) => {
       if (!user?.uid) throw new Error('No user');
 

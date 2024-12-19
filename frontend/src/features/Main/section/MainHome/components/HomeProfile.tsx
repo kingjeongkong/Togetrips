@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { formatHashTags } from '../../../utils/HashTags';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
 const HomeProfile = () => {
-  const { profile } = useUserProfile();
+  const { profile, isLoading } = useUserProfile();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [maxLength, setMaxLength] = useState(200);
   const shouldShowMoreButton = profile?.bio && profile.bio.length > maxLength;
@@ -19,6 +20,14 @@ const HomeProfile = () => {
 
     return () => window.removeEventListener('resize', updateMaxLength);
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="pl-16 pt-5">
+        <LoadingIndicator color="#6366f1" size={40} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-between items-center w-full pl-6 pr-16">

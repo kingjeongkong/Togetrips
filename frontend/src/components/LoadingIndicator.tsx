@@ -7,7 +7,7 @@ interface LoadingIndicatorProps {
 
 const LoadingIndicator = ({ color, size }: LoadingIndicatorProps) => {
   return (
-    <div className="flex items-center justify-center">
+    <div className="inline-flex">
       <ClipLoader color={color} size={size} />
     </div>
   );

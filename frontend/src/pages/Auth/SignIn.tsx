@@ -78,7 +78,7 @@ const SignInPage = () => {
         {authError && (
           <p className="text-red-500 text-sm mb-1 pl-1">{authError}</p>
         )}
-        <SubmitButton title="Sign In" isLoading={isLoading} />
+        <SubmitButton title="Sign In" isLoading={true} />
       </form>
 
       <div className="flex items-center justify-between mt-6">
