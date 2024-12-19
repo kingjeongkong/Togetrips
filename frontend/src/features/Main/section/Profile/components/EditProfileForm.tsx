@@ -86,7 +86,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
         <textarea
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          className="text-gray-600 w-4/5 text-base md:w-1/2 md:text-lg p-2 border rounded focus:outline-none focus:border-indigo-500"
+          className="text-gray-600 w-4/5 h-72 text-base md:w-1/2 md:text-lg p-2 border rounded focus:outline-none focus:border-indigo-500"
           rows={4}
         />
 
