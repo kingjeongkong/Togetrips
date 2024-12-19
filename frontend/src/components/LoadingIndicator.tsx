@@ -1,13 +1,14 @@
-import { FadeLoader } from 'react-spinners';
+import { ClipLoader } from 'react-spinners';
 
 interface LoadingIndicatorProps {
-  size: number;
+  color?: string;
+  size?: number;
 }
 
-const LoadingIndicator = ({ size }: LoadingIndicatorProps) => {
+const LoadingIndicator = ({ color, size }: LoadingIndicatorProps) => {
   return (
-    <div className="flex items-center justify-center p-4">
-      <FadeLoader color="#6366f1" width={size} height={size} margin={2} />
+    <div className="flex items-center justify-center">
+      <ClipLoader color={color} size={size} />
     </div>
   );
 };

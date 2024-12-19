@@ -7,7 +7,7 @@ const ProtectedRoute = () => {
   const loading = useAuthStore((state) => state.loading);
 
   if (loading) {
-    return <LoadingIndicator size={20} />;
+    return <LoadingIndicator color="#6366f1" size={50} />;
   }
 
   if (!isAuthenticated) {
