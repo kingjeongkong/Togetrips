@@ -1,12 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import LoadingIndicator from './LoadingIndicator';
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const loading = useAuthStore((state) => state.loading);
+  const authLoading = useAuthStore((state) => state.authLoading);
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (authLoading) {
+    return <LoadingIndicator type="component" size="lg" />;
   }
 
   if (!isAuthenticated) {
