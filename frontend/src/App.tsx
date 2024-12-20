@@ -15,10 +15,11 @@ import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const queryClient = new QueryClient();
-  const initialize = useAuthStore(state => state.initialize);
+  const initialize = useAuthStore((state) => state.initialize);
 
   useEffect(() => {
     const unsubscribe = initialize();
@@ -41,11 +42,13 @@ function App() {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-        <RouterProvider router={router} />
-      </LoadScript>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+          <RouterProvider router={router} />
+        </LoadScript>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

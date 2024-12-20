@@ -75,10 +75,8 @@ const SignInPage = () => {
           authError={authError}
           isLast={true}
         />
-        {authError && (
-          <p className="text-red-500 text-sm mb-1 pl-1">{authError}</p>
-        )}
-        <SubmitButton title="Sign In" isLoading={true} />
+        {authError && <p className="text-red-500 text-sm mb-1 pl-1">{authError}</p>}
+        <SubmitButton title="Sign In" isLoading={isLoading} />
       </form>
 
       <div className="flex items-center justify-between mt-6">
@@ -96,16 +94,10 @@ const SignInPage = () => {
           className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50"
           disabled={isLoading}
         >
-          <img
-            src={googleLogo}
-            alt="Google"
-            className='w-6 h-6'
-          />
+          <img src={googleLogo} alt="Google" className="w-6 h-6" />
           Continue with Google
         </button>
-        <p className='text-red-500 text-sm mt-2 pl-2'>
-          {oAuthError || ''}
-        </p>
+        <p className="text-red-500 text-sm mt-2 pl-2">{oAuthError || ''}</p>
       </div>
     </AuthLayout>
   );
