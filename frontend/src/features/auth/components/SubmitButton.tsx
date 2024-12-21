@@ -1,10 +1,11 @@
+import LoadingIndicator from "../../../components/LoadingIndicator";
+
 interface SubmitButtonProps {
   title: string;
-  loadingTitle?: string;
   isLoading?: boolean;
 }
 
-const SubmitButton = ({ title, loadingTitle, isLoading }: SubmitButtonProps) => {
+const SubmitButton = ({ title, isLoading }: SubmitButtonProps) => {
   return (
     <button
       type="submit"
@@ -13,7 +14,7 @@ const SubmitButton = ({ title, loadingTitle, isLoading }: SubmitButtonProps) => 
         isLoading ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
-      {isLoading ? loadingTitle : title}
+      {isLoading ? <LoadingIndicator color="#ffffff" size={24} /> : title}
     </button>
   );
 };

@@ -15,10 +15,18 @@ import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
-  const queryClient = new QueryClient();
-  const initialize = useAuthStore(state => state.initialize);
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false
+      }
+    }
+  });
+
+  const initialize = useAuthStore((state) => state.initialize);
 
   useEffect(() => {
     const unsubscribe = initialize();
@@ -30,7 +38,13 @@ function App() {
       <>
         <Route path="/" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route element={<ProtectedRoute />}>
+        <Route
+          element={
+            <ErrorBoundary>
+              <ProtectedRoute />
+            </ErrorBoundary>
+          }
+        >
           <Route path="/home" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/requests" element={<Requests />} />

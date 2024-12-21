@@ -12,7 +12,7 @@ interface LocationData {
 export const getCurrentLocationData = async () => {
   return new Promise<LocationData>((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Geolocation is not supported'));
+      reject(new Error('Location services are not supported by your browser.'));
       return;
     }
 

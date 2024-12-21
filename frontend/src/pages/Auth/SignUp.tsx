@@ -83,7 +83,7 @@ const SignUpPage = () => {
         {authError && (
           <p className="text-red-500 text-sm mb-2 pl-1">{authError}</p>
         )}
-        <SubmitButton title="Sign Up" loadingTitle='Creating...' isLoading={isLoading} />
+        <SubmitButton title="Sign Up" isLoading={isLoading} />
       </form>
 
       <p className="text-center mt-6 text-gray-600">

@@ -1,5 +1,6 @@
 import { GoogleMap } from '@react-google-maps/api';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
 interface CurrentLocationMapProps {
   currentLocation: { lat: number; lng: number };
@@ -26,7 +27,7 @@ const CurrentLocationMap = ({
         <span className="text-lg mr-5">
           Current Location:
           <span className="text-xl font-semibold ml-2">
-            {loading ? 'Loading...' : cityName}
+            {loading ? <LoadingIndicator color="#f97361" size={17} /> : cityName}
           </span>
         </span>
 

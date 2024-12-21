@@ -12,10 +12,11 @@ export const useUserProfile = () => {
     queryFn: () => (user?.uid ? profileService.getProfile(user.uid) : null),
     enabled: !!user?.uid,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000
+    gcTime: 20 * 60 * 1000,
+    throwOnError: true
   });
 
-  const { mutate: updateProfile } = useMutation({
+  const { mutateAsync: updateProfile } = useMutation({
     mutationFn: async (updates: EditableProfileFields) => {
       if (!user?.uid) throw new Error('No user');
 
@@ -31,10 +32,7 @@ export const useUserProfile = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.uid] });
     },
-    onError: (error) => {
-      console.error('Error updating profile', error);
-      throw error;
-    }
+    throwOnError: true
   });
 
   return { profile, isLoading, updateProfile };
