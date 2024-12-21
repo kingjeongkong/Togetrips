@@ -18,7 +18,14 @@ import { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false
+      }
+    }
+  });
+
   const initialize = useAuthStore((state) => state.initialize);
 
   useEffect(() => {
@@ -31,7 +38,13 @@ function App() {
       <>
         <Route path="/" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route element={<ProtectedRoute />}>
+        <Route
+          element={
+            <ErrorBoundary>
+              <ProtectedRoute />
+            </ErrorBoundary>
+          }
+        >
           <Route path="/home" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/requests" element={<Requests />} />
@@ -42,13 +55,11 @@ function App() {
   );
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-          <RouterProvider router={router} />
-        </LoadScript>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+        <RouterProvider router={router} />
+      </LoadScript>
+    </QueryClientProvider>
   );
 }
 

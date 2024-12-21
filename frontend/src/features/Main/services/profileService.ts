@@ -12,9 +12,8 @@ export const profileService = {
       }
       return null;
     } catch (error) {
-      // TODO: 에러 처리
       console.error('Error fetching profile:', error);
-      throw error;
+      throw new Error('Failed to fetch profile');
     }
   },
 
@@ -26,9 +25,8 @@ export const profileService = {
         updatedAt: new Date().toISOString()
       });
     } catch (error) {
-      // TODO: 에러 처리
       console.error('Error updating profile:', error);
-      throw error;
+      throw new Error('Failed to update profile');
     }
   },
 
@@ -39,9 +37,8 @@ export const profileService = {
       const downloadURL = await getDownloadURL(snapshot.ref);
       return downloadURL;
     } catch (error) {
-      // TODO: 에러 처리
       console.error('Error uploading profile image:', error);
-      throw error;
+      throw new Error('Failed to upload profile image');
     }
   }
 };

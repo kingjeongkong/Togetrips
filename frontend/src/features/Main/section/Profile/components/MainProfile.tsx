@@ -11,13 +11,8 @@ const MainProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = async (data: EditableProfileFields) => {
-    try {
-      await updateProfile(data);
-      setIsEditing(false);
-    } catch (error) {
-      // TODO: 에러 처리
-      console.error('Error updating profile:', error);
-    }
+    await updateProfile(data);
+    setIsEditing(false);
   };
 
   const loadingIndicator = (

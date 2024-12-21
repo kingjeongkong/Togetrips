@@ -12,7 +12,8 @@ export const useUserProfile = () => {
     queryFn: () => (user?.uid ? profileService.getProfile(user.uid) : null),
     enabled: !!user?.uid,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000
+    gcTime: 20 * 60 * 1000,
+    throwOnError: true
   });
 
   const { mutateAsync: updateProfile } = useMutation({
@@ -31,10 +32,7 @@ export const useUserProfile = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.uid] });
     },
-    onError: (error) => {
-      console.error('Error updating profile', error);
-      throw error;
-    }
+    throwOnError: true
   });
 
   return { profile, isLoading, updateProfile };

@@ -26,9 +26,6 @@ export const useUserLocation = () => {
           stateName
         );
       }
-    } catch (error) {
-      console.error('Error updating location:', error);
-      throw new Error('Error updating location');
     } finally {
       setLoading(false);
     }
