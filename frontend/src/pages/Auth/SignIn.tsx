@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../../features/Auth/services/authService';
+import { Link } from 'react-router-dom';
 
 import AuthLayout from '../../features/Auth/components/AuthLayout';
 import InputField from '../../features/Auth/components/InputField';
