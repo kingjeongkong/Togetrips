@@ -1,63 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthFormData, FormErrors } from '../../features/Auth/types/authTypes';
-import { validateSignInForm } from '../../features/Auth/utils/validation';
 import { authService } from '../../features/Auth/services/authService';
 
 import AuthLayout from '../../features/Auth/components/AuthLayout';
 import InputField from '../../features/Auth/components/InputField';
 import SubmitButton from '../../features/Auth/components/SubmitButton';
 import googleLogo from '../../assets/google-logo.png';
+import { useAuthSubmit } from '../../features/Auth/hooks/useAuthSubmit';
 
 const SignInPage = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [authError, setAuthError] = useState('');
-  const [oAuthError, setOAuthError] = useState('');
+  const { isLoading, errors, authError, oAuthError, handleSubmit, handleGoogleSignIn } =
+    useAuthSubmit({
+      type: 'signIn',
+      redirectPath: '/home'
+    });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors({});
-    setAuthError('');
-
-    const formData: AuthFormData = { email, password };
-    const validationErrors = validateSignInForm(formData);
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    const response = await authService.signIn(formData);
-    setIsLoading(false);
-
-    if (!response.success) {
-      setAuthError(response.error?.message || 'An error occurred.');
-      return;
-    }
-
-    navigate('/home');
-  };
-
-  const handleGoogleSignIn = async () => {
-    const response = await authService.signInWithGoogle();
-
-    if (!response.success) {
-      setOAuthError(response.error?.message || 'An error occurred.');
-      return;
-    }
-
-    navigate('/home');
+    handleSubmit({ email, password });
   };
 
   return (
     <AuthLayout title="Sign in">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <InputField
           type="email"
           placeholder="Email Address"

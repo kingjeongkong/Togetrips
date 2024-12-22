@@ -6,7 +6,7 @@ import {
 } from '@firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../../config/firebase';
-import { SignUpFormData, AuthFormData } from '../types/authTypes';
+import { SignUpFormData, SignInFormData } from '../types/authTypes';
 import { GoogleAuthProvider } from '@firebase/auth/internal';
 
 interface AuthResponse {
@@ -75,7 +75,7 @@ export const authService = {
     }
   },
 
-  async signIn({ email, password }: AuthFormData): Promise<AuthResponse> {
+  async signIn({ email, password }: SignInFormData): Promise<AuthResponse> {
     try {
       await signInWithEmailAndPassword(auth, email, password);
 

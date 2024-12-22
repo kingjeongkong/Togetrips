@@ -1,9 +1,9 @@
-export interface AuthFormData {
+export interface SignInFormData {
   email: string;
   password: string;
 }
 
-export interface SignUpFormData extends AuthFormData {
+export interface SignUpFormData extends SignInFormData {
   name: string;
   confirmPassword: string;
 }

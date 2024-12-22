@@ -1,53 +1,29 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import AuthLayout from '../../features/Auth/components/AuthLayout';
 import InputField from '../../features/Auth/components/InputField';
 import SubmitButton from '../../features/Auth/components/SubmitButton';
-import { FormErrors, SignUpFormData } from '../../features/Auth/types/authTypes';
-import { validateSignUpForm } from '../../features/Auth/utils/validation';
-import { authService } from '../../features/Auth/services/authService';
+import { useAuthSubmit } from '../../features/Auth/hooks/useAuthSubmit';
 
 const SignUpPage = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { isLoading, errors, authError, handleSubmit } = useAuthSubmit({
+    type: 'signUp',
+    redirectPath: '/'
+  });
 
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [authError, setAuthError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors({});
-    setAuthError('');
-
-    const formData: SignUpFormData = {name, email, password, confirmPassword};
-    const validationErrors = validateSignUpForm(formData);
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    const response = await authService.signUp(formData);
-    setIsLoading(false);
-
-    if (!response.success) {
-      setAuthError(response.error?.message || 'An error occurred.');
-      return;
-    }
-
-    navigate('/');
+    handleSubmit({ name, email, password, confirmPassword });
   };
 
   return (
     <AuthLayout title="Sign Up">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <InputField
           type="text"
           placeholder="Full Name"
@@ -80,9 +56,7 @@ const SignUpPage = () => {
           authError={authError}
           isLast={true}
         />
-        {authError && (
-          <p className="text-red-500 text-sm mb-2 pl-1">{authError}</p>
-        )}
+        {authError && <p className="text-red-500 text-sm mb-2 pl-1">{authError}</p>}
         <SubmitButton title="Sign Up" isLoading={isLoading} />
       </form>
 

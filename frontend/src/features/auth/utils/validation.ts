@@ -1,4 +1,4 @@
-import { AuthFormData, FormErrors, SignUpFormData } from '../types/authTypes';
+import { SignInFormData, FormErrors, SignUpFormData } from '../types/authTypes';
 
 const validateEmail = (email: string): string | undefined => {
   if (!email) {
@@ -18,7 +18,7 @@ const validatePassword = (password: string): string | undefined => {
   }
 };
 
-export const validateSignInForm = (formData: AuthFormData): FormErrors => {
+export const validateSignInForm = (formData: SignInFormData): FormErrors => {
   const errors: FormErrors = {};
 
   const emailError = validateEmail(formData.email);
