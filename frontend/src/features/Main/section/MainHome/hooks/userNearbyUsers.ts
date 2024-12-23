@@ -24,9 +24,10 @@ export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
         // 3. accepted/declined 상태의 요청이 있는 사용자 분류
         const filteredUsers = await Promise.all(
           otherUsers.map(async (otherUser) => {
-            const hasCompletedRequest = await requestService.checkCompletedRequest(
+            const hasCompletedRequest = await requestService.checkRequestByStatus(
               user.uid,
-              otherUser.uid
+              otherUser.uid,
+              ['accepted', 'declined']
             );
             return { user: otherUser, hasCompletedRequest };
           })

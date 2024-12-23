@@ -20,7 +20,11 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
   useEffect(() => {
     const checkRequest = async () => {
       if (!user) return;
-      const exists = await requestService.checkPendingRequest(user.uid, travelerID);
+      const exists = await requestService.checkRequestByStatus(
+        user.uid,
+        travelerID,
+        'pending'
+      );
       setHasExistingRequest(exists);
     };
 
