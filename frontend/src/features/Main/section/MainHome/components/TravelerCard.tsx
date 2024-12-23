@@ -75,7 +75,7 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
           onClick={() => setIsModalOpen(true)}
           disabled={hasExistingRequest}
         >
-          {hasExistingRequest ? 'Request Sent' : 'Send Request'}
+          {hasExistingRequest ? 'Request Pending' : 'Send Request'}
         </button>
       </div>
 

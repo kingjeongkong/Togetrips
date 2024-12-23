@@ -91,17 +91,28 @@ export const requestService = {
     }
   },
 
-  async checkExistingRequest(senderID: string, receiverID: string): Promise<boolean> {
+  async checkExistingRequest(userID: string, otherUserID: string): Promise<boolean> {
     try {
-      const requestsQuery = query(
+      const sentRequestQuery = query(
         collection(db, 'requests'),
-        where('senderID', '==', senderID),
-        where('receiverID', '==', receiverID),
+        where('senderID', '==', userID),
+        where('receiverID', '==', otherUserID),
         where('status', '==', 'pending')
       );
 
-      const snapshot = await getDocs(requestsQuery);
-      return !snapshot.empty;
+      const receivedRequestQuery = query(
+        collection(db, 'requests'),
+        where('senderID', '==', otherUserID),
+        where('receiverID', '==', userID),
+        where('status', '==', 'pending')
+      );
+
+      const [sentSnapshot, receivedSnapshot] = await Promise.all([
+        getDocs(sentRequestQuery),
+        getDocs(receivedRequestQuery)
+      ]);
+
+      return !sentSnapshot.empty || !receivedSnapshot.empty;
     } catch (error) {
       console.error('Error checking existing request:', error);
       return false; // ToDo : 실패 시 UI 알림 처리
