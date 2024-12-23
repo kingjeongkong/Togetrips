@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   const queryClient = new QueryClient({
@@ -58,6 +59,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
         <RouterProvider router={router} />
+        <ToastContainer
+          autoClose={2000}
+          hideProgressBar={true}
+          newestOnTop={true}
+          closeOnClick={true}
+          draggable={true}
+        />
       </LoadScript>
     </QueryClientProvider>
   );

@@ -23,6 +23,7 @@ export const locationService = {
         updatedAt: new Date().toISOString()
       });
     } catch (error) {
+      // ToDo : 에러 처리 다시
       console.error(`Failed to update location for user : `, error);
       throw new Error('Failed to update location');
     }
@@ -45,6 +46,7 @@ export const locationService = {
         (doc) => ({ uid: doc.id, ...doc.data() } as UserProfile)
       );
     } catch (error) {
+      // ToDo : 에러 처리 다시
       console.error(`Failed to find users in same city: `, error);
       throw new Error('Failed to find users in same city');
     }
