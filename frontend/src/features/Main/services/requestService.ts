@@ -91,7 +91,7 @@ export const requestService = {
     }
   },
 
-  async checkExistingRequest(userID: string, otherUserID: string): Promise<boolean> {
+  async checkPendingRequest(userID: string, otherUserID: string): Promise<boolean> {
     try {
       const sentRequestQuery = query(
         collection(db, 'requests'),
@@ -115,6 +115,34 @@ export const requestService = {
       return !sentSnapshot.empty || !receivedSnapshot.empty;
     } catch (error) {
       console.error('Error checking existing request:', error);
+      return false; // ToDo : 실패 시 UI 알림 처리
+    }
+  },
+
+  async checkCompletedRequest(userID: string, otherUserID: string): Promise<boolean> {
+    try {
+      const sentRequestQuery = query(
+        collection(db, 'requests'),
+        where('senderID', '==', userID),
+        where('receiverID', '==', otherUserID),
+        where('status', 'in', ['accepted', 'declined'])
+      );
+
+      const receivedRequestQuery = query(
+        collection(db, 'requests'),
+        where('senderID', '==', otherUserID),
+        where('receiverID', '==', userID),
+        where('status', 'in', ['accepted', 'declined'])
+      );
+
+      const [sentSnapshot, receivedSnapshot] = await Promise.all([
+        getDocs(sentRequestQuery),
+        getDocs(receivedRequestQuery)
+      ]);
+
+      return !sentSnapshot.empty || !receivedSnapshot.empty;
+    } catch (error) {
+      console.error('Error checking completed request:', error);
       return false; // ToDo : 실패 시 UI 알림 처리
     }
   }
