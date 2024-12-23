@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../../../store/useAuthStore';
 import { formatHashTags } from '../../../utils/HashTags';
 import RequestModal from './RequestModal';
@@ -14,23 +14,29 @@ interface TravelCardProps {
 
 const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps) => {
   const user = useAuthStore((state) => state.user);
-  const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasExistingRequest, setHasExistingRequest] = useState(false);
+
+  useEffect(() => {
+    const checkRequest = async () => {
+      if (!user) return;
+      const exists = await requestService.checkExistingRequest(user.uid, travelerID);
+      setHasExistingRequest(exists);
+    };
+
+    checkRequest();
+  }, [user, travelerID]);
 
   const handleSendRequest = async (message?: string) => {
     if (!user) return;
 
-    setIsLoading(true);
     try {
-      const success = await requestService.sendRequest(
-        user.uid,
-        travelerID,
-        message
-      )
+      const success = await requestService.sendRequest(user.uid, travelerID, message);
 
       if (success) {
         // ToDo: 성공 시 UI 알림 처리
         console.log('Request sent successfully');
+        setHasExistingRequest(true);
       } else {
         // ToDo: 실패 시 UI 알림 처리
         console.log('Failed to send request');
@@ -38,7 +44,6 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
     } catch (error) {
       console.error('Error sending request:', error);
     } finally {
-      setIsLoading(false);
       setIsModalOpen(false);
     }
   };
@@ -68,9 +73,9 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
         <button
           className="w-full py-2 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={() => setIsModalOpen(true)}
-          disabled={isLoading || !user}
+          disabled={hasExistingRequest}
         >
-          {isLoading ? 'Sending...' : 'Send Request'}
+          {hasExistingRequest ? 'Request Sent' : 'Send Request'}
         </button>
       </div>
 

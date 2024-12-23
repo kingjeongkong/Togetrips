@@ -89,5 +89,22 @@ export const requestService = {
       console.error('Error declining request:', error);
       return false; // ToDo : 실패 시 UI 알림 처리
     }
+  },
+
+  async checkExistingRequest(senderID: string, receiverID: string): Promise<boolean> {
+    try {
+      const requestsQuery = query(
+        collection(db, 'requests'),
+        where('senderID', '==', senderID),
+        where('receiverID', '==', receiverID),
+        where('status', '==', 'pending')
+      );
+
+      const snapshot = await getDocs(requestsQuery);
+      return !snapshot.empty;
+    } catch (error) {
+      console.error('Error checking existing request:', error);
+      return false; // ToDo : 실패 시 UI 알림 처리
+    }
   }
 };
