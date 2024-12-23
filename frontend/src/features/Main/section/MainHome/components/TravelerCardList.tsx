@@ -18,6 +18,7 @@ const TravelerCardList = ({ nearbyUsers, isLoading }: TravelerCardListProps) => 
         nearbyUsers?.map((user, index) => (
           <TravelerCard
             key={index}
+            travelerID={user.uid}
             photoURL={user.photoURL}
             name={user.name}
             bio={user.bio}

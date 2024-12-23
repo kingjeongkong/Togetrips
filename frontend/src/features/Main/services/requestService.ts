@@ -15,7 +15,7 @@ export const requestService = {
   async sendRequest(
     currentLoggedInUserID: string,
     receiverID: string,
-    message: string
+    message?: string
   ): Promise<boolean> {
     try {
       const newRequest = {
