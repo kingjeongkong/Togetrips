@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { Request, RequestUserProfile } from '../types/requestTypes';
+import { toast } from 'react-toastify';
 
 export const requestService = {
   async sendRequest(
@@ -27,10 +28,12 @@ export const requestService = {
       };
 
       await addDoc(collection(db, 'requests'), newRequest);
-      return true; // ToDo : 성공 시 UI 알림 처리
+      toast.success('Request sent successfully');
+      return true;
     } catch (error) {
       console.error('Error sending request:', error);
-      return false; // ToDo : 실패 시 UI 알림 처리
+      toast.error('Failed to send request. Please try again.');
+      return false;
     }
   },
 
@@ -72,10 +75,11 @@ export const requestService = {
       await updateDoc(doc(db, 'requests', requestID), {
         status: 'accepted'
       });
-      return true; // ToDo :성공 시 UI 알림 처리
+      return true; 
     } catch (error) {
       console.error('Error accepting request:', error);
-      return false; // ToDo : 실패 시 UI 알림 처리
+      toast.error('Failed to accept request. Please try again.');
+      return false;
     }
   },
 
@@ -84,10 +88,11 @@ export const requestService = {
       await updateDoc(doc(db, 'requests', requestID), {
         status: 'declined'
       });
-      return true; // ToDo :성공 시 UI 알림 처리
+      return true;
     } catch (error) {
       console.error('Error declining request:', error);
-      return false; // ToDo : 실패 시 UI 알림 처리
+      toast.error('Failed to decline request. Please try again.');
+      return false;
     }
   },
 
@@ -122,8 +127,9 @@ export const requestService = {
 
       return !sentSnapshot.empty || !receivedSnapshot.empty;
     } catch (error) {
+      // ToDo : 에러 처리
       console.error('Error checking existing request:', error);
-      return false; // ToDo : 실패 시 UI 알림 처리
+      return false;
     }
   }
 };
