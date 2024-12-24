@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import AuthLayout from '../../features/Auth/components/AuthLayout';
-import InputField from '../../features/Auth/components/InputField';
-import SubmitButton from '../../features/Auth/components/SubmitButton';
+import AuthLayout from '@/features/Auth/components/AuthLayout';
+import InputField from '@/features/Auth/components/InputField';
+import SubmitButton from '@/features/Auth/components/SubmitButton';
 import googleLogo from '../../assets/google-logo.png';
-import { useAuthSubmit } from '../../features/Auth/hooks/useAuthSubmit';
+import { useAuthSubmit } from '@/features/Auth/hooks/useAuthSubmit';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +28,7 @@ const SignInPage = () => {
           type="email"
           placeholder="Email Address"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           fieldError={errors.email}
           authError={authError}
         />
@@ -36,7 +36,7 @@ const SignInPage = () => {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           fieldError={errors.password}
           authError={authError}
           isLast={true}

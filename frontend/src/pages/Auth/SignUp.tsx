@@ -28,14 +28,14 @@ const SignUpPage = () => {
           type="text"
           placeholder="Full Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           fieldError={errors.name}
         />
         <InputField
           type="email"
           placeholder="Email Address"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           fieldError={errors.email}
           authError={authError}
         />
@@ -43,7 +43,7 @@ const SignUpPage = () => {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           fieldError={errors.password}
           authError={authError}
         />
@@ -51,7 +51,7 @@ const SignUpPage = () => {
           type="password"
           placeholder="Confirm Password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
           fieldError={errors.confirmPassword}
           authError={authError}
           isLast={true}
