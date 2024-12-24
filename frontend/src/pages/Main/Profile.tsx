@@ -1,4 +1,3 @@
-import React from 'react';
 import Sidebar from '../../features/Main/components/Sidebar';
 import MainProfile from '../../features/Main/section/Profile/components/MainProfile';
 

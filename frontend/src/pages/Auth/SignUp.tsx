@@ -16,7 +16,7 @@ const SignUpPage = () => {
     redirectPath: '/'
   });
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleSubmit({ name, email, password, confirmPassword });
   };

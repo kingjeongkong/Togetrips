@@ -10,7 +10,7 @@ interface RequestModalProps {
 const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalProps) => {
   const [message, setMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit(message);
   };

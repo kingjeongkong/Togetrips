@@ -30,7 +30,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
     try {
