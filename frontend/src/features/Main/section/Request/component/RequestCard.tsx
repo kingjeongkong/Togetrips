@@ -21,12 +21,24 @@ const RequestCard = ({ request }: RequestCardProps) => {
     queryClient.invalidateQueries({ queryKey: ['requests', user?.uid] });
   };
 
+  const updateTravelerCard = () => {
+    queryClient.invalidateQueries({
+      queryKey: [
+        'nearbyUsers',
+        user?.uid,
+        request.sender.location.city,
+        request.sender.location.state
+      ]
+    });
+  };
+
   const handleAccept = async () => {
     setIsProcessing(true);
     try {
       const success = await requestService.acceptRequest(request.id);
       if (success) {
         onStatusChange();
+        updateTravelerCard();
       }
     } catch (error) {
       console.error('Error accepting request:', error);
@@ -42,6 +54,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
       const success = await requestService.declineRequest(request.id);
       if (success) {
         onStatusChange();
+        updateTravelerCard();
       }
     } catch (error) {
       console.error('Error declining request:', error);
