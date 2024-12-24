@@ -47,6 +47,10 @@ export const getCurrentLocationData = async () => {
           ? stateResult.address_components[0].long_name
           : 'Unknown';
 
+          console.log(data);
+          console.log('City Name:', cityName);
+          console.log('State Name:', stateName);
+
         resolve({ currentLocation: location, cityName, stateName });
       } catch (error) {
         console.error('Error getting location:', error);
