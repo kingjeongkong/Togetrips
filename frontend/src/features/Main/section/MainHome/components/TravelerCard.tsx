@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuthStore } from '../../../../../store/useAuthStore';
 import { formatHashTags } from '../../../utils/HashTags';
 import RequestModal from './RequestModal';
 import { requestService } from '../../../services/requestService';
+import { useQuery } from '@tanstack/react-query';
 
 interface TravelCardProps {
   travelerID: string;
@@ -15,21 +16,19 @@ interface TravelCardProps {
 const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps) => {
   const user = useAuthStore((state) => state.user);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasExistingRequest, setHasExistingRequest] = useState(false);
 
-  useEffect(() => {
-    const checkRequest = async () => {
-      if (!user) return;
-      const exists = await requestService.checkRequestByStatus(
-        user.uid,
-        travelerID,
-        'pending'
-      );
-      setHasExistingRequest(exists);
-    };
-
-    checkRequest();
-  }, [user, travelerID]);
+  const { data: hasExistingRequest = false, refetch: updateExistingRequest } = useQuery({
+    queryKey: ['existingRequest', user?.uid, travelerID],
+    queryFn: async() => await requestService.checkRequestByStatus(
+      user!.uid,
+      travelerID,
+      'pending'
+    ),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+    // ToDo : 에러 처리
+  })
 
   const handleSendRequest = async (message?: string) => {
     if (!user) return;
@@ -40,7 +39,7 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
       if (success) {
         // ToDo: 성공 시 UI 알림 처리
         console.log('Request sent successfully');
-        setHasExistingRequest(true);
+        updateExistingRequest();
       } else {
         // ToDo: 실패 시 UI 알림 처리
         console.log('Failed to send request');

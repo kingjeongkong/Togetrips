@@ -19,13 +19,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
 
 function App() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false
-      }
-    }
-  });
+  const queryClient = new QueryClient();
 
   const initialize = useAuthStore((state) => state.initialize);
 
