@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import googleLogo from '../../../../../assets/google-logo.png';
 import { Request, RequestUserProfile } from '../../../types/requestTypes';
 import { requestService } from '../../../services/requestService';
 import { formatHashTags } from '../../../utils/HashTags';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../../../../store/useAuthStore';
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };
-  onStatusChange: () => void;
 }
 
-const RequestCard = ({ request, onStatusChange }: RequestCardProps) => {
+const RequestCard = ({ request }: RequestCardProps) => {
+  const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
   const [isloading, setIsLoading] = useState(false);
+
+  const onStatusChange = () => {
+    queryClient.invalidateQueries({ queryKey: ['requests', user?.uid] });
+  };
 
   const handleAccept = async () => {
     setIsLoading(true);
