@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Request, RequestUserProfile } from '../../../types/requestTypes';
 import { requestService } from '../../../services/requestService';
 import { formatHashTags } from '../../../utils/HashTags';
-import { useQueryClient } from '@tanstack/react-query';
+import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../../../../store/useAuthStore';
 
 interface RequestCardProps {
@@ -12,14 +12,17 @@ interface RequestCardProps {
 const RequestCard = ({ request }: RequestCardProps) => {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
-  const [isloading, setIsLoading] = useState(false);
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const isFetching = useIsFetching({ queryKey: ['requests', user?.uid] });
+  const isLoading = isProcessing || isFetching > 0;
 
   const onStatusChange = () => {
     queryClient.invalidateQueries({ queryKey: ['requests', user?.uid] });
   };
 
   const handleAccept = async () => {
-    setIsLoading(true);
+    setIsProcessing(true);
     try {
       const success = await requestService.acceptRequest(request.id);
       if (success) {
@@ -29,12 +32,12 @@ const RequestCard = ({ request }: RequestCardProps) => {
       console.error('Error accepting request:', error);
       // ToDo : 실패 시 UI 알림 처리
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
   const handleDecline = async () => {
-    setIsLoading(true);
+    setIsProcessing(true);
     try {
       const success = await requestService.declineRequest(request.id);
       if (success) {
@@ -44,7 +47,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
       console.error('Error declining request:', error);
       // ToDo : 실패 시 UI 알림 처리
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -77,17 +80,17 @@ const RequestCard = ({ request }: RequestCardProps) => {
         <button
           className="w-full py-2 text-white bg-green-600 rounded-3xl shadow-sm hover:bg-green-700 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleAccept}
-          disabled={isloading}
+          disabled={isLoading}
         >
-          {isloading ? 'Processing...' : 'Accept'}
+          {isLoading ? 'Processing...' : 'Accept'}
         </button>
 
         <button
           className="w-full py-2 text-white bg-red-600 rounded-3xl shadow-sm hover:bg-red-700 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleDecline}
-          disabled={isloading}
+          disabled={isLoading}
         >
-          {isloading ? 'Processing...' : 'Decline'}
+          {isLoading ? 'Processing...' : 'Decline'}
         </button>
       </div>
     </div>
