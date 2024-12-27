@@ -30,15 +30,15 @@ const HomeProfile = () => {
   }
 
   return (
-    <div className="flex justify-between items-center w-full pl-6 pr-16">
+    <div className="flex justify-between items-center w-full pl-6 pr-3 md:pr-16">
       <img
         src={profile?.photoURL}
-        className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-sm"
+        className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg"
       />
 
       <div className="flex flex-col justify-center ml-6 flex-grow">
         <h1 className="text-lg font-medium md:text-2xl">{profile?.name}</h1>
-        <p className="text-sm md:text-base text-orange-400">
+        <p className="text-xs md:text-base text-orange-400">
           {formatHashTags(profile?.tags || '')}
         </p>
         <p className="text-sm md:text-base">

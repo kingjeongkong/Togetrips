@@ -45,7 +45,7 @@ const SignInPage = () => {
         <SubmitButton title="Sign In" isLoading={isLoading} />
       </form>
 
-      <div className="flex items-center justify-between mt-6">
+      <div className="flex items-center justify-between text-sm mt-6">
         <Link to="#" className="text-indigo-600 hover:underline">
           Forgot password?
         </Link>
