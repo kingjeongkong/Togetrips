@@ -19,7 +19,7 @@ const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalP
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
         <div className="mb-4">
           <span className="text-gray-500">Send Request to</span>
           <span className="text-xl font-semibold ml-2">{receiverName}</span>

@@ -21,12 +21,12 @@ const CurrentLocationMap = ({
   };
 
   return (
-    <div className="flex flex-col  px-6">
+    <div className="flex flex-col px-6">
       <div className="flex items-center">
-        <FaMapMarkerAlt className="text-orange-500 text-xl mr-1" />
-        <span className="text-lg mr-5">
+        <FaMapMarkerAlt className="text-orange-500 text-base md:text-xl mr-1" />
+        <span className="flex-1 text-sm mr-5 md:text-lg">
           Current Location:
-          <span className="text-xl font-semibold ml-2">
+          <span className="text-base font-semibold ml-2 md:text-xl">
             {loading ? <LoadingIndicator color="#f97361" size={17} /> : cityName}
           </span>
         </span>
@@ -49,7 +49,7 @@ const CurrentLocationMap = ({
         />
       </div>
 
-      <p className="pt-3 text-lg text-gray-500">Only same city travelers are available</p>
+      <p className="pt-3 text-sm md:text-lg text-gray-500">Only same city travelers are available</p>
     </div>
   );
 };
