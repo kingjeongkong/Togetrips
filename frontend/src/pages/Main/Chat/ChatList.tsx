@@ -140,7 +140,7 @@ const ChatList = () => {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <div className="sticky top-0 z-50 bg-gray-100">
         <h1 className="px-4 py-2 text-xl font-semibold md:px-4 md:py-4 md:text-2xl">
           Messages

@@ -11,7 +11,7 @@ const ChatLayout = () => {
   if (isMobile) {
     // ------ (A) 모바일 레이아웃 ------
     return (
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex h-screen overflow-hidden bg-gray-100">
         <Sidebar />
         <main className="flex-1 pt-14">
           {/* 모바일에서는 <Outlet /> 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
@@ -27,7 +27,7 @@ const ChatLayout = () => {
     const hasChatId = !isRootPath; // /chat/:chatId면 true, /chat이면 false
 
     return (
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex h-screen overflow-hidden bg-gray-100">
         <Sidebar />
         <main className="flex flex-1 pl-60">
           {/* 직접 ChatList를 렌더링 */}
