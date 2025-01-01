@@ -9,7 +9,7 @@ import SignInPage from './pages/Auth/SignIn';
 import SignUpPage from './pages/Auth/SignUp';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Main/Home';
-import Chat from './pages/Main/Chat';
+import ChatLayout from './pages/Main/Chat/ChatLayout';
 import Requests from './pages/Main/Requests';
 import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -43,7 +43,7 @@ function App() {
           }
         >
           <Route path="/home" element={<Home />} />
-          <Route path="/chat" element={<Chat />}>
+          <Route path="/chat" element={<ChatLayout />}>
             <Route index element={<ChatList />} />
             <Route path=":chatID" element={<ChatRoom />} />
           </Route>
