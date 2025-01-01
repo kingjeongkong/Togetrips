@@ -17,7 +17,7 @@ const ChatListItem = ({
 }: ChatListItemProps) => {
   return (
     <div
-      className="flex gap-2 px-2 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+      className="flex gap-3 px-2 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
       onClick={onClick}
     >
       <div className="items-center justify-center flex-shrink-0">
@@ -25,7 +25,7 @@ const ChatListItem = ({
       </div>
       <div className="flex flex-col flex-1">
         <span>{name}</span>
-        <span className="text-gray-700 line-clamp-2">{lastMessage}</span>
+        <span className="line-clamp-2 text-sm text-gray-700">{lastMessage}</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <span className="text-sm text-gray-500">{lastMessageTime}</span>

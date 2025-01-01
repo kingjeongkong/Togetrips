@@ -13,7 +13,7 @@ const ChatLayout = () => {
     return (
       <div className="flex min-h-screen bg-gray-100">
         <Sidebar />
-        <main className="flex-1 pt-16 md:pt-5 md:pl-60">
+        <main className="flex-1 pt-14">
           {/* 모바일에서는 <Outlet /> 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
           <Outlet />
         </main>
@@ -29,9 +29,9 @@ const ChatLayout = () => {
     return (
       <div className="flex min-h-screen bg-gray-100">
         <Sidebar />
-        <main className="flex flex-1 pt-16 md:pt-5 md:pl-60">
+        <main className="flex flex-1 pl-60">
           {/* 직접 ChatList를 렌더링 */}
-          <div className="border-r w-[350px]">
+          <div className="border-r border-gray-300 w-[350px]">
             <ChatList />
           </div>
 
@@ -43,9 +43,7 @@ const ChatLayout = () => {
           ) : (
             // /chat(루트)면 아무 채팅방도 선택 안 된 상태이므로, ChatRoom 안띄움
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-gray-500">
-                Select a chat.
-              </div>
+              <div className="text-gray-500">Select a chat.</div>
             </div>
           )}
         </main>
