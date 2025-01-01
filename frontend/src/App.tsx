@@ -17,6 +17,8 @@ import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
+import ChatList from './pages/Main/Chat/ChatList';
+import ChatRoom from './pages/Main/Chat/ChatRoom';
 
 function App() {
   const queryClient = new QueryClient();
@@ -41,7 +43,10 @@ function App() {
           }
         >
           <Route path="/home" element={<Home />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat" element={<Chat />}>
+            <Route index element={<ChatList />} />
+            <Route path=":chatID" element={<ChatRoom />} />
+          </Route>
           <Route path="/requests" element={<Requests />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
