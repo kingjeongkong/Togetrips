@@ -2,6 +2,8 @@ import { IconType } from 'react-icons';
 import { FaBell, FaHome, FaUserAlt } from 'react-icons/fa';
 import { MdChat } from 'react-icons/md';
 import SidebarItem from './SidebarItem';
+import { useLocation } from 'react-router-dom';
+import { useMediaQuery } from '../../../hooks/useMediaQuery';
 
 interface MenuItem {
   title: string;
@@ -10,6 +12,10 @@ interface MenuItem {
 }
 
 const Sidebar = () => {
+  const location = useLocation();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isChatRoute = location.pathname.startsWith('/chat');
+
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
     { title: 'Chat', icon: MdChat, to: '/chat' },
@@ -19,10 +25,13 @@ const Sidebar = () => {
 
   return (
     <>
+
       <div
-        className="flex fixed items-center top-0 left-0 shadow-sm z-20 
+        className={`flex fixed items-center top-0 left-0 shadow-sm z-20 
         w-full justify-start pl-4 bg-gray-100
-        md:w-60 md:justify-center md:pl-0 md:bg-transparent"
+        md:w-60 md:justify-center md:pl-0 md:bg-transparent
+        ${isMobile && isChatRoute ? 'hidden' : ''}
+        `}
       >
         <p className="font-bold text-xl py-3 md:text-2xl md:py-5">
           Travel Together
