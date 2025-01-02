@@ -13,7 +13,7 @@ const ChatLayout = () => {
     return (
       <div className="flex h-screen overflow-hidden bg-gray-100">
         <Sidebar />
-        <main className="flex-1 pt-14">
+        <main className="flex-1">
           {/* 모바일에서는 <Outlet /> 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
           <Outlet />
         </main>

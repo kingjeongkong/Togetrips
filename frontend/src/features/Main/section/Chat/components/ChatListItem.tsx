@@ -25,7 +25,7 @@ const ChatListItem = ({
       </div>
       <div className="flex flex-col flex-1">
         <span>{name}</span>
-        <span className="line-clamp-2 text-sm text-gray-700">{lastMessage}</span>
+        <span className="line-clamp-1 text-sm text-gray-700">{lastMessage}</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <span className="text-sm text-gray-500">{lastMessageTime}</span>
