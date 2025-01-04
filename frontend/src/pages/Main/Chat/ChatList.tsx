@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import ChatListItem from '../../../features/Main/section/Chat/components/ChatListItem';
 
 const ChatList = () => {
-  const navigate = useNavigate();
+  //   const navigate = useNavigate();
 
   const chatList = [
     {
