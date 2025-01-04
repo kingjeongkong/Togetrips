@@ -1,5 +1,6 @@
 import ChatRoomHeader from '../../../features/Main/section/Chat/components/ChatRoomHeader';
 import ChatRoomInput from '../../../features/Main/section/Chat/components/ChatRoomInput';
+import ChatRoomMessageList from '../../../features/Main/section/Chat/components/ChatRoomMessageList';
 
 const ChatRoom = () => {
   const handleSendMessage = (message: string) => {
@@ -9,7 +10,7 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-full">
       <ChatRoomHeader profileImage="https://via.placeholder.com/150" name="John Doe" />
-      <div className="flex-1 bg-green-300">Message Area</div>
+      <ChatRoomMessageList />
       <ChatRoomInput onSendMessage={handleSendMessage} />
     </div>
   );
