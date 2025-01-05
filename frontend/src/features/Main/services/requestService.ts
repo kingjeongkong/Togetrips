@@ -131,5 +131,36 @@ export const requestService = {
       console.error('Error checking existing request:', error);
       return false;
     }
+  },
+
+  async reverRequestStatus(requestID: string): Promise<boolean> {
+    try {
+      await updateDoc(doc(db, 'requests', requestID), {
+        status: 'pending'
+      });
+      return true;
+    } catch (error) {
+      // ToDo : 에러 처리
+      console.error('Error reverting request status:', error);
+      return false;
+    }
+  },
+
+  async createChatRoom(participants: string[]): Promise<string | null> {
+    try {
+      const newChatRoom = {
+        participants,
+        createdAt: new Date().toISOString(),
+        lastMessage: '',
+        lastMessageTime: new Date().toISOString()
+      };
+
+      const chatRoomRef = await addDoc(collection(db, 'chatRooms'), newChatRoom);
+      return chatRoomRef.id;
+    } catch (error) {
+      // ToDo : 에러 처리
+      console.error('Error creating chat room:', error);
+      return null;
+    }
   }
 };

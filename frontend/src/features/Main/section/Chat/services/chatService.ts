@@ -13,24 +13,6 @@ import { db } from '../../../../../config/firebase';
 import { ChatRoom, Message } from '../types/chatTypes';
 
 export const chatService = {
-  async createChatRoom(participants: string[]): Promise<string | null> {
-    try {
-      const newChatRoom = {
-        participants,
-        createdAt: new Date().toISOString(),
-        lastMessage: '',
-        lastMessageTime: new Date().toISOString()
-      };
-
-      const chatRoomRef = await addDoc(collection(db, 'chatRooms'), newChatRoom);
-      return chatRoomRef.id;
-    } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error creating chat room:', error);
-      return null;
-    }
-  },
-
   async getChatRooms(userID: string): Promise<ChatRoom[]> {
     try {
       const q = query(
@@ -84,35 +66,41 @@ export const chatService = {
 
   async getMessages(chatRoomID: string): Promise<Message[]> {
     try {
-        const q = query(
-            collection(db, `chatRooms/${chatRoomID}/messages`),
-            orderBy('timestamp', 'asc')
-        );
+      const q = query(
+        collection(db, `chatRooms/${chatRoomID}/messages`),
+        orderBy('timestamp', 'asc')
+      );
 
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map((doc) => ({
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(
+        (doc) =>
+          ({
             id: doc.id,
             ...doc.data()
-        } as Message));;
+          } as Message)
+      );
     } catch (error) {
-        // ToDo : 에러 처리
-        console.error('Error fetching messages:', error);
-        return [];
+      // ToDo : 에러 처리
+      console.error('Error fetching messages:', error);
+      return [];
     }
   },
 
   subscribeToMessages(chatRoomID: string, callback: (messages: Message[]) => void) {
     const q = query(
-        collection(db, `chatRooms/${chatRoomID}/messages`),
-        orderBy('timestamp', 'asc')
+      collection(db, `chatRooms/${chatRoomID}/messages`),
+      orderBy('timestamp', 'asc')
     );
 
     return onSnapshot(q, (snapshot) => {
-        const messages = snapshot.docs.map(doc => ({
+      const messages = snapshot.docs.map(
+        (doc) =>
+          ({
             id: doc.id,
             ...doc.data()
-        } as Message));
-        callback(messages);
-    })
+          } as Message)
+      );
+      callback(messages);
+    });
   }
 };
