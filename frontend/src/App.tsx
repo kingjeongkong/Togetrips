@@ -9,7 +9,7 @@ import SignInPage from './pages/Auth/SignIn';
 import SignUpPage from './pages/Auth/SignUp';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Main/Home';
-import ChatLayout from './pages/Main/Chat/ChatLayout';
+import ChatLayout from './pages/Main/ChatLayout';
 import Requests from './pages/Main/Requests';
 import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -17,8 +17,8 @@ import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
-import ChatList from './pages/Main/Chat/ChatList';
-import ChatRoom from './pages/Main/Chat/ChatRoom';
+import ChatList from './features/Main/section/Chat/components/ChatList';
+import ChatRoom from './features/Main/section/Chat/components/ChatRoom';
 
 function App() {
   const queryClient = new QueryClient();

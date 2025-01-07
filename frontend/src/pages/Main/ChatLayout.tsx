@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from '../../../features/Main/components/Sidebar';
-import { useMediaQuery } from '../../../hooks/useMediaQuery';
-import ChatList from './ChatList';
+import Sidebar from '../../features/Main/components/Sidebar';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import ChatList from '../../features/Main/section/Chat/components/ChatList';
 
 const ChatLayout = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');

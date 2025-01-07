@@ -1,6 +1,6 @@
-import ChatRoomHeader from '../../../features/Main/section/Chat/components/ChatRoomHeader';
-import ChatRoomInput from '../../../features/Main/section/Chat/components/ChatRoomInput';
-import ChatRoomMessageList from '../../../features/Main/section/Chat/components/ChatRoomMessageList';
+import ChatRoomHeader from './ChatRoomHeader';
+import ChatRoomInput from './ChatRoomInput';
+import ChatRoomMessageList from './ChatRoomMessageList';
 
 const ChatRoom = () => {
   const handleSendMessage = (message: string) => {
