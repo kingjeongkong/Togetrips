@@ -3,6 +3,7 @@ import { useAuthStore } from '../../../../../store/useAuthStore';
 import { ChatRoom } from '../types/chatTypes';
 import { profileService } from '../../../services/profileService';
 import { formatRelativeTime } from '../../../../../utils/dateUtils';
+import { chatService } from '../services/chatService';
 
 interface ChatListItemProps {
   chatRoom: ChatRoom;
@@ -11,6 +12,7 @@ interface ChatListItemProps {
 
 const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   const user = useAuthStore((state) => state.user);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [otherUserProfile, setOtherUserProfile] = useState<{
     name: string;
     photoURL: string;
@@ -30,6 +32,25 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
     }
   }, [chatRoom.participants, user?.uid]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = chatService.subscribeToUnreadCount(
+      chatRoom.id,
+      user.uid,
+      (count) => setUnreadCount(count)
+    );
+
+    return () => unsubscribe();
+  }, [chatRoom.id, user?.uid]);
+
+  const handleClick = async () => {
+    if (user && unreadCount > 0) {
+      await chatService.markMessagesAsRead(chatRoom.id, user.uid);
+    }
+    onClick();
+  }
+
   if (!otherUserProfile) {
     return null;
   }
@@ -37,7 +58,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   return (
     <div
       className="flex gap-3 px-2 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
-      onClick={onClick}
+      onClick={handleClick}
     >
       <div className="items-center justify-center flex-shrink-0">
         <img src={otherUserProfile.photoURL} className="w-12 h-12 rounded-full" />
@@ -54,11 +75,11 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
             ? formatRelativeTime(chatRoom.lastMessageTime)
             : formatRelativeTime(chatRoom.createdAt)}
         </span>
-        {/* {unreadMessages > 0 && (
+        {unreadCount > 0 && (
           <span className="text-sm rounded-full w-5 h-5 text-center text-white bg-orange-400">
-            {unreadMessages}
+            {unreadCount}
           </span>
-        )} */}
+        )}
       </div>
     </div>
   );

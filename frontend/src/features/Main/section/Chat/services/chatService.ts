@@ -7,7 +7,8 @@ import {
   orderBy,
   query,
   updateDoc,
-  where
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '../../../../../config/firebase';
 import { ChatRoom, Message } from '../types/chatTypes';
@@ -33,6 +34,45 @@ export const chatService = {
       // ToDo : 에러 처리
       console.error('Error fetching chat rooms:', error);
       return [];
+    }
+  },
+
+  async getUnreadCount(chatRoomID: string, userID: string): Promise<number> {
+    try {
+      const q = query(
+        collection(db, `chatRooms/${chatRoomID}/messages`),
+        where('senderID', '!=', userID),
+        where('read', '==', false)
+      );
+
+      const snapshot = await getDocs(q);
+      return snapshot.docs.length;
+    } catch (error) {
+      // ToDo : 에러 처리
+      console.error('Error fetching unread count:', error);
+      return 0;
+    }
+  },
+
+  async markMessagesAsRead(chatRoomID: string, userID: string): Promise<void> {
+    try {
+      const q = query(
+        collection(db, `chatRooms/${chatRoomID}/messages`),
+        where('senderID', '!=', userID),
+        where('read', '==', false)
+      );
+
+      const snapshot = await getDocs(q);
+      const batch = writeBatch(db);
+
+      snapshot.docs.forEach((doc) => {
+        batch.update(doc.ref, { read: true });
+      });
+
+      await batch.commit();
+    } catch (error) {
+      // ToDo : 에러 처리
+      console.error('Error marking messages as read:', error);
     }
   },
 
@@ -102,5 +142,29 @@ export const chatService = {
       );
       callback(messages);
     });
+  },
+
+  subscribeToUnreadCount(
+    chatRoomID: string,
+    userID: string,
+    callback: (count: number) => void
+  ) {
+    const q = query(
+      collection(db, `chatRooms/${chatRoomID}/messages`),
+      where('senderID', '!=', userID),
+      where('read', '==', false)
+    );
+
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        callback(snapshot.docs.length);
+      },
+      (error) => {
+        // ToDo : 에러 처리
+        console.error('Error fetching unread count:', error);
+        callback(0);
+      }
+    );
   }
 };
