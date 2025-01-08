@@ -44,13 +44,6 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
     return () => unsubscribe();
   }, [chatRoom.id, user?.uid]);
 
-  const handleClick = async () => {
-    if (user && unreadCount > 0) {
-      await chatService.markMessagesAsRead(chatRoom.id, user.uid);
-    }
-    onClick();
-  }
-
   if (!otherUserProfile) {
     return null;
   }
@@ -58,7 +51,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   return (
     <div
       className="flex gap-3 px-2 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
-      onClick={handleClick}
+      onClick={onClick}
     >
       <div className="items-center justify-center flex-shrink-0">
         <img src={otherUserProfile.photoURL} className="w-12 h-12 rounded-full" />

@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -34,6 +35,26 @@ export const chatService = {
       // ToDo : 에러 처리
       console.error('Error fetching chat rooms:', error);
       return [];
+    }
+  },
+
+  async getChatRoom(chatRoomID: string): Promise<ChatRoom | null> {
+    try {
+      const docRef = doc(db, 'chatRooms', chatRoomID);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return {
+          id: docSnap.id,
+          ...docSnap.data()
+        } as ChatRoom;
+      }
+
+      return null;
+    } catch (error) {
+      // ToDo : 에러 처리
+      console.error('Error fetching chat room:', error);
+      return null;
     }
   },
 

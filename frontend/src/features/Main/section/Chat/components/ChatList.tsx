@@ -37,11 +37,11 @@ const ChatList = () => {
       )}
 
       <div className="flex-1 overflow-y-auto">
-        {chatRooms.map((chat) => (
+        {chatRooms.map((chatRoom) => (
           <ChatListItem
-            key={chat.id}
-            chatRoom={chat}
-            onClick={() => handleChatClick(chat.id)}
+            key={chatRoom.id}
+            chatRoom={chatRoom}
+            onClick={() => handleChatClick(chatRoom.id)}
           />
         ))}
       </div>
