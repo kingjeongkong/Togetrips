@@ -75,8 +75,11 @@ const ChatRoom = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <ChatRoomHeader profileImage="https://via.placeholder.com/150" name="John Doe" />
-      <ChatRoomMessageList />
+      <ChatRoomHeader
+        profileImage={otherUserProfile.photoURL}
+        name={otherUserProfile.name}
+      />
+      <ChatRoomMessageList messages={messages} currentUserID={user?.uid || ''} />
       <ChatRoomInput onSendMessage={handleSendMessage} />
     </div>
   );

@@ -1,5 +1,4 @@
 interface ChatRoomMessageProps {
-  id: number;
   text: string;
   time: string;
   isMine: boolean;
