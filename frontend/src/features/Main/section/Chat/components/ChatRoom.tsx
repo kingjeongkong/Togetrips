@@ -14,36 +14,31 @@ const ChatRoom = () => {
   const { chatRoomID } = useParams<{ chatRoomID: string }>();
   const user = useAuthStore((state) => state.user);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [otherUserProfile, setOtherUserProfile] = useState<{
-    name: string;
-    photoURL: string;
-  } | null>(null);
 
   // Fetch Chat Room data
-  const { data: chatRoomData, isLoading } = useQuery({
+  const { data: chatRoomData, isLoading: isLoadingRoom } = useQuery({
     queryKey: ['chatRoom', chatRoomID],
     queryFn: () => chatService.getChatRoom(chatRoomID!),
     enabled: !!chatRoomID,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000 
+    // ToDo : 에러 처리
   });
 
-  // 상대 유저 프로필 fetch
-  useEffect(() => {
-    if (!chatRoomData || !user) return;
+  // Fetch other user's profile
+  const {data: otherUserProfile, isLoading: isLoadingProfile} = useQuery({
+    queryKey: ['profile', chatRoomData?.participants.find(id => id !== user?.uid)],
+    queryFn: async () => {
+      const otherUserID = chatRoomData?.participants.find(id => id !== user?.uid)
+      if (!otherUserID) return null;
 
-    const otherUserID = chatRoomData.participants.find((id) => id !== user.uid);
-    if (otherUserID) {
-      profileService.getProfile(otherUserID).then((profile) => {
-        if (profile) {
-          setOtherUserProfile({
-            name: profile.name,
-            photoURL: profile.photoURL || ''
-          });
-        }
-      });
-    }
-  }, [chatRoomData, user]);
+      return profileService.getProfile(otherUserID);
+    },
+    enabled: !!chatRoomData && !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+    // ToDo : 에러 처리
+  })
 
   // 실시간 메시지 구독
   useEffect(() => {
@@ -65,7 +60,7 @@ const ChatRoom = () => {
     await chatService.sendMessage(chatRoomID, user.uid, message);
   };
 
-  if (isLoading || !otherUserProfile) {
+  if (isLoadingRoom || isLoadingProfile) {
     return (
       <div className="flex justify-center items-center h-full">
         <LoadingIndicator color="#6366f1" size={50} />
@@ -76,8 +71,8 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-full">
       <ChatRoomHeader
-        profileImage={otherUserProfile.photoURL}
-        name={otherUserProfile.name}
+        profileImage={otherUserProfile?.photoURL || ''}
+        name={otherUserProfile?.name || ''}
       />
       <ChatRoomMessageList messages={messages} currentUserID={user?.uid || ''} />
       <ChatRoomInput onSendMessage={handleSendMessage} />

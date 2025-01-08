@@ -45,7 +45,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/chat" element={<ChatLayout />}>
             <Route index element={<ChatList />} />
-            <Route path=":chatID" element={<ChatRoom />} />
+            <Route path=":chatRoomID" element={<ChatRoom />} />
           </Route>
           <Route path="/requests" element={<Requests />} />
           <Route path="/profile" element={<Profile />} />
