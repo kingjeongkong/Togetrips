@@ -1,3 +1,5 @@
+import { formatMessageTime } from "../../../../../utils/dateUtils";
+
 interface ChatRoomMessageProps {
   text: string;
   time: string;
@@ -18,7 +20,7 @@ const ChatRoomMessage = ({ text, time, isMine }: ChatRoomMessageProps) => {
             isMine ? 'text-blue-100' : 'text-gray-500'
           }`}
         >
-          {time}
+          {formatMessageTime(time)}
         </p>
       </div>
     </div>
