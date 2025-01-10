@@ -12,11 +12,22 @@ export const formatRelativeTime = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
+// 채팅 메시지 시간 'HH:MM AM/PM' 형식으로 변환
 export const formatMessageTime = (timeString: string): string => {
   const date = new Date(timeString);
   return date.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true
+  });
+};
+
+// 채팅 메시지 날짜 형식으로 변환
+export const formatMessageDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   });
 };
