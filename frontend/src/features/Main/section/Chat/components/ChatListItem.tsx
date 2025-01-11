@@ -13,6 +13,8 @@ interface ChatListItemProps {
 const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   const user = useAuthStore((state) => state.user);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [lastMessage, setLastMessage] = useState(chatRoom.lastMessage);
+  const [lastMessageTime, setLastMessageTime] = useState(chatRoom.lastMessageTime);
   const [otherUserProfile, setOtherUserProfile] = useState<{
     name: string;
     photoURL: string;
@@ -35,13 +37,26 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   useEffect(() => {
     if (!user) return;
 
-    const unsubscribe = chatService.subscribeToUnreadCount(
+    // 읽지 않은 메시지 수 구독
+    const unsubscribeUnread = chatService.subscribeToUnreadCount(
       chatRoom.id,
       user.uid,
       (count) => setUnreadCount(count)
     );
 
-    return () => unsubscribe();
+    // 마지막 메시지와 시간 구독
+    const unsubscribeLastMessage = chatService.subscribeToLastMessage(
+      chatRoom.id,
+      ({ lastMessage, lastMessageTime }) => {
+        setLastMessage(lastMessage);
+        setLastMessageTime(lastMessageTime);
+      }
+    );
+
+    return () => {
+      unsubscribeUnread();
+      unsubscribeLastMessage();
+    };
   }, [chatRoom.id, user?.uid]);
 
   if (!otherUserProfile) {
@@ -59,13 +74,13 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
       <div className="flex flex-col flex-1">
         <span>{otherUserProfile.name}</span>
         <span className="line-clamp-1 text-sm text-gray-700">
-          {chatRoom.lastMessage || ''}
+          {lastMessage}
         </span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <span className="text-sm text-gray-500">
-          {chatRoom.lastMessageTime
-            ? formatRelativeTime(chatRoom.lastMessageTime)
+          {lastMessageTime
+            ? formatRelativeTime(lastMessageTime)
             : formatRelativeTime(chatRoom.createdAt)}
         </span>
         {unreadCount > 0 && (

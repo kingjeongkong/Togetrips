@@ -1,5 +1,3 @@
-import { formatMessageDate } from '../../../../../utils/dateUtils';
-
 interface ChatRoomDateDividerProps {
   date: string;
 }

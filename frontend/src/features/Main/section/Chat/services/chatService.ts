@@ -187,5 +187,22 @@ export const chatService = {
         callback(0);
       }
     );
+  },
+
+  subscribeToLastMessage(
+    chatRoomID: string,
+    callback: (data: { lastMessage: string; lastMessageTime: string }) => void
+  ) {
+    const chatRoomRef = doc(db, 'chatRooms', chatRoomID);
+
+    return onSnapshot(chatRoomRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        callback({
+          lastMessage: data.lastMessage,
+          lastMessageTime: data.lastMessageTime
+        });
+      }
+    });
   }
 };
