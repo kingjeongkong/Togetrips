@@ -13,7 +13,7 @@ const ChatRoomMessage = ({ text, time, isMine }: ChatRoomMessageProps) => {
         {formatMessageTime(time)}
       </div>
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+        className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm md:text-base ${
           isMine ? 'bg-blue-500 text-white order-2' : 'bg-white order-1'
         }`}
       >
