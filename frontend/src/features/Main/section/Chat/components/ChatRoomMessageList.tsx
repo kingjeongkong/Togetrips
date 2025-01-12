@@ -22,7 +22,7 @@ const ChatRoomMessageList = ({ messages, currentUserID }: ChatRoomMessageListPro
   );
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 bg-gray-200">
+    <div className="flex-1 overflow-y-auto px-2 py-2 bg-gray-200">
       {Object.entries(messagesByDate).map(([date, messages]) => (
         <div key={date} className="space-y-1">
           <ChatRoomDateDivider date={date} />
