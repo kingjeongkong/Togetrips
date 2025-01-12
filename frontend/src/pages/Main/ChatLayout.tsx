@@ -11,7 +11,7 @@ const ChatLayout = () => {
   if (isMobile) {
     // ------ (A) 모바일 레이아웃 ------
     return (
-      <div className={`flex overflow-hidden bg-gray-100 pb-16 md:pb-0 ${isRootPath ? 'h-screen' : 'max-h-screen h-[--webkit-fill-available]'}`}>
+      <div className={`flex overflow-hidden h-[--webkit-fill-available] bg-gray-100 pb-16 md:pb-0 ${isRootPath ? 'h-screen' : 'max-h-screen'}`}>
         <Sidebar />
         <main className="flex-1">
           {/* 모바일에서는 <Outlet /> 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
