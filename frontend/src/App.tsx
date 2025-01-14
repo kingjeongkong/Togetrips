@@ -15,7 +15,7 @@ import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
-import ErrorBoundary from './components/ErrorBoundary';
+import BaseErrorBoundary from './components/BaseErrorBoundary';
 import { ToastContainer } from 'react-toastify';
 import ChatList from './features/Main/section/Chat/components/ChatList';
 import ChatRoom from './features/Main/section/Chat/components/ChatRoom';
@@ -37,9 +37,9 @@ function App() {
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route
           element={
-            <ErrorBoundary>
+            <BaseErrorBoundary>
               <ProtectedRoute />
-            </ErrorBoundary>
+            </BaseErrorBoundary>
           }
         >
           <Route path="/home" element={<Home />} />
