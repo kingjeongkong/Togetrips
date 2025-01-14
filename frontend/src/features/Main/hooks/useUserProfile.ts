@@ -12,8 +12,7 @@ export const useUserProfile = () => {
     queryFn: () => (user?.uid ? profileService.getProfile(user.uid) : null),
     enabled: !!user?.uid,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
-    throwOnError: true
+    gcTime: 20 * 60 * 1000
   });
 
   const { mutateAsync: updateProfile } = useMutation({

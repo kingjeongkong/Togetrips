@@ -3,12 +3,10 @@ import HomeProfile from '../../features/Main/section/MainHome/components/HomePro
 import CurrentLocationMap from '../../features/Main/section/MainHome/components/CurrentLocationMap';
 import TravelerCardList from '../../features/Main/section/MainHome/components/TravelerCardList';
 import { useUserLocation } from '../../features/Main/section/MainHome/hooks/useUserLocation';
-import { useNearbyUsers } from '../../features/Main/section/MainHome/hooks/userNearbyUsers';
 import DataFetchErrorBoundary from '../../components/ErrorBoundary/DataFetchErrorBoundary';
 
 const Home = () => {
   const { currentLocation, cityInfo, loading, updateLocation } = useUserLocation();
-  const { nearbyUsers, isLoading } = useNearbyUsers(cityInfo);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -18,14 +16,17 @@ const Home = () => {
           <HomeProfile />
         </DataFetchErrorBoundary>
 
-          <CurrentLocationMap
-            currentLocation={currentLocation}
-            cityName={cityInfo.city}
-            updateLocation={updateLocation}
-            loading={loading}
-          />
+        <CurrentLocationMap
+          currentLocation={currentLocation}
+          cityName={cityInfo.city}
+          updateLocation={updateLocation}
+          loading={loading}
+          // ToDo : 해당 로직만 따로 에러 처리
+        />
 
-          <TravelerCardList nearbyUsers={nearbyUsers} isLoading={isLoading} />
+        <DataFetchErrorBoundary>
+          <TravelerCardList cityInfo={cityInfo} />
+        </DataFetchErrorBoundary>
       </main>
     </div>
   );

@@ -5,17 +5,11 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export const profileService = {
   async getProfile(uid: string): Promise<UserProfile | null> {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        return userDoc.data() as UserProfile;
-      }
-      return null;
-    } catch (error) {
-      // ToDo : 에러 처리 다시
-      console.error('Error fetching profile:', error);
-      throw new Error('Failed to fetch profile');
+    const userDoc = await getDoc(doc(db, 'users', uid));
+    if (userDoc.exists()) {
+      return userDoc.data() as UserProfile;
     }
+    return null;
   },
 
   async updateProfile(uid: string, updates: Partial<UserProfile>) {
