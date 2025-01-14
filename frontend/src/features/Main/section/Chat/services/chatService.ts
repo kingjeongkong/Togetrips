@@ -16,26 +16,20 @@ import { ChatRoom, Message } from '../types/chatTypes';
 
 export const chatService = {
   async getChatRooms(userID: string): Promise<ChatRoom[]> {
-    try {
-      const q = query(
-        collection(db, 'chatRooms'),
-        where('participants', 'array-contains', userID),
-        orderBy('lastMessageTime', 'desc')
-      );
-      const snapshot = await getDocs(q);
+    const q = query(
+      collection(db, 'chatRooms'),
+      where('participants', 'array-contains', userID),
+      orderBy('lastMessageTime', 'desc')
+    );
+    const snapshot = await getDocs(q);
 
-      return snapshot.docs.map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data()
-          } as ChatRoom)
-      );
-    } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error fetching chat rooms:', error);
-      return [];
-    }
+    return snapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data()
+        } as ChatRoom)
+    );
   },
 
   async getChatRoom(chatRoomID: string): Promise<ChatRoom | null> {

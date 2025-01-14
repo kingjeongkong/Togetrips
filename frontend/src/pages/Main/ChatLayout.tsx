@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../../features/Main/components/Sidebar';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import ChatList from '../../features/Main/section/Chat/components/ChatList';
+import DataFetchErrorBoundary from '../../components/ErrorBoundary/DataFetchErrorBoundary';
 
 const ChatLayout = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -15,7 +16,9 @@ const ChatLayout = () => {
         <Sidebar />
         <main className="flex-1 overflow-hidden pb-16 md:pb-0">
           {/* 모바일에서는 <Outlet /> 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
-          <Outlet />
+          <DataFetchErrorBoundary>
+            <Outlet />
+          </DataFetchErrorBoundary>
         </main>
       </div>
     );
@@ -32,13 +35,17 @@ const ChatLayout = () => {
         <main className="flex flex-1 pl-60">
           {/* 직접 ChatList를 렌더링 */}
           <div className="border-r border-gray-300 w-[350px]">
-            <ChatList />
+            <DataFetchErrorBoundary>
+              <ChatList />
+            </DataFetchErrorBoundary>
           </div>
 
           {/* 오른쪽 영역: /chat/:chatId 일 때만 <Outlet /> (ChatRoom) 표시 */}
           {hasChatId ? (
             <div className="flex-1">
-              <Outlet />
+              <DataFetchErrorBoundary>
+                <Outlet />
+              </DataFetchErrorBoundary>
             </div>
           ) : (
             // /chat(루트)면 아무 채팅방도 선택 안 된 상태이므로, ChatRoom 안띄움

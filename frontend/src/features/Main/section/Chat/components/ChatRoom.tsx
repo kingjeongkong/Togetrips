@@ -21,15 +21,14 @@ const ChatRoom = () => {
     queryFn: () => chatService.getChatRoom(chatRoomID!),
     enabled: !!chatRoomID,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000 
-    // ToDo : 에러 처리
+    gcTime: 10 * 60 * 1000
   });
 
   // Fetch other user's profile
-  const {data: otherUserProfile, isLoading: isLoadingProfile} = useQuery({
-    queryKey: ['profile', chatRoomData?.participants.find(id => id !== user?.uid)],
+  const { data: otherUserProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['profile', chatRoomData?.participants.find((id) => id !== user?.uid)],
     queryFn: async () => {
-      const otherUserID = chatRoomData?.participants.find(id => id !== user?.uid)
+      const otherUserID = chatRoomData?.participants.find((id) => id !== user?.uid);
       if (!otherUserID) return null;
 
       return profileService.getProfile(otherUserID);
@@ -37,8 +36,7 @@ const ChatRoom = () => {
     enabled: !!chatRoomData && !!user,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
-    // ToDo : 에러 처리
-  })
+  });
 
   // 실시간 메시지 구독
   useEffect(() => {
