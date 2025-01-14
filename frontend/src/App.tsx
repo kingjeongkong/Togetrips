@@ -15,13 +15,19 @@ import Profile from './pages/Main/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
-import BaseErrorBoundary from './components/BaseErrorBoundary';
+import BaseErrorBoundary from './components/ErrorBoundary/BaseErrorBoundary';
 import { ToastContainer } from 'react-toastify';
 import ChatList from './features/Main/section/Chat/components/ChatList';
 import ChatRoom from './features/Main/section/Chat/components/ChatRoom';
 
 function App() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        throwOnError: true
+      }
+    }
+  });
 
   const initialize = useAuthStore((state) => state.initialize);
 
