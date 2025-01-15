@@ -2,6 +2,7 @@ import { EditableProfileFields } from '../types/profileTypes';
 import { profileService } from '../services/profileService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { toast } from 'react-toastify';
 
 export const useUserProfile = () => {
   const user = useAuthStore((state) => state.user);
@@ -30,8 +31,11 @@ export const useUserProfile = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.uid] });
+      toast.success('Profile updated successfully');
     },
-    throwOnError: true
+    onError: () => {
+      toast.error('Failed to update profile');
+    }
   });
 
   return { profile, isLoading, updateProfile };
