@@ -53,8 +53,6 @@ const ChatRoom = () => {
         setMessages(messages);
       },
       (failedCount) => {
-        toast.error('Failed to fetch messages');
-
         if (failedCount >= 3) {
           setSubscriptionFailed(true);
         }

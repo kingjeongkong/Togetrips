@@ -139,6 +139,7 @@ export const chatService = {
           console.error('Error in messages subscription:', error);
         }
 
+        toast.error('Failed to fetch messages');
         onError?.(failedCount);
 
         if (retries > 0) {
@@ -173,8 +174,9 @@ export const chatService = {
         callback(snapshot.docs.length);
       },
       (error) => {
-        // ToDo : 에러 처리
-        console.error('Error fetching unread count:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error fetching unread count:', error);
+        }
         callback(0);
       }
     );
@@ -186,14 +188,26 @@ export const chatService = {
   ) {
     const chatRoomRef = doc(db, 'chatRooms', chatRoomID);
 
-    return onSnapshot(chatRoomRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
+    return onSnapshot(
+      chatRoomRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          callback({
+            lastMessage: data.lastMessage,
+            lastMessageTime: data.lastMessageTime
+          });
+        }
+      },
+      (error) => {
+        if (import.meta.env.DEV) {
+          console.error('Error fetching last message:', error);
+        }
         callback({
-          lastMessage: data.lastMessage,
-          lastMessageTime: data.lastMessageTime
+          lastMessage: '',
+          lastMessageTime: ''
         });
       }
-    });
+    );
   }
 };
