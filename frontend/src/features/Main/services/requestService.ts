@@ -29,9 +29,12 @@ export const requestService = {
 
       await addDoc(collection(db, 'requests'), newRequest);
       toast.success('Request sent successfully');
+
       return true;
     } catch (error) {
-      console.error('Error sending request:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error sending request:', error);
+      }
       toast.error('Failed to send request. Please try again.');
       return false;
     }
