@@ -9,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { chatService } from '../services/chatService';
 import { profileService } from '../../../services/profileService';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
-import { toast } from 'react-toastify';
 
 const ChatRoom = () => {
   const { chatRoomID } = useParams<{ chatRoomID: string }>();

@@ -4,7 +4,6 @@ import { requestService } from '../../../services/requestService';
 import { formatHashTags } from '../../../utils/HashTags';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../../../../store/useAuthStore';
-import { toast } from 'react-toastify';
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };
@@ -35,48 +34,38 @@ const RequestCard = ({ request }: RequestCardProps) => {
 
   const handleAccept = async () => {
     setIsProcessing(true);
-    try {
-      // 1. Request 수락
-      const success = await requestService.acceptRequest(request.id);
-      if (!success) return;
 
-      // 2. Chat Room 생성
-      const chatRoomID = await requestService.createChatRoom([
-        request.senderID,
-        request.receiverID
-      ]);
+    // 1. Request 수락
+    const success = await requestService.acceptRequest(request.id);
+    if (!success) return;
 
-      if (chatRoomID) {
-        toast.success('Chat Room created successfully');
-        onStatusChange();
-        updateTravelerCard();
-      } else {
-        // ChatRoom 생성 실패 시 request 상태 pending으로 복구
-        toast.error('Failed to create chat room');
-        await requestService.reverRequestStatus(request.id);
-      }
-    } catch (error) {
-      console.error('Error accepting request:', error);
-      // ToDo : 실패 시 UI 알림 처리
-    } finally {
-      setIsProcessing(false);
+    // 2. Chat Room 생성
+    const chatRoomID = await requestService.createChatRoom([
+      request.senderID,
+      request.receiverID
+    ]);
+
+    if (chatRoomID) {
+      onStatusChange();
+      updateTravelerCard();
+    } else {
+      // ChatRoom 생성 실패 시 request 상태 pending으로 복구
+      await requestService.reverRequestStatus(request.id);
     }
+
+    setIsProcessing(false);
   };
 
   const handleDecline = async () => {
     setIsProcessing(true);
-    try {
-      const success = await requestService.declineRequest(request.id);
-      if (success) {
-        onStatusChange();
-        updateTravelerCard();
-      }
-    } catch (error) {
-      console.error('Error declining request:', error);
-      // ToDo : 실패 시 UI 알림 처리
-    } finally {
-      setIsProcessing(false);
+
+    const success = await requestService.declineRequest(request.id);
+    if (success) {
+      onStatusChange();
+      updateTravelerCard();
     }
+
+    setIsProcessing(false);
   };
 
   return (

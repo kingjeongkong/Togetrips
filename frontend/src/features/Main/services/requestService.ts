@@ -70,7 +70,9 @@ export const requestService = {
       });
       return true;
     } catch (error) {
-      console.error('Error accepting request:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error accepting request:', error);
+      }
       toast.error('Failed to accept request. Please try again.');
       return false;
     }
@@ -83,7 +85,9 @@ export const requestService = {
       });
       return true;
     } catch (error) {
-      console.error('Error declining request:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error declining request:', error);
+      }
       toast.error('Failed to decline request. Please try again.');
       return false;
     }
@@ -127,8 +131,9 @@ export const requestService = {
       });
       return true;
     } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error reverting request status:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error reverting request status:', error);
+      }
       return false;
     }
   },
@@ -143,10 +148,14 @@ export const requestService = {
       };
 
       const chatRoomRef = await addDoc(collection(db, 'chatRooms'), newChatRoom);
+      toast.success('Chat Room created successfully');
+
       return chatRoomRef.id;
     } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error creating chat room:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error creating chat room:', error);
+      }
+      toast.error('Failed to create chat room. Please accept the request again.');
       return null;
     }
   }
