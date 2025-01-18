@@ -1,13 +1,14 @@
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
-import { UserProfile } from '../../../types/profileTypes';
+import { useNearbyUsers } from '../hooks/userNearbyUsers';
 import TravelerCard from './TravelerCard';
 
 interface TravelerCardListProps {
-  nearbyUsers: UserProfile[] | null;
-  isLoading: boolean;
+  cityInfo: { city: string; state: string };
 }
 
-const TravelerCardList = ({ nearbyUsers, isLoading }: TravelerCardListProps) => {
+const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
+  const { nearbyUsers, isLoading } = useNearbyUsers(cityInfo);
+
   return (
     <div className="grid grid-cols-2 gap-2 w-full px-2 md:grid-cols-3 md:gap-8 md:px-10">
       {isLoading ? (

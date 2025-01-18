@@ -29,9 +29,12 @@ export const requestService = {
 
       await addDoc(collection(db, 'requests'), newRequest);
       toast.success('Request sent successfully');
+
       return true;
     } catch (error) {
-      console.error('Error sending request:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error sending request:', error);
+      }
       toast.error('Failed to send request. Please try again.');
       return false;
     }
@@ -40,34 +43,27 @@ export const requestService = {
   async getMyRequests(
     currentLoggedInUserID: string
   ): Promise<(Request & { sender: RequestUserProfile })[]> {
-    try {
-      const requestsQuery = query(
-        collection(db, 'requests'),
-        where('receiverID', '==', currentLoggedInUserID),
-        where('status', '==', 'pending')
-      );
-      const requestsSnapshot = await getDocs(requestsQuery);
+    const requestsQuery = query(
+      collection(db, 'requests'),
+      where('receiverID', '==', currentLoggedInUserID),
+      where('status', '==', 'pending')
+    );
+    const requestsSnapshot = await getDocs(requestsQuery);
 
-      const requests = await Promise.all(
-        requestsSnapshot.docs.map(async (requestDoc) => {
-          const request = { id: requestDoc.id, ...requestDoc.data() } as Request;
-          const senderDoc = await getDoc(doc(db, 'users', request.senderID));
-          const senderData = senderDoc.data() as RequestUserProfile;
+    const requests = await Promise.all(
+      requestsSnapshot.docs.map(async (requestDoc) => {
+        const request = { id: requestDoc.id, ...requestDoc.data() } as Request;
+        const senderDoc = await getDoc(doc(db, 'users', request.senderID));
+        const senderData = senderDoc.data() as RequestUserProfile;
 
-          return {
-            ...request,
-            sender: senderData
-          };
-        })
-      );
+        return {
+          ...request,
+          sender: senderData
+        };
+      })
+    );
 
-      return requests;
-    } catch (error) {
-      //ToDo : 에러 처리
-      console.error('Error fetching requests:', error);
-      throw new Error('Failed to fetch requests');
-      return [];
-    }
+    return requests;
   },
 
   async acceptRequest(requestID: string): Promise<boolean> {
@@ -75,9 +71,11 @@ export const requestService = {
       await updateDoc(doc(db, 'requests', requestID), {
         status: 'accepted'
       });
-      return true; 
+      return true;
     } catch (error) {
-      console.error('Error accepting request:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error accepting request:', error);
+      }
       toast.error('Failed to accept request. Please try again.');
       return false;
     }
@@ -90,7 +88,9 @@ export const requestService = {
       });
       return true;
     } catch (error) {
-      console.error('Error declining request:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error declining request:', error);
+      }
       toast.error('Failed to decline request. Please try again.');
       return false;
     }
@@ -101,36 +101,30 @@ export const requestService = {
     otherUserID: string,
     status: 'pending' | ['accepted', 'declined']
   ): Promise<boolean> {
-    try {
-      const statusCondition = Array.isArray(status)
-        ? where('status', 'in', status)
-        : where('status', '==', status);
+    const statusCondition = Array.isArray(status)
+      ? where('status', 'in', status)
+      : where('status', '==', status);
 
-      const sentRequestQuery = query(
-        collection(db, 'requests'),
-        where('senderID', '==', userID),
-        where('receiverID', '==', otherUserID),
-        statusCondition
-      );
+    const sentRequestQuery = query(
+      collection(db, 'requests'),
+      where('senderID', '==', userID),
+      where('receiverID', '==', otherUserID),
+      statusCondition
+    );
 
-      const receivedRequestQuery = query(
-        collection(db, 'requests'),
-        where('senderID', '==', otherUserID),
-        where('receiverID', '==', userID),
-        statusCondition
-      );
+    const receivedRequestQuery = query(
+      collection(db, 'requests'),
+      where('senderID', '==', otherUserID),
+      where('receiverID', '==', userID),
+      statusCondition
+    );
 
-      const [sentSnapshot, receivedSnapshot] = await Promise.all([
-        getDocs(sentRequestQuery),
-        getDocs(receivedRequestQuery)
-      ]);
+    const [sentSnapshot, receivedSnapshot] = await Promise.all([
+      getDocs(sentRequestQuery),
+      getDocs(receivedRequestQuery)
+    ]);
 
-      return !sentSnapshot.empty || !receivedSnapshot.empty;
-    } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error checking existing request:', error);
-      return false;
-    }
+    return !sentSnapshot.empty || !receivedSnapshot.empty;
   },
 
   async reverRequestStatus(requestID: string): Promise<boolean> {
@@ -140,8 +134,9 @@ export const requestService = {
       });
       return true;
     } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error reverting request status:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error reverting request status:', error);
+      }
       return false;
     }
   },
@@ -156,10 +151,14 @@ export const requestService = {
       };
 
       const chatRoomRef = await addDoc(collection(db, 'chatRooms'), newChatRoom);
+      toast.success('Chat Room created successfully');
+
       return chatRoomRef.id;
     } catch (error) {
-      // ToDo : 에러 처리
-      console.error('Error creating chat room:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error creating chat room:', error);
+      }
+      toast.error('Failed to create chat room. Please accept the request again.');
       return null;
     }
   }

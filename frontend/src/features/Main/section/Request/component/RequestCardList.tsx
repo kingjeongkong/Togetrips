@@ -16,7 +16,6 @@ const RequestCardList = () => {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
-    // ToDo : 에러 처리
   });
 
   if (isLoading) {

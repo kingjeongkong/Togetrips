@@ -19,36 +19,22 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
 
   const { data: hasExistingRequest = false, refetch: updateExistingRequest } = useQuery({
     queryKey: ['existingRequest', user?.uid, travelerID],
-    queryFn: async() => await requestService.checkRequestByStatus(
-      user!.uid,
-      travelerID,
-      'pending'
-    ),
+    queryFn: async () =>
+      await requestService.checkRequestByStatus(user!.uid, travelerID, 'pending'),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
-    // ToDo : 에러 처리
-  })
+  });
 
   const handleSendRequest = async (message?: string) => {
     if (!user) return;
 
-    try {
-      const success = await requestService.sendRequest(user.uid, travelerID, message);
-
-      if (success) {
-        // ToDo: 성공 시 UI 알림 처리
-        console.log('Request sent successfully');
-        updateExistingRequest();
-      } else {
-        // ToDo: 실패 시 UI 알림 처리
-        console.log('Failed to send request');
-      }
-    } catch (error) {
-      console.error('Error sending request:', error);
-    } finally {
-      setIsModalOpen(false);
+    const success = await requestService.sendRequest(user.uid, travelerID, message);
+    if (success) {
+      updateExistingRequest();
     }
+
+    setIsModalOpen(false);
   };
 
   return (
