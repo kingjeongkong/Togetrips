@@ -15,10 +15,6 @@ const CurrentLocationMap = ({
   updateLocation,
   loading
 }: CurrentLocationMapProps) => {
-  const mapContainerStyle = {
-    width: '100%',
-    height: '400px'
-  };
 
   return (
     <div className="flex flex-col px-6">
@@ -42,11 +38,13 @@ const CurrentLocationMap = ({
       </div>
 
       <div className="pt-4">
+        <div className="w-full h-[300px] md:h-[400px]">
         <GoogleMap
-          mapContainerStyle={mapContainerStyle}
+          mapContainerStyle={{ width: '100%', height: '100%' }}
           center={currentLocation}
           zoom={15}
         />
+        </div>
       </div>
 
       <p className="pt-3 text-sm md:text-lg text-gray-500">Only same city travelers are available</p>
