@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { formatMessageDate } from '../../../../../utils/dateUtils';
 import { Message } from '../types/chatTypes';
 import ChatRoomDateDivider from './ChatRoomDateDivider';
@@ -9,6 +10,8 @@ interface ChatRoomMessageListProps {
 }
 
 const ChatRoomMessageList = ({ messages, currentUserID }: ChatRoomMessageListProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const messagesByDate = messages.reduce(
     (groups: { [key: string]: Message[] }, message) => {
       const date = formatMessageDate(message.timestamp);
@@ -21,8 +24,19 @@ const ChatRoomMessageList = ({ messages, currentUserID }: ChatRoomMessageListPro
     {}
   );
 
+  useEffect(() => {
+    // Scroll to the bottom
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <div className="flex-1 overflow-y-auto px-2 py-2 bg-gray-200">
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-auto px-2 py-2 bg-gray-200"
+      style={{ height: '100%', maxHeight: '100%' }}
+    >
       {Object.entries(messagesByDate).map(([date, messages]) => (
         <div key={date} className="space-y-1">
           <ChatRoomDateDivider date={date} />
