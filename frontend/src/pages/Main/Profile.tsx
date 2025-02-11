@@ -1,6 +1,6 @@
 import DataFetchErrorBoundary from '../../components/ErrorBoundary/DataFetchErrorBoundary';
 import Sidebar from '../../features/shared/components/Sidebar';
-import MainProfile from '../../features/shared/section/Profile/components/MainProfile';
+import MainProfile from '../../features/profile/MainProfile';
 
 const Profile = () => {
   return (

@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import ChatListItem from './ChatListItem';
 import { chatService } from '../services/chatService';
-import { useAuthStore } from '../../../../../store/useAuthStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const ChatList = () => {
   const user = useAuthStore((state) => state.user);

@@ -1,6 +1,6 @@
 import DataFetchErrorBoundary from '../../components/ErrorBoundary/DataFetchErrorBoundary';
 import Sidebar from '../../features/shared/components/Sidebar';
-import RequestCardList from '../../features/shared/section/Request/component/RequestCardList';
+import RequestCardList from '../../features/request/RequestCardList'; 
 
 const Requests = () => {
   return (

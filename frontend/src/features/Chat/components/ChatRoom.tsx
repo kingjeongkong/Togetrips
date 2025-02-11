@@ -1,14 +1,14 @@
 import { useParams } from 'react-router-dom';
-import ChatRoomHeader from './ChatRoomHeader';
-import ChatRoomInput from './ChatRoomInput';
+import ChatRoomHeader from './ChatRoomHeader'; 
+import ChatRoomInput from './ChatRoomInput'; 
 import ChatRoomMessageList from './ChatRoomMessageList';
-import { useAuthStore } from '../../../../../store/useAuthStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { useEffect, useState } from 'react';
-import { Message } from '../types/chatTypes';
+import { Message } from '../types/chatTypes'; 
 import { useQuery } from '@tanstack/react-query';
-import { chatService } from '../services/chatService';
-import { profileService } from '../../../services/profileService';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { chatService } from '../services/chatService'; 
+import { profileService } from '../../shared/services/profileService'; 
+import LoadingIndicator from '../../../components/LoadingIndicator'; 
 
 const ChatRoom = () => {
   const { chatRoomID } = useParams<{ chatRoomID: string }>();

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import AuthLayout from '../../features/Auth/components/AuthLayout';
-import InputField from '../../features/Auth/components/InputField';
-import SubmitButton from '../../features/Auth/components/SubmitButton';
+import AuthLayout from '../../features/auth/components/AuthLayout';
+import InputField from '../../features/auth/components/InputField';
+import SubmitButton from '../../features/auth/components/SubmitButton';
 import googleLogo from '../../assets/google-logo.png';
-import { useAuthSubmit } from '../../features/Auth/hooks/useAuthSubmit';
+import { useAuthSubmit } from '../../features/auth/hooks/useAuthSubmit';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');

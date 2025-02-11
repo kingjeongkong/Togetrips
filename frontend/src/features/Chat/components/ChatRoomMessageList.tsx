@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { formatMessageDate } from '../../../../../utils/dateUtils';
-import { Message } from '../types/chatTypes';
+import { formatMessageDate } from '../../../utils/dateUtils';
+import { Message } from '../types/chatTypes'; 
 import ChatRoomDateDivider from './ChatRoomDateDivider';
-import ChatRoomMessage from './ChatRoomMessage';
+import ChatRoomMessage from './ChatRoomMessage'; 
 import { BsArrowDownCircleFill } from 'react-icons/bs';
 
 interface ChatRoomMessageListProps {

@@ -1,4 +1,4 @@
-import { formatMessageTime } from '../../../../../utils/dateUtils';
+import { formatMessageTime } from "../../../utils/dateUtils";
 
 interface ChatRoomMessageProps {
   text: string;

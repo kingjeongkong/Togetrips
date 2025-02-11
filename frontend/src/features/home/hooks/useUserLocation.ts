@@ -1,6 +1,6 @@
 import { getCurrentLocationData } from '../utils/location';
-import { locationService } from '../service/locationService';
-import { useAuthStore } from '../../../../../store/useAuthStore';
+import { locationService } from '../services/locationService';
+import { useAuthStore } from '../../../store/useAuthStore'; 
 import { useQuery } from '@tanstack/react-query';
 
 export const useUserLocation = () => {

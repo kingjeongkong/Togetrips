@@ -1,4 +1,4 @@
-import { locationService } from '../service/locationService';
+import { locationService } from '../services/locationService';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { requestService } from '../../shared/services/requestService'; 
 import { useQuery } from '@tanstack/react-query';

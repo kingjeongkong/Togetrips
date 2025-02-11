@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { EditableProfileFields } from '../../../types/profileTypes';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { EditableProfileFields } from '../shared/types/profileTypes'; 
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface EditProfileFormProps {
   onCancle: () => void;
