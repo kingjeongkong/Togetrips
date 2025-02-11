@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useUserProfile } from '../../../hooks/useUserProfile';
-import { formatHashTags } from '../../../utils/HashTags';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { useUserProfile } from '../../shared/hooks/useUserProfile';
+import { formatHashTags } from '../../shared/utils/HashTags';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const HomeProfile = () => {
   const { profile, isLoading } = useUserProfile();

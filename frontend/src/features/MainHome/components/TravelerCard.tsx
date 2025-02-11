@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useAuthStore } from '../../../../../store/useAuthStore';
-import { formatHashTags } from '../../../utils/HashTags';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { formatHashTags } from '../../shared/utils/HashTags';
 import RequestModal from './RequestModal';
-import { requestService } from '../../../services/requestService';
+import { requestService } from '../../shared/services/requestService';
 import { useQuery } from '@tanstack/react-query';
 
 interface TravelCardProps {

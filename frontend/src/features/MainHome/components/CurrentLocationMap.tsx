@@ -1,6 +1,6 @@
 import { GoogleMap } from '@react-google-maps/api';
 import { FaMapMarkerAlt } from 'react-icons/fa';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface CurrentLocationMapProps {
   currentLocation: { lat: number; lng: number };
