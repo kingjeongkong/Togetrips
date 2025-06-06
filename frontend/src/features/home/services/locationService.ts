@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
-import { UserProfile } from '@firebase/auth'; 
+import { UserProfile } from '../../shared/types/profileTypes';
 
 export const locationService = {
   async updateUserLocationDB(userID: string, city: string, state: string): Promise<void> {
@@ -27,8 +27,9 @@ export const locationService = {
     );
 
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(
-      (doc) => ({ uid: doc.id, ...doc.data() } as UserProfile)
-    );
+    return querySnapshot.docs.map((doc) => ({
+      uid: doc.id,
+      ...doc.data()
+    } as UserProfile));
   }
 };

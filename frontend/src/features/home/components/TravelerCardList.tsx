@@ -1,4 +1,5 @@
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { UserProfile } from '../../shared/types/profileTypes';
 import { useNearbyUsers } from '../hooks/userNearbyUsers';
 import TravelerCard from './TravelerCard';
 
@@ -16,7 +17,7 @@ const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
           <LoadingIndicator color="#f97361" size={60} />
         </div>
       ) : (
-        nearbyUsers?.map((user, index) => (
+        nearbyUsers?.map((user: UserProfile, index) => (
           <TravelerCard
             key={index}
             travelerID={user.uid}

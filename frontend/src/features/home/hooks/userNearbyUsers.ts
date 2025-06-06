@@ -1,12 +1,13 @@
-import { locationService } from '../services/locationService';
-import { useAuthStore } from '../../../store/useAuthStore';
-import { requestService } from '../../shared/services/requestService'; 
 import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { requestService } from '../../shared/services/requestService';
+import { UserProfile } from '../../shared/types/profileTypes';
+import { locationService } from '../services/locationService';
 
 export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
   const user = useAuthStore((state) => state.user);
 
-  const { data: nearbyUsers = null, isLoading } = useQuery({
+  const { data: nearbyUsers = null, isLoading } = useQuery<UserProfile[]>({
     queryKey: ['nearbyUsers', user?.uid, cityInfo.city, cityInfo.state],
     queryFn: async () => {
       // 1. 같은 도시의 모든 사용자 가져오기
