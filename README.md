@@ -38,29 +38,18 @@ Service Link : https://togetrip.vercel.app
 frontend/
 ├── src/
 │   ├── components/             # Common Components
-│   ├── features/               # Main Features
-│   │   ├── Auth/               # Authentication
-│   │   │   ├── components/     
-│   │   │   ├── hooks/          
-│   │   │   └── services/       
-│   │   └── Main/               # Main Page Features
-│   │       ├── components/     
-│   │       ├── section/        # Page Section Components
-│   │       │   ├── Chat/       
-│   │       │   ├── MainHome/   
-│   │       │   ├── Profile/    
-│   │       │   └── Request/   
-│   │       ├── hooks/          
-│   │       └── services/      
-│   ├── pages/                  # Pages
-│   │   ├── Auth/               # Authentication Pages
-│   │   │   ├── SignIn.tsx      
-│   │   │   └── SignUp.tsx      
-│   │   └── Main/               # Main Pages
-│   │       ├── Home.tsx        
-│   │       ├── ChatLayout.tsx  
-│   │       ├── Profile.tsx     
-│   │       └── Requests.tsx    
-│   └── store/                  # State Management
+│   ├── features/               # Feature Modules
+│   │   ├── Auth/
+│   │   ├── Chat/
+│   │   ├── home/
+│   │   ├── profile/
+│   │   ├── request/
+│   │   └── shared/            # Shared Features
+│   ├── pages/                 # Page Components
+│   │   ├── Auth/
+│   │   └── Main/
+│   ├── store/                # State Management
+│   └── config/               # Configuration Files
 ├── public/
-└── package.json 
+└── package.json
+```
