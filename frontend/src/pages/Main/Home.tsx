@@ -1,8 +1,8 @@
-import Sidebar from '../../features/Main/components/Sidebar';
-import HomeProfile from '../../features/Main/section/MainHome/components/HomeProfile';
-import CurrentLocationMap from '../../features/Main/section/MainHome/components/CurrentLocationMap';
-import TravelerCardList from '../../features/Main/section/MainHome/components/TravelerCardList';
-import { useUserLocation } from '../../features/Main/section/MainHome/hooks/useUserLocation';
+import Sidebar from '../../features/shared/components/Sidebar';
+import HomeProfile from '../../features/home/components/HomeProfile';
+import CurrentLocationMap from '../../features/home/components/CurrentLocationMap';
+import TravelerCardList from '../../features/home/components/TravelerCardList';
+import { useUserLocation } from '../../features/home/hooks/useUserLocation';
 import DataFetchErrorBoundary from '../../components/ErrorBoundary/DataFetchErrorBoundary';
 
 const Home = () => {

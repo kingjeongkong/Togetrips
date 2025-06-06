@@ -1,4 +1,4 @@
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useNearbyUsers } from '../hooks/userNearbyUsers';
 import TravelerCard from './TravelerCard';
 

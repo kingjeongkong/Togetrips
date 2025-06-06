@@ -17,8 +17,8 @@ import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 import BaseErrorBoundary from './components/ErrorBoundary/BaseErrorBoundary';
 import { ToastContainer } from 'react-toastify';
-import ChatList from './features/Main/section/Chat/components/ChatList';
-import ChatRoom from './features/Main/section/Chat/components/ChatRoom';
+import ChatList from './features/chat/components/ChatList';
+import ChatRoom from './features/chat/components/ChatRoom';
 
 function App() {
   const queryClient = new QueryClient({

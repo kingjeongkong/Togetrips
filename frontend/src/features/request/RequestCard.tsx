@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Request, RequestUserProfile } from '../../../types/requestTypes';
-import { requestService } from '../../../services/requestService';
-import { formatHashTags } from '../../../utils/HashTags';
+import { Request, RequestUserProfile } from '../shared/types/requestTypes';
+import { requestService } from '../shared/services/requestService';
+import { formatHashTags } from '../shared/utils/HashTags';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../../../../../store/useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore'; 
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };

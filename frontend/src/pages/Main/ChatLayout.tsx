@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from '../../features/Main/components/Sidebar';
+import Sidebar from '../../features/shared/components/Sidebar';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import ChatList from '../../features/Main/section/Chat/components/ChatList';
+import ChatList from '../../features/chat/components/ChatList';
 import DataFetchErrorBoundary from '../../components/ErrorBoundary/DataFetchErrorBoundary';
 
 const ChatLayout = () => {

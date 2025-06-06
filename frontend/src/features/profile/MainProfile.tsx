@@ -1,10 +1,10 @@
 import { FiEdit, FiSettings } from 'react-icons/fi';
 import { useState } from 'react';
 import EditProfileForm from './EditProfileForm';
-import { useUserProfile } from '../../../hooks/useUserProfile';
-import { EditableProfileFields } from '../../../types/profileTypes';
-import { splitHashTags } from '../../../utils/HashTags';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { useUserProfile } from '../shared/hooks/useUserProfile';
+import { EditableProfileFields } from '../shared/types/profileTypes';
+import { splitHashTags } from '../shared/utils/HashTags';
+import LoadingIndicator from '../../components/LoadingIndicator'; 
 
 const MainProfile = () => {
   const { profile, isLoading, updateProfile } = useUserProfile();

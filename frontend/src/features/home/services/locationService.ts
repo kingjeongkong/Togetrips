@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import { db } from '../../../../../config/firebase';
-import { UserProfile } from '../../../types/profileTypes';
+import { db } from '../../../config/firebase';
+import { UserProfile } from '@firebase/auth'; 
 
 export const locationService = {
   async updateUserLocationDB(userID: string, city: string, state: string): Promise<void> {

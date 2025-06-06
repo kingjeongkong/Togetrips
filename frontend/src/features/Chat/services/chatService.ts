@@ -11,7 +11,7 @@ import {
   where,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '../../../../../config/firebase';
+import { db } from '../../../config/firebase';
 import { ChatRoom, Message } from '../types/chatTypes';
 import { toast } from 'react-toastify';
 

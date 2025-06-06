@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useAuthStore } from '../../../../../store/useAuthStore';
-import { ChatRoom } from '../types/chatTypes';
-import { profileService } from '../../../services/profileService';
-import { formatRelativeTime } from '../../../../../utils/dateUtils';
-import { chatService } from '../services/chatService';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { ChatRoom } from '../types/chatTypes'; 
+import { profileService } from '../../shared/services/profileService';
+import { formatRelativeTime } from '../../../utils/dateUtils'; 
+import { chatService } from '../services/chatService'; 
 
 interface ChatListItemProps {
   chatRoom: ChatRoom;

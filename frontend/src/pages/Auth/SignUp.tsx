@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import AuthLayout from '../../features/Auth/components/AuthLayout';
-import InputField from '../../features/Auth/components/InputField';
-import SubmitButton from '../../features/Auth/components/SubmitButton';
-import { useAuthSubmit } from '../../features/Auth/hooks/useAuthSubmit';
+import AuthLayout from '../../features/auth/components/AuthLayout';
+import InputField from '../../features/auth/components/InputField';
+import SubmitButton from '../../features/auth/components/SubmitButton';
+import { useAuthSubmit } from '../../features/auth/hooks/useAuthSubmit';
 
 const SignUpPage = () => {
   const [name, setName] = useState('');

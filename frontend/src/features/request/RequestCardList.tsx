@@ -1,8 +1,8 @@
-import { useAuthStore } from '../../../../../store/useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore'; 
 import RequestCard from './RequestCard';
-import { Request, RequestUserProfile } from '../../../types/requestTypes';
-import { requestService } from '../../../services/requestService';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { Request, RequestUserProfile } from '../shared/types/requestTypes';
+import { requestService } from '../shared/services/requestService'; 
+import LoadingIndicator from '../../components/LoadingIndicator'; 
 import { useQuery } from '@tanstack/react-query';
 
 const RequestCardList = () => {

@@ -1,6 +1,6 @@
-import { locationService } from '../service/locationService';
-import { useAuthStore } from '../../../../../store/useAuthStore';
-import { requestService } from '../../../services/requestService';
+import { locationService } from '../services/locationService';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { requestService } from '../../shared/services/requestService'; 
 import { useQuery } from '@tanstack/react-query';
 
 export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
