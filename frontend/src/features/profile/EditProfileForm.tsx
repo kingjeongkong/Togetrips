@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { EditableProfileFields } from '../shared/types/profileTypes'; 
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { EditableProfileFields } from '../shared/types/profileTypes';
 
 interface EditProfileFormProps {
   onCancle: () => void;
@@ -10,7 +10,7 @@ interface EditProfileFormProps {
 
 const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormProps) => {
   const [formData, setFormData] = useState(initialData);
-  const [previewImage, setPreviewImage] = useState<string | null>(initialData.photoURL);
+  const [previewImage, setPreviewImage] = useState<string | null>(initialData.image);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,7 +54,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
       >
         <div className="relative">
           <img
-            src={previewImage || initialData.photoURL}
+            src={previewImage || initialData.image}
             alt="profile"
             onClick={handleImageClick}
             className="w-40 h-40 md:w-52 md:h-52 rounded-full cursor-pointer hover:opacity-80 bg-white"

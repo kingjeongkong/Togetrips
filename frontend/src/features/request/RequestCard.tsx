@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Request, RequestUserProfile } from '../shared/types/requestTypes';
-import { requestService } from '../shared/services/requestService';
-import { formatHashTags } from '../shared/utils/HashTags';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../../store/useAuthStore'; 
+import { useState } from 'react';
+import { useAuthStore } from '../../store/useAuthStore';
+import { requestService } from '../shared/services/requestService';
+import { Request, RequestUserProfile } from '../shared/types/requestTypes';
+import { formatHashTags } from '../shared/utils/HashTags';
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };
@@ -72,7 +72,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
     <div className="overflow-hidden flex flex-col h-full px-5 py-4 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6">
       <div className="flex">
         <img
-          src={request.sender.photoURL || ''}
+          src={request.sender.image || ''}
           className="w-12 h-12 rounded-full mr-2 md:w-16 md:h-16 md:mr-4"
         />
         <div className="flex flex-col justify-center">

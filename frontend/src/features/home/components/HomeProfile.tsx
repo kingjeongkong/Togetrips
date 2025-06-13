@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useUserProfile } from '../../shared/hooks/useUserProfile';
 import { formatHashTags } from '../../shared/utils/HashTags';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const HomeProfile = () => {
   const { profile, isLoading } = useUserProfile();
@@ -32,7 +32,7 @@ const HomeProfile = () => {
   return (
     <div className="flex justify-between items-center w-full pl-6 pr-3 md:pr-16">
       <img
-        src={profile?.photoURL}
+        src={profile?.image}
         className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg"
       />
 

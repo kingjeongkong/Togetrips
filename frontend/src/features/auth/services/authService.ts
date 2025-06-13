@@ -1,13 +1,13 @@
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  signInWithEmailAndPassword,
   signInWithPopup
 } from '@firebase/auth';
+import { GoogleAuthProvider } from '@firebase/auth/internal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../../config/firebase';
-import { SignUpFormData, SignInFormData } from '../types/authTypes';
-import { GoogleAuthProvider } from '@firebase/auth/internal';
+import { SignInFormData, SignUpFormData } from '../types/authTypes';
 
 interface AuthResponse {
   success: boolean;
@@ -50,7 +50,7 @@ export const authService = {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name,
         email,
-        photoURL: '',
+        image: '',
         tags: '',
         bio: '',
         location: {
@@ -107,7 +107,7 @@ export const authService = {
           {
             name: result.user.displayName,
             email: result.user.email,
-            photoURL: result.user.photoURL || '',
+            image: result.user.image || '',
             tags: '',
             bio: '',
             location: {

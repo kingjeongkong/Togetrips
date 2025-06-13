@@ -11,5 +11,5 @@ export interface Request {
 
 export type RequestUserProfile = Pick<
   UserProfile,
-  'name' | 'photoURL' | 'tags' | 'location'
+  'name' | 'image' | 'tags' | 'location'
 >;

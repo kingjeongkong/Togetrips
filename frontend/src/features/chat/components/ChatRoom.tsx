@@ -1,14 +1,14 @@
-import { useParams } from 'react-router-dom';
-import ChatRoomHeader from './ChatRoomHeader'; 
-import ChatRoomInput from './ChatRoomInput'; 
-import ChatRoomMessageList from './ChatRoomMessageList';
-import { useAuthStore } from '../../../store/useAuthStore';
-import { useEffect, useState } from 'react';
-import { Message } from '../types/chatTypes'; 
 import { useQuery } from '@tanstack/react-query';
-import { chatService } from '../services/chatService'; 
-import { profileService } from '../../shared/services/profileService'; 
-import LoadingIndicator from '../../../components/LoadingIndicator'; 
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { profileService } from '../../shared/services/profileService';
+import { chatService } from '../services/chatService';
+import { Message } from '../types/chatTypes';
+import ChatRoomHeader from './ChatRoomHeader';
+import ChatRoomInput from './ChatRoomInput';
+import ChatRoomMessageList from './ChatRoomMessageList';
 
 const ChatRoom = () => {
   const { chatRoomID } = useParams<{ chatRoomID: string }>();
@@ -98,7 +98,7 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-full">
       <ChatRoomHeader
-        profileImage={otherUserProfile?.photoURL || ''}
+        profileImage={otherUserProfile?.image || ''}
         name={otherUserProfile?.name || ''}
       />
       <ChatRoomMessageList messages={messages} currentUserID={user?.uid || ''} />

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../store/useAuthStore';
-import { ChatRoom } from '../types/chatTypes'; 
+import { formatRelativeTime } from '../../../utils/dateUtils';
 import { profileService } from '../../shared/services/profileService';
-import { formatRelativeTime } from '../../../utils/dateUtils'; 
-import { chatService } from '../services/chatService'; 
+import { chatService } from '../services/chatService';
+import { ChatRoom } from '../types/chatTypes';
 
 interface ChatListItemProps {
   chatRoom: ChatRoom;
@@ -17,7 +17,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   const [lastMessageTime, setLastMessageTime] = useState(chatRoom.lastMessageTime);
   const [otherUserProfile, setOtherUserProfile] = useState<{
     name: string;
-    photoURL: string;
+    image: string;
   } | null>(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
         if (profile) {
           setOtherUserProfile({
             name: profile.name,
-            photoURL: profile.photoURL || ''
+            image: profile.image || ''
           });
         }
       });
@@ -69,7 +69,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
       onClick={onClick}
     >
       <div className="items-center justify-center flex-shrink-0">
-        <img src={otherUserProfile.photoURL} className="w-12 h-12 rounded-full" />
+        <img src={otherUserProfile.image} className="w-12 h-12 rounded-full" />
       </div>
       <div className="flex flex-col flex-1">
         <span>{otherUserProfile.name}</span>

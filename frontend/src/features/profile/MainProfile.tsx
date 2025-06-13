@@ -1,10 +1,10 @@
-import { FiEdit, FiSettings } from 'react-icons/fi';
 import { useState } from 'react';
-import EditProfileForm from './EditProfileForm';
+import { FiEdit, FiSettings } from 'react-icons/fi';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import { useUserProfile } from '../shared/hooks/useUserProfile';
 import { EditableProfileFields } from '../shared/types/profileTypes';
 import { splitHashTags } from '../shared/utils/HashTags';
-import LoadingIndicator from '../../components/LoadingIndicator'; 
+import EditProfileForm from './EditProfileForm';
 
 const MainProfile = () => {
   const { profile, isLoading, updateProfile } = useUserProfile();
@@ -40,9 +40,9 @@ const MainProfile = () => {
           ) : (
             <>
               <img
-                src={profile?.photoURL || ''}
+                src={profile?.image || ''}
                 className={`w-40 h-40 md:w-52 md:h-52 rounded-full ${
-                  profile?.photoURL ? '' : 'border border-gray-400'
+                  profile?.image ? '' : 'border border-gray-400'
                 }`}
               />
 

@@ -1,19 +1,19 @@
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { requestService } from '../../shared/services/requestService';
 import { formatHashTags } from '../../shared/utils/HashTags';
 import RequestModal from './RequestModal';
-import { requestService } from '../../shared/services/requestService';
-import { useQuery } from '@tanstack/react-query';
 
 interface TravelCardProps {
   travelerID: string;
-  photoURL?: string;
+  image?: string;
   name?: string;
   bio?: string;
   tags?: string;
 }
 
-const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps) => {
+const TravelerCard = ({ travelerID, image, name, bio, tags }: TravelCardProps) => {
   const user = useAuthStore((state) => state.user);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -42,7 +42,7 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
       <div className="overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6">
         <div className="flex">
           <img
-            src={photoURL || ''}
+            src={image || ''}
             className="flex-shrink-0 w-12 h-12 rounded-full mr-2 md:w-16 md:h-16 md:mr-4"
           />
           <div className="flex flex-col justify-center">

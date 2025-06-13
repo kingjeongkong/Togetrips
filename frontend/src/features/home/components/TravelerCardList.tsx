@@ -21,7 +21,7 @@ const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
           <TravelerCard
             key={index}
             travelerID={user.uid}
-            photoURL={user.photoURL}
+            image={user.image}
             name={user.name}
             bio={user.bio}
             tags={user.tags}

@@ -7,7 +7,7 @@ export interface UserProfile {
   uid: string;
   name: string;
   email: string;
-  photoURL: string;
+  image: string;
   tags: string;
   bio: string;
   location: Location;
@@ -17,5 +17,5 @@ export interface UserProfile {
 
 export type EditableProfileFields = Pick<
   UserProfile,
-  'name' | 'photoURL' | 'tags' | 'bio'
+  'name' | 'image' | 'tags' | 'bio'
 > & { photoFile?: File };

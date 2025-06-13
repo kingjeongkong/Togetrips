@@ -1,8 +1,8 @@
-import { EditableProfileFields } from '../types/profileTypes';
-import { profileService } from '../services/profileService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../../../store/useAuthStore';
 import { toast } from 'react-toastify';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { profileService } from '../services/profileService';
+import { EditableProfileFields } from '../types/profileTypes';
 
 export const useUserProfile = () => {
   const user = useAuthStore((state) => state.user);
@@ -20,12 +20,12 @@ export const useUserProfile = () => {
     mutationFn: async (updates: EditableProfileFields) => {
       if (!user?.uid) throw new Error('No user');
 
-      const photoURL = updates.photoFile
+      const image = updates.photoFile
         ? await profileService.uploadProfileImage(user.uid, updates.photoFile)
-        : updates.photoURL;
+        : updates.image;
 
       const { photoFile, ...updateData } = updates;
-      const dataToUpdate = { ...updateData, photoURL };
+      const dataToUpdate = { ...updateData, image };
 
       return profileService.updateProfile(user.uid, dataToUpdate);
     },
