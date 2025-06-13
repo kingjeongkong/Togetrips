@@ -107,7 +107,7 @@ export const authService = {
           {
             name: result.user.displayName,
             email: result.user.email,
-            image: result.user.image || '',
+            image: result.user.photoURL || '',
             tags: '',
             bio: '',
             location: {
