@@ -9,12 +9,19 @@ export async function POST(req: NextRequest) {
       password,
       displayName: name,
     });
-    await adminDb.collection('users').doc(userRecord.uid).set({
-      name,
-      email,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    await adminDb
+      .collection('users')
+      .doc(userRecord.uid)
+      .set({
+        name,
+        email,
+        image: '',
+        tags: '',
+        bio: '',
+        location: { city: '', state: '' },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
