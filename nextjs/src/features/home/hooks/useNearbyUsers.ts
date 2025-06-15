@@ -1,9 +1,7 @@
 'use client';
 
-import { db } from '@/lib/firebase-config';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
 
 interface User {
   id: string;
@@ -15,51 +13,40 @@ interface User {
   state: string;
 }
 
-export const useNearbyUsers = (cityInfo: { city: string; state: string }) => {
+const fetchNearbyUsers = async (city: string, state: string, userId: string): Promise<User[]> => {
+  const response = await fetch(`/api/nearby-users?city=${city}&state=${state}&userId=${userId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch nearby users.');
+  }
+  return response.json();
+};
+
+export default function useNearbyUsers(city: string, state: string) {
   const { data: session } = useSession();
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const userId = session?.user?.id;
 
-  useEffect(() => {
-    const fetchNearbyUsers = async () => {
-      if (!session?.user?.id) return;
+  const { data, isLoading } = useQuery({
+    queryKey: ['nearbyUsers', city, state, userId],
+    queryFn: () => {
+      if (!userId) return [];
+      return fetchNearbyUsers(city, state, userId);
+    },
+    enabled: !!userId && !!city && !!state,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    throwOnError: true,
+  });
 
-      try {
-        const usersRef = collection(db, 'users');
-        const q = query(
-          usersRef,
-          where('location.city', '==', cityInfo.city),
-          where('location.state', '==', cityInfo.state),
-        );
+  return {
+    users: data || [],
+    isLoading,
+  };
+}
 
-        const querySnapshot = await getDocs(q);
-        const nearbyUsers: User[] = [];
-
-        querySnapshot.forEach((doc) => {
-          const userData = doc.data();
-          if (userData.id !== session.user.id) {
-            nearbyUsers.push({
-              id: doc.id,
-              name: userData.name,
-              image: userData.image,
-              bio: userData.bio,
-              tags: userData.tags,
-              city: userData.city,
-              state: userData.state,
-            });
-          }
-        });
-
-        setUsers(nearbyUsers);
-      } catch (error) {
-        console.error('Error fetching nearby users:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchNearbyUsers();
-  }, [session, cityInfo]);
-
-  return { users, isLoading };
+// 주변 사용자 목록 갱신이 필요할 때 호출할 invalidate 함수
+export const invalidateNearbyUsers = (city: string, state: string, userId: string) => {
+  const queryClient = useQueryClient();
+  return queryClient.invalidateQueries({
+    queryKey: ['nearbyUsers', city, state, userId],
+  });
 };

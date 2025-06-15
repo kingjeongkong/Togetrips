@@ -1,55 +1,76 @@
 'use client';
 
-import { db } from '@/lib/firebase-config';
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
-export const useSendRequest = (receiverId: string) => {
+interface SendRequestParams {
+  senderId: string;
+  receiverId: string;
+  message?: string;
+}
+
+const checkRequestByStatus = async (userAId: string, userBId: string, status: string) => {
+  const url = `/api/requests?userAId=${userAId}&userBId=${userBId}&status=${status}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to check request status.');
+  const reqs = await res.json();
+  return reqs.length > 0;
+};
+
+const sendRequest = async ({ senderId, receiverId, message }: SendRequestParams) => {
+  const response = await fetch('/api/requests', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      senderId,
+      receiverId,
+      message,
+    }),
+  });
+
+  if (!response.ok) {
+    toast.error('Failed to send request. Please try again.');
+  }
+
+  return response.json();
+};
+
+export const useSendRequest = (otherUserId: string) => {
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
-  const [hasExistingRequest, setHasExistingRequest] = useState(false);
+  const userId = session?.user?.id;
 
-  useEffect(() => {
-    const checkExistingRequest = async () => {
-      if (!session?.user?.id) return;
+  const { data: hasExistingRequest = false, refetch: updateExistingRequest } = useQuery({
+    queryKey: ['existingRequest', otherUserId, userId],
+    queryFn: async () => {
+      if (!userId) return false;
+      return checkRequestByStatus(userId, otherUserId, 'pending');
+    },
+    enabled: !!otherUserId && !!userId,
+  });
 
-      try {
-        const requestsRef = collection(db, 'requests');
-        const q = query(
-          requestsRef,
-          where('senderId', '==', session.user.id),
-          where('receiverId', '==', receiverId),
-          where('status', '==', 'pending'),
-        );
+  const sendRequestMutation = async (message?: string) => {
+    if (!userId) throw new Error('Login required.');
 
-        const querySnapshot = await getDocs(q);
-        setHasExistingRequest(!querySnapshot.empty);
-      } catch (error) {
-        console.error('Error checking existing request:', error);
-      }
-    };
+    const result = await sendRequest({
+      senderId: userId,
+      receiverId: otherUserId,
+      message,
+    });
 
-    checkExistingRequest();
-  }, [session, receiverId]);
-
-  const sendRequest = async (message: string) => {
-    if (!session?.user?.id) return;
-
-    try {
-      await addDoc(collection(db, 'requests'), {
-        senderId: session.user.id,
-        receiverId,
-        message,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      });
-
-      setHasExistingRequest(true);
-    } catch (error) {
-      console.error('Error sending request:', error);
-      throw error;
+    if (result.ok) {
+      updateExistingRequest();
+      queryClient.invalidateQueries({ queryKey: ['existingRequest', otherUserId, userId] });
     }
+
+    return result;
   };
 
-  return { sendRequest, hasExistingRequest };
+  return {
+    sendRequest: sendRequestMutation,
+    hasExistingRequest,
+  };
 };
