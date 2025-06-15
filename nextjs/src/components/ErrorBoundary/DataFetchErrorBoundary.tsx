@@ -42,10 +42,10 @@ class DataFetchErrorBoundary extends Component<Props, State> {
       return (
         <div className="p-4 bg-red-50 rounded-lg">
           <h2 className="text-lg font-semibold text-red-600 mb-2">
-            데이터를 불러오는 중 오류가 발생했습니다
+            An error occurred while fetching data
           </h2>
           <p className="text-sm text-red-500 mb-2">
-            {this.state.error?.message || '예기치 않은 오류가 발생했습니다'}
+            {this.state.error?.message || 'An unexpected error has occurred'}
           </p>
           {process.env.NODE_ENV === 'development' && (
             <pre className="bg-red-100 p-2 rounded text-xs overflow-auto max-h-40">
@@ -56,7 +56,7 @@ class DataFetchErrorBoundary extends Component<Props, State> {
             onClick={() => window.location.reload()}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
           >
-            새로고침
+            Refresh
           </button>
         </div>
       );

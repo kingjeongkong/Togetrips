@@ -1,13 +1,17 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import { useUserProfile } from '@/features/shared/hooks/useUserProfile';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import useProfile from '../hooks/useProfile';
 
-const HomeProfile = () => {
-  const { profile, isLoading } = useUserProfile();
+interface HomeProfileProps {
+  userId: string;
+}
+
+const HomeProfile = ({ userId }: HomeProfileProps) => {
+  const { profile, isLoading } = useProfile(userId);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [maxLength, setMaxLength] = useState(200);
   const shouldShowMoreButton = profile?.bio && profile.bio.length > maxLength;
@@ -17,7 +21,6 @@ const HomeProfile = () => {
       if (window.innerWidth > 786) setMaxLength(200);
       else setMaxLength(50);
     };
-
     updateMaxLength();
     window.addEventListener('resize', updateMaxLength);
 
@@ -41,7 +44,6 @@ const HomeProfile = () => {
         className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg"
         alt="Profile"
       />
-
       <div className="flex flex-col justify-center flex-grow ml-3 md:ml-6">
         <h1 className="text-lg font-semibold md:text-2xl text-black">{profile?.name}</h1>
         <p className="text-xs md:text-base text-orange-400">
@@ -49,7 +51,6 @@ const HomeProfile = () => {
         </p>
         <p className="text-sm md:text-base text-gray-800">
           {showFullDescription ? profile?.bio : `${profile?.bio?.slice(0, maxLength)}`}
-
           {shouldShowMoreButton && (
             <button
               onClick={() => setShowFullDescription((prev) => !prev)}
