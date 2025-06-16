@@ -35,7 +35,7 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
       <div className="overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6">
         <div className="flex">
           <Image
-            src={profile?.image || imageURL || '/default-profile.png'}
+            src={profile?.image || imageURL || '/default-traveler.png'}
             width={64}
             height={64}
             className="flex-shrink-0 w-12 h-12 rounded-full mr-2 md:w-16 md:h-16 md:mr-4"

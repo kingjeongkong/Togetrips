@@ -26,7 +26,7 @@ const HomeProfile = () => {
     return () => window.removeEventListener('resize', updateMaxLength);
   }, []);
 
-  if (isLoading) {
+  if (isLoading || !profile) {
     return (
       <div className="pl-16 pt-5">
         <LoadingIndicator color="#6366f1" size={40} />
@@ -37,7 +37,7 @@ const HomeProfile = () => {
   return (
     <div className="flex justify-between items-center w-full pl-6 pr-3 md:pr-16">
       <Image
-        src={profile?.image || '/default-profile.png'}
+        src={profile?.image || '/default-traveler.png'}
         width={80}
         height={80}
         className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg"
