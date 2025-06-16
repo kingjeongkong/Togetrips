@@ -1,16 +1,9 @@
+'use client';
+
+import type { User } from '@/features/shared/types/User';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-interface Profile {
-  id: string;
-  name: string;
-  image: string;
-  bio: string;
-  tags: string;
-  city: string;
-  state: string;
-}
-
-const fetchProfile = async (userId: string): Promise<Profile> => {
+const fetchProfile = async (userId: string): Promise<User> => {
   const response = await fetch(`/api/profile?userId=${userId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch profile.');
@@ -18,10 +11,14 @@ const fetchProfile = async (userId: string): Promise<Profile> => {
   return response.json();
 };
 
-export default function useProfile(userId: string) {
+export default function useProfile(userId: string | undefined) {
   const { data, isLoading } = useQuery({
     queryKey: ['profile', userId],
-    queryFn: () => fetchProfile(userId),
+    queryFn: () => {
+      if (!userId) return Promise.reject(new Error('No userId'));
+      return fetchProfile(userId);
+    },
+    enabled: !!userId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     throwOnError: true,

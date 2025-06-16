@@ -6,19 +6,16 @@ import HomeProfile from '@/features/home/components/HomeProfile';
 import TravelerCardList from '@/features/home/components/TravelerCardList';
 import { useUserLocation } from '@/features/home/hooks/useUserLocation';
 import Sidebar from '@/features/shared/components/Sidebar';
-import { useSession } from 'next-auth/react';
 
 export default function Home() {
   const { currentLocation, cityInfo, loading, updateLocation } = useUserLocation();
-  const { data: session } = useSession();
-  const userId = session?.user?.id || '';
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
       <main className="flex-1 flex flex-col pt-16 md:pt-5 md:pl-60 space-y-10 overflow-y-auto pb-20 md:pb-5">
         <DataFetchErrorBoundary>
-          <HomeProfile userId={userId} />
+          <HomeProfile />
         </DataFetchErrorBoundary>
 
         <CurrentLocationMap

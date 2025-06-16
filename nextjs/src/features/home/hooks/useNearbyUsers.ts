@@ -1,17 +1,8 @@
 'use client';
 
+import type { User } from '@/features/shared/types/User';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-
-interface User {
-  id: string;
-  name: string;
-  image: string;
-  bio: string;
-  tags: string;
-  city: string;
-  state: string;
-}
 
 const fetchNearbyUsers = async (city: string, state: string, userId: string): Promise<User[]> => {
   const response = await fetch(`/api/nearby-users?city=${city}&state=${state}&userId=${userId}`);

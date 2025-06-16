@@ -1,23 +1,12 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import TravelerCard from '@/features/home/components/TravelerCard';
-import useNearbyUsers from '@/features/home/hooks/useNearbyUsers';
+import type { User } from '@/features/shared/types/User';
+import useNearbyUsers from '../hooks/useNearbyUsers';
+import TravelerCard from './TravelerCard';
 
 interface TravelerCardListProps {
   cityInfo: { city: string; state: string };
-}
-
-interface User {
-  id: string;
-  name: string;
-  image: string;
-  bio: string;
-  tags: string;
-  location?: {
-    city: string;
-    state: string;
-  };
 }
 
 const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
@@ -34,7 +23,7 @@ const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
           <TravelerCard
             key={user.id || index}
             travelerID={user.id}
-            photoURL={user.image}
+            imageURL={user.image}
             name={user.name}
             bio={user.bio}
             tags={user.tags}

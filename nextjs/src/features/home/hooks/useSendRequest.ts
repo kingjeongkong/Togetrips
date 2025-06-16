@@ -1,14 +1,12 @@
 'use client';
 
+import type { Request } from '@/features/shared/types/Request';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 
-interface SendRequestParams {
-  senderId: string;
-  receiverId: string;
-  message?: string;
-}
+// Request 타입에서 필요한 필드만 Pick
+export type SendRequestParams = Pick<Request, 'senderId' | 'receiverId' | 'message'>;
 
 const checkRequestByStatus = async (userAId: string, userBId: string, status: string) => {
   const url = `/api/requests?userAId=${userAId}&userBId=${userBId}&status=${status}`;
@@ -50,6 +48,8 @@ export const useSendRequest = (otherUserId: string) => {
       return checkRequestByStatus(userId, otherUserId, 'pending');
     },
     enabled: !!otherUserId && !!userId,
+    staleTime: 5 * 60 * 1000, // 5분
+    gcTime: 10 * 60 * 1000, // 10분
   });
 
   const sendRequestMutation = async (message?: string) => {

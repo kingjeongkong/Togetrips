@@ -4,17 +4,18 @@ import RequestModal from '@/features/home/components/RequestModal';
 import useProfile from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
+import Image from 'next/image';
 import { useState } from 'react';
 
 interface TravelCardProps {
   travelerID: string;
-  photoURL?: string;
+  imageURL?: string;
   name?: string;
   bio?: string;
   tags?: string;
 }
 
-const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps) => {
+const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { profile } = useProfile(travelerID);
   const { sendRequest, hasExistingRequest } = useSendRequest(travelerID);
@@ -33,8 +34,10 @@ const TravelerCard = ({ travelerID, photoURL, name, bio, tags }: TravelCardProps
     <>
       <div className="overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6">
         <div className="flex">
-          <img
-            src={profile?.image || photoURL || '/default-profile.png'}
+          <Image
+            src={profile?.image || imageURL || '/default-profile.png'}
+            width={64}
+            height={64}
             className="flex-shrink-0 w-12 h-12 rounded-full mr-2 md:w-16 md:h-16 md:mr-4"
             alt={profile?.name || name || 'Traveler'}
           />
