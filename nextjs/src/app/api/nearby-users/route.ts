@@ -23,19 +23,34 @@ export async function GET(req: NextRequest) {
 
   // 2. accepted/declined 상태의 요청이 있는 사용자 제외
   const requestsRef = collection(db, 'requests');
-  const requestsSnapshot = await getDocs(requestsRef);
-  const requests = requestsSnapshot.docs.map((doc) => doc.data());
+  const filteredUsers = await Promise.all(
+    users.map(async (user) => {
+      // 내가 보낸 요청
+      const sentQuery = query(
+        requestsRef,
+        where('senderID', '==', userId),
+        where('receiverID', '==', user.id),
+        where('status', 'in', ['accepted', 'declined']),
+      );
+      // 상대가 나에게 보낸 요청
+      const receivedQuery = query(
+        requestsRef,
+        where('senderID', '==', user.id),
+        where('receiverID', '==', userId),
+        where('status', 'in', ['accepted', 'declined']),
+      );
 
-  const filteredUsers = users.filter((user) => {
-    // 내가 보낸 요청 또는 상대방이 나에게 보낸 요청 중 accepted/declined 상태가 있는지 확인
-    const hasCompletedRequest = requests.some(
-      (req) =>
-        ((req.senderId === userId && req.receiverId === user.id) ||
-          (req.senderId === user.id && req.receiverId === userId)) &&
-        (req.status === 'accepted' || req.status === 'declined'),
-    );
-    return !hasCompletedRequest;
-  });
+      const [sentSnap, receivedSnap] = await Promise.all([
+        getDocs(sentQuery),
+        getDocs(receivedQuery),
+      ]);
+      const hasCompletedRequest = !sentSnap.empty || !receivedSnap.empty;
 
-  return NextResponse.json(filteredUsers);
+      return { user, hasCompletedRequest };
+    }),
+  );
+
+  const result = filteredUsers.filter((item) => !item.hasCompletedRequest).map((item) => item.user);
+
+  return NextResponse.json(result);
 }
