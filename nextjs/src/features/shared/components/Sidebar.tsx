@@ -21,7 +21,7 @@ const Sidebar = () => {
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
     { title: 'Chat', icon: MdChat, to: '/chat' },
-    { title: 'Requests', icon: FaBell, to: '/requests' },
+    { title: 'Requests', icon: FaBell, to: '/request' },
     { title: 'Profile', icon: FaUserAlt, to: '/profile' },
   ];
 
