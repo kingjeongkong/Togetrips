@@ -1,14 +1,11 @@
 import { db } from '@/lib/firebase-config';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const city = searchParams.get('city');
-  const state = searchParams.get('state');
-  const userId = searchParams.get('userId');
-  if (!city || !state || !userId) return NextResponse.json([], { status: 400 });
-
+/**
+ * 같은 도시/주에 있는 주변 유저 목록을 가져온다.
+ * 본인 제외, accepted/declined 상태의 요청이 있는 유저 제외(양방향)
+ */
+export async function fetchNearbyUsers(city: string, state: string, userId: string) {
   // 1. 같은 도시의 모든 사용자 가져오기 (본인 제외)
   const usersRef = collection(db, 'users');
   const q = query(
@@ -21,7 +18,7 @@ export async function GET(req: NextRequest) {
     .map((doc) => ({ id: doc.id, ...doc.data() }))
     .filter((user) => user.id !== userId);
 
-  // 2. accepted/declined 상태의 요청이 있는 사용자 제외
+  // 2. accepted/declined 상태의 요청이 있는 사용자 제외 (양방향)
   const requestsRef = collection(db, 'requests');
   const filteredUsers = await Promise.all(
     users.map(async (user) => {
@@ -39,18 +36,14 @@ export async function GET(req: NextRequest) {
         where('receiverID', '==', userId),
         where('status', 'in', ['accepted', 'declined']),
       );
-
       const [sentSnap, receivedSnap] = await Promise.all([
         getDocs(sentQuery),
         getDocs(receivedQuery),
       ]);
       const hasCompletedRequest = !sentSnap.empty || !receivedSnap.empty;
-
       return { user, hasCompletedRequest };
     }),
   );
 
-  const result = filteredUsers.filter((item) => !item.hasCompletedRequest).map((item) => item.user);
-
-  return NextResponse.json(result);
+  return filteredUsers.filter((item) => !item.hasCompletedRequest).map((item) => item.user);
 }

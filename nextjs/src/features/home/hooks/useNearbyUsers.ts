@@ -1,16 +1,9 @@
 'use client';
 
-import type { User } from '@/features/shared/types/User';
+import { User } from '@/features/shared/types/User';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-
-const fetchNearbyUsers = async (city: string, state: string, userId: string): Promise<User[]> => {
-  const response = await fetch(`/api/nearby-users?city=${city}&state=${state}&userId=${userId}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch nearby users.');
-  }
-  return response.json();
-};
+import { fetchNearbyUsers } from '../services/nearbyUserService';
 
 export default function useNearbyUsers(city: string, state: string) {
   const { data: session } = useSession();
@@ -29,7 +22,7 @@ export default function useNearbyUsers(city: string, state: string) {
   });
 
   return {
-    users: data || [],
+    users: (data || []) as User[],
     isLoading,
   };
 }
