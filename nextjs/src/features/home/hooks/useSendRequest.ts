@@ -1,13 +1,16 @@
 'use client';
 
+import {
+  createRequest,
+  fetchRequestsBetweenUsers,
+} from '@/features/shared/services/requestService';
 import type { Request } from '@/features/shared/types/Request';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
-import { createRequest, fetchRequestsBetweenUsers } from '../services/requestService';
 
 // Request 타입에서 필요한 필드만 Pick
-export type SendRequestParams = Pick<Request, 'senderId' | 'receiverId' | 'message'>;
+export type SendRequestParams = Pick<Request, 'senderID' | 'receiverID' | 'message'>;
 
 const checkRequestByStatus = async (userAId: string, userBId: string, status: string) => {
   if (!userAId || !userBId) return false;
@@ -15,9 +18,9 @@ const checkRequestByStatus = async (userAId: string, userBId: string, status: st
   return reqs.length > 0;
 };
 
-const sendRequest = async ({ senderId, receiverId, message }: SendRequestParams) => {
+const sendRequest = async ({ senderID, receiverID, message }: SendRequestParams) => {
   try {
-    await createRequest({ senderId, receiverId, message: message || '' });
+    await createRequest({ senderID, receiverID, message: message || '' });
     return { ok: true };
   } catch (error) {
     toast.error('Failed to send request. Please try again.');
@@ -45,8 +48,8 @@ export const useSendRequest = (otherUserId: string) => {
     if (!userId || !otherUserId) return { ok: false };
 
     const result = await sendRequest({
-      senderId: userId as string,
-      receiverId: otherUserId as string,
+      senderID: userId as string,
+      receiverID: otherUserId as string,
       message,
     });
 
