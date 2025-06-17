@@ -2,7 +2,9 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import type { User } from '@/features/shared/types/User';
-import useNearbyUsers from '../hooks/useNearbyUsers';
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { fetchNearbyUsers } from '../services/nearbyUserService';
 import TravelerCard from './TravelerCard';
 
 interface TravelerCardListProps {
@@ -10,7 +12,22 @@ interface TravelerCardListProps {
 }
 
 const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
-  const { users, isLoading } = useNearbyUsers(cityInfo.city, cityInfo.state);
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['nearbyUsers', cityInfo.city, cityInfo.state, userId],
+    queryFn: () => {
+      if (!userId) return [];
+      return fetchNearbyUsers(cityInfo.city, cityInfo.state, userId);
+    },
+    enabled: !!userId && !!cityInfo.city && !!cityInfo.state,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    throwOnError: true,
+  });
+
+  const userList = users as User[];
 
   return (
     <div className="grid grid-cols-2 gap-2 w-full px-2 md:grid-cols-3 md:gap-8 md:px-10">
@@ -19,7 +36,7 @@ const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
           <LoadingIndicator color="#f97361" size={60} />
         </div>
       ) : (
-        users?.map((user: User, index: number) => (
+        userList.map((user, index) => (
           <TravelerCard
             key={user.id || index}
             travelerID={user.id}
