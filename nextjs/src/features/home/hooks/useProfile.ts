@@ -1,14 +1,14 @@
 'use client';
 
+import { profileService } from '@/features/shared/services/profileService';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchProfile } from '../services/profileService';
 
 export default function useProfile(userId: string | undefined) {
   const { data, isLoading } = useQuery({
     queryKey: ['profile', userId],
     queryFn: () => {
       if (!userId) return Promise.reject(new Error('No userId'));
-      return fetchProfile(userId);
+      return profileService.getProfile(userId);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,

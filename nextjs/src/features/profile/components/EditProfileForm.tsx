@@ -10,8 +10,16 @@ interface EditProfileFormProps {
 }
 
 const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormProps) => {
-  const [formData, setFormData] = useState(initialData);
-  const [previewImage, setPreviewImage] = useState<string | null>(initialData.image);
+  // 기본값 제공
+  const defaultData: EditableProfileFields = {
+    name: '',
+    image: '',
+    tags: '',
+    bio: '',
+  };
+
+  const [formData, setFormData] = useState(initialData || defaultData);
+  const [previewImage, setPreviewImage] = useState<string | null>(initialData?.image || null);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,7 +60,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
       <form onSubmit={handleSubmit} className="flex flex-col w-full gap-4 items-center md:pt-5">
         <div className="relative">
           <Image
-            src={previewImage || initialData.image}
+            src={previewImage || initialData?.image || '/default-traveler.png'}
             width={200}
             height={200}
             alt="profile"
@@ -73,6 +81,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           className="text-2xl md:text-3xl font-semibold text-center bg-transparent border-b-2 border-indigo-500 focus:outline-none text-black"
+          placeholder="Enter your name"
         />
 
         <input
@@ -88,6 +97,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
           className="text-gray-600 w-4/5 h-72 text-base md:w-1/2 md:text-lg p-2 border-none rounded focus:border-2 focus:border-indigo-500 bg-white"
           rows={4}
+          placeholder="Tell us about yourself..."
         />
 
         <div className="flex gap-4">
