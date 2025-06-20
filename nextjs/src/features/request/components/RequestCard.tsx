@@ -1,6 +1,11 @@
 'use client';
 
-import { acceptRequest, declineRequest } from '@/features/shared/services/requestService';
+import {
+  acceptRequest,
+  createChatRoom,
+  declineRequest,
+  revertRequestStatus,
+} from '@/features/shared/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
@@ -38,11 +43,25 @@ const RequestCard = ({ request }: RequestCardProps) => {
 
   const handleAccept = async () => {
     setIsProcessing(true);
+
+    // 1. Request 수락
     const success = await acceptRequest(request.id);
-    if (success) {
+    if (!success) {
+      setIsProcessing(false);
+      return;
+    }
+
+    // 2. Chat Room 생성
+    const chatRoomID = await createChatRoom([request.senderID, request.receiverID]);
+
+    if (chatRoomID) {
       onStatusChange();
       updateTravelerCard();
+    } else {
+      // ChatRoom 생성 실패 시 request 상태 pending으로 복구
+      await revertRequestStatus(request.id);
     }
+
     setIsProcessing(false);
   };
 
