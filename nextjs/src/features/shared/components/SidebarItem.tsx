@@ -12,7 +12,7 @@ interface SidebarItemProps {
 
 const SidebarItem = ({ title, icon: Icon, to }: SidebarItemProps) => {
   const pathname = usePathname();
-  const isActive = pathname === to;
+  const isActive = pathname.startsWith(to);
 
   return (
     <Link
