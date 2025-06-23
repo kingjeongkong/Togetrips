@@ -48,7 +48,7 @@ const ChatRoom = () => {
     if (!chatRoomID || !userId) return;
 
     // ChatRoom 입장 시 메시지 읽음 update
-    chatService.markMessagesAsRead(chatRoomID, userId);
+    chatService.markMessagesAsRead(chatRoomID);
 
     const unsubscribe = chatService.subscribeToMessages(
       chatRoomID,
@@ -68,7 +68,7 @@ const ChatRoom = () => {
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;
 
-    await chatService.sendMessage(chatRoomID, userId, message);
+    await chatService.sendMessage(chatRoomID, message);
   };
 
   if (isLoadingRoom || isLoadingProfile) {

@@ -127,15 +127,21 @@ export async function revertRequestStatus(requestID: string) {
  */
 export async function createChatRoom(participants: string[]) {
   try {
-    const newChatRoom = {
-      participants,
-      createdAt: new Date().toISOString(),
-      lastMessage: '',
-      lastMessageTime: new Date().toISOString(),
-    };
+    const response = await fetch('/api/chat/create-room', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ participants }),
+    });
 
-    const chatRoomRef = await addDoc(collection(db, 'chatRooms'), newChatRoom);
-    return chatRoomRef.id;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create chat room');
+    }
+
+    const data = await response.json();
+    return data.chatRoomID;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Error creating chat room:', error);

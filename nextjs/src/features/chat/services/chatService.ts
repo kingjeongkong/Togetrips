@@ -1,6 +1,5 @@
 import { db } from '@/lib/firebase-config';
 import {
-  addDoc,
   collection,
   doc,
   getDoc,
@@ -8,9 +7,7 @@ import {
   onSnapshot,
   orderBy,
   query,
-  updateDoc,
   where,
-  writeBatch,
 } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { ChatRoom, Message } from '../types/chatTypes';
@@ -47,22 +44,27 @@ export const chatService = {
     return null;
   },
 
-  async markMessagesAsRead(chatRoomID: string, userID: string, retries = 3): Promise<void> {
+  async markMessagesAsRead(chatRoomID: string, retries = 3): Promise<void> {
     try {
-      const q = query(
-        collection(db, `chatRooms/${chatRoomID}/messages`),
-        where('senderID', '!=', userID),
-        where('read', '==', false),
-      );
-
-      const snapshot = await getDocs(q);
-      const batch = writeBatch(db);
-
-      snapshot.docs.forEach((doc) => {
-        batch.update(doc.ref, { read: true });
+      const response = await fetch('/api/chat/mark-read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatRoomID,
+        }),
       });
 
-      await batch.commit();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to mark messages as read');
+      }
+
+      const result = await response.json();
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Marked ${result.updatedCount} messages as read`);
+      }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error marking messages as read:', error);
@@ -70,27 +72,29 @@ export const chatService = {
 
       if (retries > 0) {
         setTimeout(() => {
-          this.markMessagesAsRead(chatRoomID, userID, retries - 1);
+          this.markMessagesAsRead(chatRoomID, retries - 1);
         }, 500);
       }
     }
   },
 
-  async sendMessage(chatRoomID: string, senderID: string, content: string): Promise<boolean> {
+  async sendMessage(chatRoomID: string, content: string): Promise<boolean> {
     try {
-      const newMessage = {
-        senderID,
-        content,
-        timestamp: new Date().toISOString(),
-        read: false,
-      };
-
-      await addDoc(collection(db, `chatRooms/${chatRoomID}/messages`), newMessage);
-
-      await updateDoc(doc(db, 'chatRooms', chatRoomID), {
-        lastMessage: content,
-        lastMessageTime: new Date().toISOString(),
+      const response = await fetch('/api/chat/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatRoomID,
+          content,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send message');
+      }
 
       return true;
     } catch (error) {
