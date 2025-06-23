@@ -1,61 +1,56 @@
 'use client';
 
+import { profileService } from '@/features/shared/services/profileService';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
-import { db } from '@/lib/firebase-config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import type { User } from '@/features/shared/types/User';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-
-interface UserProfile {
-  name: string;
-  image: string;
-  bio: string;
-  tags: string;
-}
+import { toast } from 'react-toastify';
 
 export const useUserProfile = () => {
   const { data: session } = useSession();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const userId = session?.user?.id;
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!session?.user?.id) {
-        return;
-      }
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile', userId],
+    queryFn: () => (userId ? profileService.getProfile(userId) : null),
+    enabled: !!userId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+  });
 
-      try {
-        const userRef = doc(db, 'users', session.user.id);
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          setProfile(userDoc.data() as UserProfile);
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { mutateAsync: updateProfile } = useMutation({
+    mutationFn: async (updates: EditableProfileFields) => {
+      if (!userId) throw new Error('No user');
 
-    fetchProfile();
-  }, [session]);
+      // 이미지 파일이 있으면 업로드
+      const imageUrl = updates.photoFile
+        ? await profileService.uploadProfileImage(userId, updates.photoFile)
+        : updates.image;
 
-  const updateProfile = async (profileData: EditableProfileFields) => {
-    if (!session?.user?.id) return;
-    const userRef = doc(db, 'users', session.user.id);
-    // image 필드만 예시로 업데이트 (photoFile 업로드 등은 추후 구현)
-    await updateDoc(userRef, {
-      name: profileData.name,
-      image: profileData.image,
-      tags: profileData.tags,
-      bio: profileData.bio,
-    });
-    // 수정 후 최신 데이터 fetch
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      setProfile(userDoc.data() as UserProfile);
-    }
-  };
+      // photoFile 제외하고 업데이트할 데이터 준비
+      const { photoFile, ...updateData } = updates;
+      const dataToUpdate = { ...updateData, image: imageUrl };
+
+      await profileService.updateProfile(userId, dataToUpdate);
+
+      // 업데이트된 프로필 데이터 반환 (캐시 업데이트용)
+      return {
+        ...profile,
+        ...dataToUpdate,
+        updatedAt: new Date().toISOString(),
+      } as User;
+    },
+    onSuccess: (updatedProfile) => {
+      // 로컬 캐시 직접 업데이트 (네트워크 요청 없이)
+      queryClient.setQueryData(['profile', userId], updatedProfile);
+      toast.success('Profile updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update profile');
+    },
+  });
 
   return { profile, isLoading, updateProfile };
 };

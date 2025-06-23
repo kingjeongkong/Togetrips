@@ -49,6 +49,7 @@ export async function fetchRequestsBetweenUsers(
     where('status', 'in', status),
   );
   const snap = await getDocs(q);
+
   return snap.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Request, 'id'>) }))
     .filter(
@@ -66,15 +67,12 @@ export async function fetchRequestsBetweenUsers(
  * 특정 유저의 요청 목록 조회 (sender 프로필 포함)
  */
 export async function getMyRequests(userID: string) {
-  console.log('[getMyRequests] userID:', userID);
   const requestsRef = collection(db, 'requests');
   const q = query(requestsRef, where('receiverID', '==', userID));
   const snap = await getDocs(q);
-  console.log('[getMyRequests] docs count:', snap.docs.length);
   const requests = await Promise.all(
     snap.docs.map(async (docSnap) => {
       const data = docSnap.data() as any;
-      console.log('[getMyRequests] request doc:', data);
       let sender = null;
       if (data.senderID) {
         const senderRef = doc(db, 'users', data.senderID);
@@ -87,7 +85,6 @@ export async function getMyRequests(userID: string) {
       return { id: docSnap.id, ...data, sender };
     }),
   );
-  console.log('[getMyRequests] final requests:', requests);
   return requests.filter((req) => req.status === 'pending');
 }
 
@@ -107,4 +104,48 @@ export async function declineRequest(requestID: string) {
   const requestRef = doc(db, 'requests', requestID);
   await updateDoc(requestRef, { status: 'declined' });
   return true;
+}
+
+/**
+ * 요청 상태를 pending으로 되돌리기 (채팅방 생성 실패 시 사용)
+ */
+export async function revertRequestStatus(requestID: string) {
+  try {
+    const requestRef = doc(db, 'requests', requestID);
+    await updateDoc(requestRef, { status: 'pending' });
+    return true;
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error reverting request status:', error);
+    }
+    return false;
+  }
+}
+
+/**
+ * 채팅방 생성
+ */
+export async function createChatRoom(participants: string[]) {
+  try {
+    const response = await fetch('/api/chat/create-room', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ participants }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create chat room');
+    }
+
+    const data = await response.json();
+    return data.chatRoomID;
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error creating chat room:', error);
+    }
+    return null;
+  }
 }
