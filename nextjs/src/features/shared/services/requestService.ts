@@ -1,15 +1,6 @@
 import type { Request } from '@/features/shared/types/Request';
 import { db } from '@/lib/firebase-config';
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 
 /**
  * 요청 생성 (pending 상태로 추가)
@@ -89,63 +80,21 @@ export async function getMyRequests(userID: string) {
 }
 
 /**
- * 요청 수락 (status: 'accepted'로 변경)
+ * 요청에 응답 (수락 또는 거절) - 서버 API 호출
  */
-export async function acceptRequest(requestID: string) {
-  const requestRef = doc(db, 'requests', requestID);
-  await updateDoc(requestRef, { status: 'accepted' });
-  return true;
-}
+export async function respondToRequest(requestID: string, action: 'accept' | 'decline') {
+  const response = await fetch('/api/request/respond', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ requestID, action }),
+  });
 
-/**
- * 요청 거절 (status: 'declined'로 변경)
- */
-export async function declineRequest(requestID: string) {
-  const requestRef = doc(db, 'requests', requestID);
-  await updateDoc(requestRef, { status: 'declined' });
-  return true;
-}
-
-/**
- * 요청 상태를 pending으로 되돌리기 (채팅방 생성 실패 시 사용)
- */
-export async function revertRequestStatus(requestID: string) {
-  try {
-    const requestRef = doc(db, 'requests', requestID);
-    await updateDoc(requestRef, { status: 'pending' });
-    return true;
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error reverting request status:', error);
-    }
-    return false;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || `Failed to ${action} request`);
   }
-}
 
-/**
- * 채팅방 생성
- */
-export async function createChatRoom(participants: string[]) {
-  try {
-    const response = await fetch('/api/chat/create-room', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ participants }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create chat room');
-    }
-
-    const data = await response.json();
-    return data.chatRoomID;
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error creating chat room:', error);
-    }
-    return null;
-  }
+  return response.json();
 }
