@@ -9,12 +9,12 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const userId = session.user.id;
+    const currentUserId = session.user.id;
 
     // 1. pending 상태의 요청들 가져오기
     const requestsRef = adminDb.collection('requests');
     const requestsQuery = await requestsRef
-      .where('receiverID', '==', userId)
+      .where('receiverID', '==', currentUserId)
       .where('status', '==', 'pending')
       .get();
 

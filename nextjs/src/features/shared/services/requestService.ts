@@ -61,7 +61,7 @@ export async function fetchRequestsBetweenUsers(
     });
 }
 
-export async function getMyRequests(userID: string) {
+export async function getMyRequests() {
   const response = await fetch('/api/request/my-requests', {
     method: 'GET',
     headers: {
