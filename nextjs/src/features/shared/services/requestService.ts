@@ -1,6 +1,6 @@
 import type { Request } from '@/features/shared/types/Request';
 import { db } from '@/lib/firebase-config';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export async function createRequest({
   receiverID,
@@ -62,25 +62,20 @@ export async function fetchRequestsBetweenUsers(
 }
 
 export async function getMyRequests(userID: string) {
-  const requestsRef = collection(db, 'requests');
-  const q = query(requestsRef, where('receiverID', '==', userID));
-  const snap = await getDocs(q);
-  const requests = await Promise.all(
-    snap.docs.map(async (docSnap) => {
-      const data = docSnap.data() as any;
-      let sender = null;
-      if (data.senderID) {
-        const senderRef = doc(db, 'users', data.senderID);
-        const senderDoc = await getDoc(senderRef);
-        if (senderDoc.exists()) {
-          const { name, image, tags, location } = senderDoc.data();
-          sender = { name, image, tags, location };
-        }
-      }
-      return { id: docSnap.id, ...data, sender };
-    }),
-  );
-  return requests.filter((req) => req.status === 'pending');
+  const response = await fetch('/api/request/my-requests', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to fetch requests');
+  }
+
+  const data = await response.json();
+  return data.requests;
 }
 
 export async function respondToRequest(requestID: string, action: 'accept' | 'decline') {
