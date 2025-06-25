@@ -11,6 +11,7 @@ interface RequestModalProps {
 
 const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalProps) => {
   const [message, setMessage] = useState('');
+  const MAX_LENGTH = 500;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,11 +30,15 @@ const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalP
 
         <form onSubmit={handleSubmit}>
           <textarea
-            className="w-full h-32 p-3 border rounded-xl mb-4 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full h-32 p-3 border rounded-xl mb-2 resize-none focus:border-none focus:outline-none focus:ring-2 focus:ring-orange-500"
             placeholder="Write a message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            maxLength={MAX_LENGTH}
           />
+          <div className="text-right text-sm text-gray-500 mb-4">
+            {message.length} / {MAX_LENGTH}
+          </div>
 
           <div className="flex gap-3">
             <button
