@@ -19,7 +19,7 @@ const TravelerCardList = ({ cityInfo }: TravelerCardListProps) => {
     queryKey: ['nearbyUsers', cityInfo.city, cityInfo.state, userId],
     queryFn: () => {
       if (!userId) return [];
-      return fetchNearbyUsers(cityInfo.city, cityInfo.state, userId);
+      return fetchNearbyUsers(cityInfo.city, cityInfo.state);
     },
     enabled: !!userId && !!cityInfo.city && !!cityInfo.state,
     staleTime: 5 * 60 * 1000,
