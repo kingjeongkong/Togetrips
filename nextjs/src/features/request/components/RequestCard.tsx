@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  acceptRequest,
-  createChatRoom,
-  declineRequest,
-  revertRequestStatus,
-} from '@/features/shared/services/requestService';
+import { respondToRequest } from '@/features/shared/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
@@ -43,36 +38,34 @@ const RequestCard = ({ request }: RequestCardProps) => {
 
   const handleAccept = async () => {
     setIsProcessing(true);
-
-    // 1. Request 수락
-    const success = await acceptRequest(request.id);
-    if (!success) {
-      setIsProcessing(false);
-      return;
-    }
-
-    // 2. Chat Room 생성
-    const chatRoomID = await createChatRoom([request.senderID, request.receiverID]);
-
-    if (chatRoomID) {
+    try {
+      await respondToRequest(request.id, 'accept');
       onStatusChange();
       updateTravelerCard();
-    } else {
-      // ChatRoom 생성 실패 시 request 상태 pending으로 복구
-      await revertRequestStatus(request.id);
+    } catch (error) {
+      // TODO: 사용자에게 에러를 알려주는 토스트 메시지 추가
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to accept request:', error);
+      }
+    } finally {
+      setIsProcessing(false);
     }
-
-    setIsProcessing(false);
   };
 
   const handleDecline = async () => {
     setIsProcessing(true);
-    const success = await declineRequest(request.id);
-    if (success) {
+    try {
+      await respondToRequest(request.id, 'decline');
       onStatusChange();
       updateTravelerCard();
+    } catch (error) {
+      // TODO: 사용자에게 에러를 알려주는 토스트 메시지 추가
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to decline request:', error);
+      }
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   return (

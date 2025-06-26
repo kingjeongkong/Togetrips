@@ -4,65 +4,42 @@ import {
   createRequest,
   fetchRequestsBetweenUsers,
 } from '@/features/shared/services/requestService';
-import type { Request } from '@/features/shared/types/Request';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
-
-// Request 타입에서 필요한 필드만 Pick
-export type SendRequestParams = Pick<Request, 'senderID' | 'receiverID' | 'message'>;
-
-const checkRequestByStatus = async (userAId: string, userBId: string, status: string) => {
-  if (!userAId || !userBId) return false;
-  const reqs = await fetchRequestsBetweenUsers(userAId, userBId, [status]);
-  return reqs.length > 0;
-};
-
-const sendRequest = async ({ senderID, receiverID, message }: SendRequestParams) => {
-  try {
-    await createRequest({ senderID, receiverID, message: message || '' });
-    return { ok: true };
-  } catch (error) {
-    toast.error('Failed to send request. Please try again.');
-    return { ok: false };
-  }
-};
 
 export const useSendRequest = (otherUserId: string) => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const currentUserId = session?.user?.id;
 
-  const { data: hasExistingRequest = false, refetch: updateExistingRequest } = useQuery({
-    queryKey: ['existingRequest', otherUserId, userId],
+  // 서버의 중복 체크와 별개로, UI 업데이트를 위해 기존 요청 상태를 조회
+  const { data: hasExistingRequest, isLoading: isChecking } = useQuery({
+    queryKey: ['existingRequest', otherUserId, currentUserId],
     queryFn: async () => {
-      if (!userId || !otherUserId) return false;
-      return checkRequestByStatus(userId, otherUserId, 'pending');
+      if (!currentUserId) return false;
+      const requests = await fetchRequestsBetweenUsers(currentUserId, otherUserId, ['pending']);
+      return requests.length > 0;
     },
-    enabled: !!otherUserId && !!userId,
-    staleTime: 5 * 60 * 1000, // 5분
-    gcTime: 10 * 60 * 1000, // 10분
+    enabled: !!currentUserId && !!otherUserId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  const sendRequestMutation = async (message?: string) => {
-    if (!userId || !otherUserId) return { ok: false };
-
-    const result = await sendRequest({
-      senderID: userId as string,
-      receiverID: otherUserId as string,
-      message,
-    });
-
-    if (result.ok) {
-      updateExistingRequest();
-      queryClient.invalidateQueries({ queryKey: ['existingRequest', otherUserId, userId] });
-    }
-
-    return result;
-  };
+  const { mutate: sendRequest, isPending: isSending } = useMutation({
+    mutationFn: (message: string) => createRequest({ receiverID: otherUserId, message }),
+    onSuccess: () => {
+      toast.success('Request sent successfully!');
+      queryClient.setQueryData(['existingRequest', otherUserId, currentUserId], true);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to send request.');
+    },
+  });
 
   return {
-    sendRequest: sendRequestMutation,
-    hasExistingRequest,
+    sendRequest,
+    isLoading: isSending || isChecking,
+    isRequestSent: hasExistingRequest,
   };
 };

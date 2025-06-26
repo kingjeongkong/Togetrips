@@ -1,5 +1,6 @@
 'use client';
 
+import LoadingIndicator from '@/components/LoadingIndicator';
 import RequestModal from '@/features/home/components/RequestModal';
 import useProfile from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
@@ -18,9 +19,9 @@ interface TravelCardProps {
 const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { profile } = useProfile(travelerID);
-  const { sendRequest, hasExistingRequest } = useSendRequest(travelerID);
+  const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
 
-  const handleSendRequest = async (message?: string) => {
+  const handleSendRequest = async (message: string) => {
     try {
       await sendRequest(message);
       setIsModalOpen(false);
@@ -56,11 +57,12 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
         </p>
 
         <button
-          className="w-full py-2 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full py-2 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           onClick={() => setIsModalOpen(true)}
-          disabled={hasExistingRequest}
+          disabled={isRequestSent || isLoading}
         >
-          {hasExistingRequest ? 'Request Pending' : 'Send Request'}
+          {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
+          {isLoading ? 'Loading...' : isRequestSent ? 'Request Pending' : 'Send Request'}
         </button>
       </div>
 

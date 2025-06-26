@@ -13,11 +13,9 @@ Next.js 프로젝트 폴더 구조 및 관심사 분리 규칙
 
 3. components/
 여러 도메인/페이지에서 재사용되는 공통 UI 컴포넌트만 위치시킨다.
-예시: Button, Modal, Spinner, ErrorBoundary 등
 
 4. lib/
 외부 서비스 연동, 유틸리티, API 등 전역적으로 사용되는 함수/설정만 위치시킨다.
-예시: firebase.ts, api.ts
 
 5. store/
 전역 상태 관리(zustand, recoil 등) 관련 파일만 위치시킨다.
@@ -28,7 +26,7 @@ Next.js 프로젝트 폴더 구조 및 관심사 분리 규칙
 
 7. import 규칙
 app/ 하위에서는 반드시 features/도메인/ 또는 components/에서 필요한 컴포넌트/로직만 import해서 사용한다.
-features/도메인/ 하위에서는 다른 도메인의 내부 파일을 직접 import하지 않는다(공통이 필요하면 components/나 lib/로 승격).
+features/도메인/ 하위에서는 다른 도메인의 내부 파일을 직접 import하지 않는다(공통이 필요하면 features/shared로 분리하거나, components/나 lib/로 승격).
 
 8. 기타
 폴더/파일 네이밍은 소문자+카멜케이스를 원칙으로 한다.
@@ -52,4 +50,5 @@ features/도메인/ 하위에서는 다른 도메인의 내부 파일을 직접 
    - 변수명, 함수명, 클래스명은 영어로 작성합니다
    - 의미가 명확한 이름을 사용합니다
    - 일관된 네이밍 컨벤션을 따릅니다 (camelCase, PascalCase 등)
+   - 다른 개발자가 읽어도 코드를 파악하기 쉽게 줄바꿈을 통해 가독성을 증가시킵니다.
 

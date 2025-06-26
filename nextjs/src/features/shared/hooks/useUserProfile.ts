@@ -26,14 +26,14 @@ export const useUserProfile = () => {
 
       // 이미지 파일이 있으면 업로드
       const imageUrl = updates.photoFile
-        ? await profileService.uploadProfileImage(userId, updates.photoFile)
+        ? await profileService.uploadProfileImage(updates.photoFile)
         : updates.image;
 
       // photoFile 제외하고 업데이트할 데이터 준비
       const { photoFile, ...updateData } = updates;
       const dataToUpdate = { ...updateData, image: imageUrl };
 
-      await profileService.updateProfile(userId, dataToUpdate);
+      await profileService.updateProfile(dataToUpdate);
 
       // 업데이트된 프로필 데이터 반환 (캐시 업데이트용)
       return {

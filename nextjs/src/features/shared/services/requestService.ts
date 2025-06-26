@@ -1,36 +1,28 @@
 import type { Request } from '@/features/shared/types/Request';
 import { db } from '@/lib/firebase-config';
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
-/**
- * 요청 생성 (pending 상태로 추가)
- */
 export async function createRequest({
-  senderID,
   receiverID,
   message,
 }: {
-  senderID: string;
   receiverID: string;
   message: string;
 }) {
-  const docRef = await addDoc(collection(db, 'requests'), {
-    senderID,
-    receiverID,
-    message,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
+  const response = await fetch('/api/request/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ receiverID, message }),
   });
-  return docRef.id;
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to send request');
+  }
+
+  return response.json();
 }
 
 /**
@@ -52,100 +44,53 @@ export async function fetchRequestsBetweenUsers(
 
   return snap.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Request, 'id'>) }))
-    .filter(
-      (req) =>
-        req.senderID &&
-        req.receiverID &&
-        req.status &&
-        ((req.senderID === userAID && req.receiverID === userBID) ||
-          (req.senderID === userBID && req.receiverID === userAID)) &&
-        status.includes(req.status),
-    );
-}
-
-/**
- * 특정 유저의 요청 목록 조회 (sender 프로필 포함)
- */
-export async function getMyRequests(userID: string) {
-  const requestsRef = collection(db, 'requests');
-  const q = query(requestsRef, where('receiverID', '==', userID));
-  const snap = await getDocs(q);
-  const requests = await Promise.all(
-    snap.docs.map(async (docSnap) => {
-      const data = docSnap.data() as any;
-      let sender = null;
-      if (data.senderID) {
-        const senderRef = doc(db, 'users', data.senderID);
-        const senderDoc = await getDoc(senderRef);
-        if (senderDoc.exists()) {
-          const { name, image, tags, location } = senderDoc.data();
-          sender = { name, image, tags, location };
-        }
+    .filter((req) => {
+      if (!req.senderID || !req.receiverID || !req.status) {
+        return false;
       }
-      return { id: docSnap.id, ...data, sender };
-    }),
-  );
-  return requests.filter((req) => req.status === 'pending');
-}
 
-/**
- * 요청 수락 (status: 'accepted'로 변경)
- */
-export async function acceptRequest(requestID: string) {
-  const requestRef = doc(db, 'requests', requestID);
-  await updateDoc(requestRef, { status: 'accepted' });
-  return true;
-}
+      const isBetweenUsers =
+        (req.senderID === userAID && req.receiverID === userBID) ||
+        (req.senderID === userBID && req.receiverID === userAID);
 
-/**
- * 요청 거절 (status: 'declined'로 변경)
- */
-export async function declineRequest(requestID: string) {
-  const requestRef = doc(db, 'requests', requestID);
-  await updateDoc(requestRef, { status: 'declined' });
-  return true;
-}
+      if (!isBetweenUsers) {
+        return false;
+      }
 
-/**
- * 요청 상태를 pending으로 되돌리기 (채팅방 생성 실패 시 사용)
- */
-export async function revertRequestStatus(requestID: string) {
-  try {
-    const requestRef = doc(db, 'requests', requestID);
-    await updateDoc(requestRef, { status: 'pending' });
-    return true;
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error reverting request status:', error);
-    }
-    return false;
-  }
-}
-
-/**
- * 채팅방 생성
- */
-export async function createChatRoom(participants: string[]) {
-  try {
-    const response = await fetch('/api/chat/create-room', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ participants }),
+      return status.includes(req.status);
     });
+}
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create chat room');
-    }
+export async function getMyRequests() {
+  const response = await fetch('/api/request/my-requests', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
-    const data = await response.json();
-    return data.chatRoomID;
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error creating chat room:', error);
-    }
-    return null;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to fetch requests');
   }
+
+  const data = await response.json();
+  return data.requests;
+}
+
+export async function respondToRequest(requestID: string, action: 'accept' | 'decline') {
+  const response = await fetch('/api/request/respond', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ requestID, action }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || `Failed to ${action} request`);
+  }
+
+  return response.json();
 }
