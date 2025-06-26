@@ -3,6 +3,18 @@ import { authOptions } from '@/lib/next-auth-config';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
+interface LocationData {
+  city: string;
+  state: string;
+}
+
+interface ProfileUpdates {
+  name?: string;
+  bio?: string;
+  tags?: string;
+  location?: LocationData;
+}
+
 // 기본 유효성 검사 함수들 (길이, 타입, 필수값)
 function validateName(name: string): boolean {
   return name.length >= 1 && name.length <= 50;
@@ -16,7 +28,7 @@ function validateTags(tags: string): boolean {
   return tags.length <= 200;
 }
 
-function validateLocation(location: any): boolean {
+function validateLocation(location: LocationData): boolean {
   if (!location) return false;
 
   // 타입 검사
@@ -70,10 +82,10 @@ export async function PUT(req: Request) {
     }
     const currentUserId = session.user.id;
 
-    const updates = await req.json();
+    const updates: ProfileUpdates = await req.json();
 
     // 업데이트할 필드들 검증
-    const validatedUpdates: any = {};
+    const validatedUpdates: Record<string, unknown> = {};
 
     // 이름 검증
     if (updates.name !== undefined) {
@@ -132,8 +144,19 @@ export async function PUT(req: Request) {
       message: 'Profile updated successfully',
       updatedFields: Object.keys(validatedUpdates),
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    // 에러 타입에 따른 적절한 에러 메시지 처리
+    let errorMessage = 'Internal Server Error';
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error && typeof error === 'object' && 'message' in error) {
+      errorMessage = String(error.message);
+    }
+
     console.error('Error updating profile:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

@@ -4,6 +4,8 @@ import { profileService } from '@/features/shared/services/profileService';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function useProfile(userId: string | undefined) {
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ['profile', userId],
     queryFn: () => {
@@ -16,14 +18,16 @@ export default function useProfile(userId: string | undefined) {
     throwOnError: true,
   });
 
+  // 프로필 수정 시 호출할 invalidate 함수
+  const invalidateProfile = () => {
+    if (userId) {
+      return queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+    }
+  };
+
   return {
     profile: data,
     isLoading,
+    invalidateProfile,
   };
 }
-
-// 프로필 수정 시 호출할 invalidate 함수
-export const invalidateProfile = (userId: string) => {
-  const queryClient = useQueryClient();
-  return queryClient.invalidateQueries({ queryKey: ['profile', userId] });
-};

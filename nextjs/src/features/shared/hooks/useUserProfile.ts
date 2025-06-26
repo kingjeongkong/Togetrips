@@ -30,7 +30,7 @@ export const useUserProfile = () => {
         : updates.image;
 
       // photoFile 제외하고 업데이트할 데이터 준비
-      const { photoFile, ...updateData } = updates;
+      const { photoFile: _, ...updateData } = updates;
       const dataToUpdate = { ...updateData, image: imageUrl };
 
       await profileService.updateProfile(dataToUpdate);

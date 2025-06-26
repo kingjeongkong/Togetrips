@@ -37,11 +37,16 @@ export const authOptions: NextAuthOptions = {
             email: userCredential.user.email,
             name: userCredential.user.displayName,
           };
-        } catch (error: any) {
-          if (error.code === 'auth/invalid-credential') {
+        } catch (error: unknown) {
+          if (
+            error instanceof Error &&
+            'code' in error &&
+            error.code === 'auth/invalid-credential'
+          ) {
             throw new Error('Invalid email or password.');
           }
-          throw new Error(error.message);
+          const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+          throw new Error(errorMessage);
         }
       },
     }),

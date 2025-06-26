@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
         updatedAt: new Date().toISOString(),
       });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return NextResponse.json({ success: false, message: errorMessage }, { status: 400 });
   }
 }

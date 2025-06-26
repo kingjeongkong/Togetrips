@@ -12,6 +12,19 @@ interface CityInfo {
   state: string;
 }
 
+interface GeocodingResult {
+  types: string[];
+  address_components: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
+}
+
+interface GeocodingResponse {
+  results: GeocodingResult[];
+}
+
 export const useUserLocation = () => {
   const [currentLocation, setCurrentLocation] = useState<Location>({
     lat: 37.5665,
@@ -43,10 +56,12 @@ export const useUserLocation = () => {
         throw new Error('Failed to fetch geocoding data.');
       }
 
-      const data = await response.json();
+      const data: GeocodingResponse = await response.json();
 
-      const cityResult = data.results.find((result: any) => result.types.includes('locality'));
-      const stateResult = data.results.find((result: any) =>
+      const cityResult = data.results.find((result: GeocodingResult) =>
+        result.types.includes('locality'),
+      );
+      const stateResult = data.results.find((result: GeocodingResult) =>
         result.types.includes('administrative_area_level_1'),
       );
 

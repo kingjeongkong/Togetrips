@@ -19,7 +19,7 @@ export const useAuth = () => {
 
     try {
       await signIn('google', { callbackUrl: '/home' });
-    } catch (error) {
+    } catch {
       setAuthError('An error occurred during Google sign in.');
     } finally {
       setIsLoading(false);
@@ -51,8 +51,10 @@ export const useAuth = () => {
       } else {
         setAuthError(data.message || 'Sign up failed.');
       }
-    } catch (error: any) {
-      setAuthError(error.message || 'An error occurred during sign up.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'An error occurred during sign up.';
+      setAuthError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -75,8 +77,10 @@ export const useAuth = () => {
       } else {
         router.push('/home');
       }
-    } catch (error: any) {
-      setAuthError(error.message || 'An error occurred during sign in.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'An error occurred during sign in.';
+      setAuthError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +92,7 @@ export const useAuth = () => {
     setIsLoading(true);
     try {
       await signOut({ callbackUrl: '/auth/signin' });
-    } catch (error) {
+    } catch {
       setAuthError('An error occurred during sign out.');
     } finally {
       setIsLoading(false);

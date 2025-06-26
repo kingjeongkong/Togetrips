@@ -4,6 +4,7 @@ import { profileService } from '@/features/shared/services/profileService';
 import type { User } from '@/features/shared/types/User';
 import { formatRelativeTime } from '@/utils/dateUtils';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { chatService } from '../services/chatService';
@@ -74,9 +75,11 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
       onClick={onClick}
     >
       <div className="items-center justify-center flex-shrink-0">
-        <img
+        <Image
           src={otherUserProfile.image || '/default-traveler.png'}
           alt={otherUserProfile.name}
+          width={48}
+          height={48}
           className="w-12 h-12 rounded-full"
         />
       </div>
