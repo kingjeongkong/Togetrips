@@ -1,5 +1,6 @@
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
+import { createHash } from 'crypto';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -184,6 +185,5 @@ export async function POST(req: Request) {
 
 // 파일 해시 계산 함수 (간단한 해시)
 async function calculateFileHash(buffer: Buffer): Promise<string> {
-  const crypto = require('crypto');
-  return crypto.createHash('md5').update(buffer).digest('hex');
+  return createHash('md5').update(buffer).digest('hex');
 }
