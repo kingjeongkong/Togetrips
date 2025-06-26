@@ -104,9 +104,28 @@ export async function POST(req: Request) {
     // 1. 현재 사용자의 기존 프로필 이미지 URL 가져오기
     const userRef = adminDb.collection('users').doc(currentUserId);
     const userDoc = await userRef.get();
-    const currentImageUrl = userDoc.data()?.image;
 
-    // 2. Firebase Storage에 업로드
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const currentData = userDoc.data();
+    const currentImageUrl = currentData?.image;
+
+    // 2. 이미지 변경사항 확인 (파일 해시 비교)
+    const fileHash = await calculateFileHash(buffer);
+    const currentImageHash = currentData?.imageHash;
+
+    // 같은 해시값이면 이미지가 동일함
+    if (currentImageHash && currentImageHash === fileHash) {
+      return NextResponse.json({
+        message: 'Image is identical to current profile image. No upload needed.',
+        imageUrl: currentImageUrl,
+        noChanges: true,
+      });
+    }
+
+    // 3. Firebase Storage에 업로드
     const bucket = adminStorage.bucket();
     const fileName = `profiles/${currentUserId}/${Date.now()}_${file.name}`;
     const fileUpload = bucket.file(fileName);
@@ -117,21 +136,23 @@ export async function POST(req: Request) {
         metadata: {
           uploadedBy: currentUserId,
           uploadedAt: new Date().toISOString(),
+          fileHash: fileHash, // 파일 해시 저장
         },
       },
     });
 
-    // 3. 영구 공개 URL 생성
+    // 4. 영구 공개 URL 생성
     await fileUpload.makePublic();
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
-    // 4. 사용자 프로필에 이미지 URL 업데이트
+    // 5. 사용자 프로필에 이미지 URL과 해시 업데이트
     await userRef.update({
       image: publicUrl,
+      imageHash: fileHash, // 파일 해시 저장
       updatedAt: new Date().toISOString(),
     });
 
-    // 5. 기존 이미지가 있으면 삭제 (스토리지 정리)
+    // 6. 기존 이미지가 있으면 삭제 (스토리지 정리)
     if (currentImageUrl && currentImageUrl.includes('storage.googleapis.com')) {
       try {
         // URL에서 파일 경로 추출
@@ -159,4 +180,10 @@ export async function POST(req: Request) {
     console.error('Error uploading profile image:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
+}
+
+// 파일 해시 계산 함수 (간단한 해시)
+async function calculateFileHash(buffer: Buffer): Promise<string> {
+  const crypto = require('crypto');
+  return crypto.createHash('md5').update(buffer).digest('hex');
 }
