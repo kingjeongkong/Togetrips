@@ -14,7 +14,7 @@ const RequestCardList = () => {
   const { data: requests = [], isLoading } = useQuery<(Request & { sender: RequestUserProfile })[]>(
     {
       queryKey: ['requests', userId],
-      queryFn: () => getMyRequests(userId!),
+      queryFn: () => getMyRequests(),
       enabled: !!userId,
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
