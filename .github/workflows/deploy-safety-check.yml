@@ -26,21 +26,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 10
 
-      - name: Get pnpm store path
-        id: pnpm-cache-path
-        run: echo "STORE_PATH=$(pnpm config get store-dir)" >> $GITHUB_OUTPUT
-
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ steps.pnpm-cache-path.outputs.STORE_PATH }}
+          path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
