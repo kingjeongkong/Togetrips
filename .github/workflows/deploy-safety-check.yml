@@ -36,23 +36,28 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('nextjs/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
+        working-directory: nextjs
         run: pnpm install
 
       - name: Code quality check
+        working-directory: nextjs
         run: pnpm lint
 
       - name: Type safety check
+        working-directory: nextjs
         run: pnpm type-check
 
       - name: Test execution
+        working-directory: nextjs
         run: pnpm test
 
       - name: Production build verification
+        working-directory: nextjs
         run: |
           START_TIME=$(date +%s)
           pnpm build
@@ -68,6 +73,7 @@ jobs:
           FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
 
       - name: Collect build metrics
+        working-directory: nextjs
         run: |
           BUILD_SIZE_RAW=$(du -sh .next/ | cut -f1)
           # 단위 변환 (K, M, G → KB, MB, GB)
