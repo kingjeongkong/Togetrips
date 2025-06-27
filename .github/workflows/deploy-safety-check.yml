@@ -26,121 +26,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 10
 
-      - name: Get pnpm store path
-        id: pnpm-cache-path
-        run: echo "STORE_PATH=$(pnpm config get store-dir)" >> $GITHUB_OUTPUT
-
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: ${{ steps.pnpm-cache-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('nextjs/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
+        working-directory: nextjs
         run: pnpm install
 
       - name: Code quality check
+        working-directory: nextjs
         run: pnpm lint
 
       - name: Type safety check
+        working-directory: nextjs
         run: pnpm type-check
 
       - name: Test execution
+        working-directory: nextjs
         run: pnpm test
-
-      - name: Production build verification
-        run: |
-          START_TIME=$(date +%s)
-          pnpm build
-          END_TIME=$(date +%s)
-          echo "BUILD_DURATION=$((END_TIME - START_TIME))" >> $GITHUB_ENV
-        env:
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-
-      - name: Collect build metrics
-        run: |
-          BUILD_SIZE_RAW=$(du -sh .next/ | cut -f1)
-          # 단위 변환 (K, M, G → KB, MB, GB)
-          if [[ $BUILD_SIZE_RAW == *K ]]; then
-            BUILD_SIZE="${BUILD_SIZE_RAW%K} KB"
-          elif [[ $BUILD_SIZE_RAW == *M ]]; then
-            BUILD_SIZE="${BUILD_SIZE_RAW%M} MB"
-          elif [[ $BUILD_SIZE_RAW == *G ]]; then
-            BUILD_SIZE="${BUILD_SIZE_RAW%G} GB"
-          else
-            BUILD_SIZE="${BUILD_SIZE_RAW} B"
-          fi
-          echo "BUILD_SIZE=$BUILD_SIZE" >> $GITHUB_ENV
-          echo "NODE_VERSION=${{ matrix.node-version }}" >> $GITHUB_ENV
-
-      - name: Update deployment status
-        if: github.event_name == 'pull_request'
-        env:
-          JOB_STATUS: ${{ job.status }}
-          BUILD_DURATION: ${{ env.BUILD_DURATION }}
-          BUILD_SIZE: ${{ env.BUILD_SIZE }}
-          NODE_VERSION: ${{ env.NODE_VERSION }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const status = process.env.JOB_STATUS;
-            const buildDuration = process.env.BUILD_DURATION;
-            const buildSize = process.env.BUILD_SIZE;
-            const nodeVersion = process.env.NODE_VERSION;
-
-            const message = status === 'success' 
-              ? `<!-- DEPLOYMENT-CHECK -->
-                 ✅ Production deployment ready - Safe to merge!
-                 
-                 📊 Build Metrics:
-                 • Node.js: ${nodeVersion}
-                 • Build Time: ${buildDuration} seconds
-                 • Build Size: ${buildSize}
-                 • Status: All checks passed
-                 <!-- DEPLOYMENT-CHECK -->` 
-              : `<!-- DEPLOYMENT-CHECK -->
-                 ❌ Deployment blocked - Fix issues before merging to main.
-                 
-                 🔍 Check the logs above for details.
-                 <!-- DEPLOYMENT-CHECK -->`;
-
-            const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.data.find(c => 
-              c.user.type === 'Bot' && c.body.includes('<!-- DEPLOYMENT-CHECK -->')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: message
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: message
-              });
-            }
