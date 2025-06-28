@@ -2,10 +2,14 @@
 
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { IconType } from 'react-icons';
 import { FaBell, FaHome, FaUserAlt } from 'react-icons/fa';
+import { FiSettings } from 'react-icons/fi';
 import { MdChat } from 'react-icons/md';
+import LogoutMenu from './LogoutMenu';
 
 interface MenuItem {
   title: string;
@@ -17,6 +21,7 @@ const Sidebar = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
@@ -46,6 +51,22 @@ const Sidebar = () => {
         {menuItems.map((item, index) => (
           <SidebarItem key={index} title={item.title} icon={item.icon} to={item.to} />
         ))}
+        <div className="hidden md:flex flex-col items-center w-full mt-auto mb-6 relative">
+          <button
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-sky-300 transition"
+            onClick={() => setSettingsOpen((prev) => !prev)}
+            aria-label="Settings"
+          >
+            <FiSettings className="w-6 h-6 text-gray-700" />
+          </button>
+          {settingsOpen && (
+            <LogoutMenu
+              onLogout={() => signOut({ callbackUrl: '/auth/signin' })}
+              onClose={() => setSettingsOpen(false)}
+              direction="up"
+            />
+          )}
+        </div>
       </div>
     </>
   );

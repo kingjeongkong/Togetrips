@@ -1,15 +1,43 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
+import LogoutMenu from '@/features/shared/components/LogoutMenu';
 import { useUserProfile } from '@/features/shared/hooks/useUserProfile';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
 import { splitHashTags } from '@/features/shared/utils/HashTags';
+import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FiEdit, FiSettings } from 'react-icons/fi';
 import EditProfileForm from './EditProfileForm';
 
+const ProfileHeaderActions = ({
+  settingsOpen,
+  setSettingsOpen,
+}: {
+  settingsOpen: boolean;
+  setSettingsOpen: (open: boolean) => void;
+}) => (
+  <div className="absolute top-4 right-4 md:top-7 md:right-7">
+    <button
+      className="p-2 rounded-full bg-indigo-500 hover:bg-indigo-600"
+      onClick={() => setSettingsOpen(!settingsOpen)}
+      aria-label="Settings"
+    >
+      <FiSettings className="w-6 h-6 md:w-8 md:h-8 text-white" />
+    </button>
+    {settingsOpen && (
+      <LogoutMenu
+        onLogout={() => signOut({ callbackUrl: '/auth/signin' })}
+        onClose={() => setSettingsOpen(false)}
+        direction="down"
+      />
+    )}
+  </div>
+);
+
 const MainProfile = () => {
   const { profile, isLoading, updateProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleSubmit = async (data: EditableProfileFields) => {
     await updateProfile(data);
@@ -26,9 +54,7 @@ const MainProfile = () => {
   if (isLoading || !profile) {
     return (
       <div className="flex flex-col items-center w-full pt-10 relative">
-        <button className="absolute top-4 right-4 md:top-7 md:right-7 p-2 rounded-full bg-indigo-500 hover:bg-indigo-600">
-          <FiSettings className="w-6 h-6 md:w-8 md:h-8 text-white" />
-        </button>
+        <ProfileHeaderActions settingsOpen={settingsOpen} setSettingsOpen={setSettingsOpen} />
         {loadingIndicator}
       </div>
     );
@@ -36,9 +62,7 @@ const MainProfile = () => {
 
   return (
     <div className="flex flex-col items-center w-full pt-10 relative">
-      <button className="absolute top-4 right-4 md:top-7 md:right-7 p-2 rounded-full bg-indigo-500 hover:bg-indigo-600">
-        <FiSettings className="w-6 h-6 md:w-8 md:h-8 text-white" />
-      </button>
+      <ProfileHeaderActions settingsOpen={settingsOpen} setSettingsOpen={setSettingsOpen} />
 
       {isEditing ? (
         <EditProfileForm
