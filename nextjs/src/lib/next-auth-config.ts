@@ -105,7 +105,6 @@ export const authOptions: NextAuthOptions = {
             {
               name: user.name || '',
               email: user.email || '',
-              photoURL: user.image || '',
               tags: '',
               bio: '',
               location: { city: '', state: '' },
