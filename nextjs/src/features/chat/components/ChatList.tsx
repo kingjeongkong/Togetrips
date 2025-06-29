@@ -39,13 +39,19 @@ const ChatList = () => {
       )}
 
       <div className="flex-1 overflow-y-auto">
-        {chatRooms.map((chatRoom) => (
-          <ChatListItem
-            key={chatRoom.id}
-            chatRoom={chatRoom}
-            onClick={() => handleChatClick(chatRoom.id)}
-          />
-        ))}
+        {chatRooms.length === 0 && !isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 text-lg py-10 text-center">
+            No chat rooms yet.
+          </div>
+        ) : (
+          chatRooms.map((chatRoom) => (
+            <ChatListItem
+              key={chatRoom.id}
+              chatRoom={chatRoom}
+              onClick={() => handleChatClick(chatRoom.id)}
+            />
+          ))
+        )}
       </div>
     </div>
   );
