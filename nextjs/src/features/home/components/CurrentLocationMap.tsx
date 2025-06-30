@@ -1,7 +1,7 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap } from '@react-google-maps/api';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
 interface CurrentLocationMapProps {
@@ -40,13 +40,11 @@ const CurrentLocationMap = ({
 
       <div className="pt-4">
         <div className="w-full h-[300px] md:h-[400px]">
-          <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '100%' }}
-              center={currentLocation}
-              zoom={15}
-            />
-          </LoadScript>
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={currentLocation}
+            zoom={15}
+          />
         </div>
       </div>
 
