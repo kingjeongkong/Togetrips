@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
