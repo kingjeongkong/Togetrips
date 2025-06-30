@@ -9,7 +9,8 @@ import Link from 'next/link';
 import { Suspense, useState } from 'react';
 
 function SignInForm() {
-  const { isLoading, errors, authError, handleSignIn, handleGoogleSignIn } = useAuth();
+  const { isLoading, isRedirecting, errors, authError, handleSignIn, handleGoogleSignIn } =
+    useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -20,6 +21,16 @@ function SignInForm() {
 
   return (
     <AuthLayout title="Sign in">
+      {/* 리다이렉트 중일 때 인라인 로딩 메시지 */}
+      {isRedirecting && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            <span className="text-blue-700 text-sm font-medium">Signing you in...</span>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={onSubmit}>
         <InputField
           type="email"
@@ -52,7 +63,7 @@ function SignInForm() {
         <button
           onClick={handleGoogleSignIn}
           className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-200 shadow-sm rounded-lg px-4 py-2 font-medium hover:bg-gray-50 transition disabled:opacity-50"
-          disabled={isLoading}
+          disabled={isLoading || isRedirecting}
         >
           <Image src="/google-logo.png" alt="Google" width={24} height={24} className="w-6 h-6" />
           Continue with Google
