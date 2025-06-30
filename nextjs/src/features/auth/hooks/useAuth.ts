@@ -10,6 +10,7 @@ export const useAuth = () => {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [authError, setAuthError] = useState('');
 
@@ -25,11 +26,13 @@ export const useAuth = () => {
     setIsLoading(true);
 
     try {
+      // Google 로그인 시작 시 리다이렉트 상태로 전환
+      setIsRedirecting(true);
       await signIn('google', { callbackUrl: getCallbackUrl() });
     } catch {
       setAuthError('An error occurred during Google sign in.');
-    } finally {
       setIsLoading(false);
+      setIsRedirecting(false);
     }
   };
 
@@ -81,7 +84,10 @@ export const useAuth = () => {
       });
       if (result?.error) {
         setAuthError(result.error);
+        setIsLoading(false);
       } else {
+        // 로그인 성공 시 리다이렉트 상태로 전환
+        setIsRedirecting(true);
         // callbackUrl로 리다이렉트
         router.push(getCallbackUrl());
       }
@@ -89,7 +95,6 @@ export const useAuth = () => {
       const errorMessage =
         error instanceof Error ? error.message : 'An error occurred during sign in.';
       setAuthError(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -102,13 +107,13 @@ export const useAuth = () => {
       await signOut({ callbackUrl: '/auth/signin' });
     } catch {
       setAuthError('An error occurred during sign out.');
-    } finally {
       setIsLoading(false);
     }
   };
 
   return {
     isLoading,
+    isRedirecting,
     errors,
     authError,
     session,
