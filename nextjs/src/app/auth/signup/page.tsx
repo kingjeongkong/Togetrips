@@ -5,9 +5,9 @@ import InputField from '@/features/auth/components/InputField';
 import SubmitButton from '@/features/auth/components/SubmitButton';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
-export default function SignUpPage() {
+function SignUpForm() {
   const { isLoading, errors, authError, handleSignUp } = useAuth();
   const [form, setForm] = useState({
     name: '',
@@ -62,5 +62,19 @@ export default function SignUpPage() {
         </Link>
       </div>
     </AuthLayout>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
+        </div>
+      }
+    >
+      <SignUpForm />
+    </Suspense>
   );
 }
