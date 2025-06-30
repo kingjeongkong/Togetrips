@@ -6,9 +6,9 @@ import SubmitButton from '@/features/auth/components/SubmitButton';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
-export default function SignInPage() {
+function SignInForm() {
   const { isLoading, errors, authError, handleSignIn, handleGoogleSignIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,5 +59,19 @@ export default function SignInPage() {
         </button>
       </div>
     </AuthLayout>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
+        </div>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }

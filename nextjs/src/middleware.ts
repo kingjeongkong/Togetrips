@@ -7,5 +7,14 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ['/\(main\)/(home|request|profile|chat)/:path*'],
+  matcher: [
+    '/home/:path*',
+    '/request/:path*',
+    '/profile/:path*',
+    '/chat/:path*',
+    '/api/users/:path*',
+    '/api/profile/:path*',
+    '/api/request/:path*',
+    '/api/chat/:path*',
+  ],
 };

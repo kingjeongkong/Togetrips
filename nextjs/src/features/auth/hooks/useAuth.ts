@@ -1,16 +1,23 @@
 import type { FormErrors, SignUpFormData } from '@/features/auth/types/auth';
 import { validateSignUpForm } from '@/features/auth/utils/auth-validators';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 export const useAuth = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [authError, setAuthError] = useState('');
+
+  // callbackUrl을 가져오는 함수
+  const getCallbackUrl = () => {
+    const callbackUrl = searchParams.get('callbackUrl');
+    return callbackUrl || '/home';
+  };
 
   // Google 로그인
   const handleGoogleSignIn = async () => {
@@ -18,7 +25,7 @@ export const useAuth = () => {
     setIsLoading(true);
 
     try {
-      await signIn('google', { callbackUrl: '/home' });
+      await signIn('google', { callbackUrl: getCallbackUrl() });
     } catch {
       setAuthError('An error occurred during Google sign in.');
     } finally {
@@ -75,7 +82,8 @@ export const useAuth = () => {
       if (result?.error) {
         setAuthError(result.error);
       } else {
-        router.push('/home');
+        // callbackUrl로 리다이렉트
+        router.push(getCallbackUrl());
       }
     } catch (error: unknown) {
       const errorMessage =

@@ -84,6 +84,14 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // 상대 URL인 경우 baseUrl과 결합
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // 같은 도메인의 URL인 경우 허용
+      else if (new URL(url).origin === baseUrl) return url;
+      // 그 외의 경우 홈으로 리다이렉트
+      return baseUrl;
+    },
   },
   events: {
     async signIn({ user, account }) {
