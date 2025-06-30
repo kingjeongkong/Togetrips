@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { userLocationService } from '../services/userLocationService';
+import { getCurrentLocationData } from '../utils/location';
 
 interface Location {
   lat: number;
@@ -26,59 +29,54 @@ interface GeocodingResponse {
 }
 
 export const useUserLocation = () => {
-  const [currentLocation, setCurrentLocation] = useState<Location>({
-    lat: 37.5665,
-    lng: 126.978,
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+
+  // 위치 정보 fetch + DB 업데이트
+  const {
+    data: locationData,
+    isLoading: locationLoading,
+    refetch: refetchLocation,
+    error: locationError,
+  } = useQuery({
+    queryKey: ['userLocation', userId],
+    queryFn: async () => {
+      const { currentLocation, cityInfo } = await getCurrentLocationData();
+      await userLocationService.updateUserLocation(cityInfo.city, cityInfo.state);
+      return { ...currentLocation, ...cityInfo };
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
-  const [cityInfo, setCityInfo] = useState<CityInfo>({
-    city: 'Seoul',
-    state: 'Seoul',
+
+  // nearbyUsers fetch
+  const {
+    data: users,
+    isLoading: usersLoading,
+    refetch: refetchUsers,
+    error: usersError,
+  } = useQuery({
+    queryKey: ['nearbyUsers', locationData?.city, locationData?.state, userId],
+    queryFn: () => {
+      if (!userId || !locationData?.city || !locationData?.state) return undefined;
+      return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
+    },
+    enabled: !!userId && !!locationData?.city && !!locationData?.state,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    throwOnError: true,
   });
-  const [loading, setLoading] = useState(false);
 
-  const updateLocation = async () => {
-    setLoading(true);
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
-
-      const { latitude, longitude } = position.coords;
-      setCurrentLocation({ lat: latitude, lng: longitude });
-
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=en&key=${
-          process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-        }`,
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch geocoding data.');
-      }
-
-      const data: GeocodingResponse = await response.json();
-
-      const cityResult = data.results.find((result: GeocodingResult) =>
-        result.types.includes('locality'),
-      );
-      const stateResult = data.results.find((result: GeocodingResult) =>
-        result.types.includes('administrative_area_level_1'),
-      );
-
-      const cityName = cityResult ? cityResult.address_components[0].long_name : 'Unknown';
-      const stateName = stateResult ? stateResult.address_components[0].long_name : 'Unknown';
-
-      setCityInfo({ city: cityName, state: stateName });
-    } catch (error) {
-      console.error('Error getting location:', error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    currentLocation: locationData ? { lat: locationData.lat, lng: locationData.lng } : undefined,
+    cityInfo: locationData ? { city: locationData.city, state: locationData.state } : undefined,
+    loading: locationLoading,
+    updateLocation: refetchLocation,
+    users,
+    usersLoading,
+    refetchUsers,
+    locationError,
+    usersError,
   };
-
-  useEffect(() => {
-    updateLocation();
-  }, []);
-
-  return { currentLocation, cityInfo, loading, updateLocation };
 };

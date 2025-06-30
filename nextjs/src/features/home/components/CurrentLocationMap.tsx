@@ -3,20 +3,10 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { GoogleMap } from '@react-google-maps/api';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import { useUserLocation } from '../hooks/useUserLocation';
 
-interface CurrentLocationMapProps {
-  currentLocation: { lat: number; lng: number };
-  cityName: string;
-  updateLocation: () => void;
-  loading: boolean;
-}
-
-const CurrentLocationMap = ({
-  currentLocation,
-  cityName,
-  updateLocation,
-  loading,
-}: CurrentLocationMapProps) => {
+const CurrentLocationMap = () => {
+  const { currentLocation, cityInfo, loading, updateLocation } = useUserLocation();
   return (
     <div className="flex flex-col px-6">
       <div className="flex items-center">
@@ -24,20 +14,16 @@ const CurrentLocationMap = ({
         <span className="flex-1 text-sm mr-5 md:text-lg text-black">
           Current Location:
           <span className="text-base font-semibold ml-2 md:text-xl text-black">
-            {loading ? <LoadingIndicator color="#f97361" size={17} /> : cityName}
+            {loading ? <LoadingIndicator color="#f97361" size={17} /> : cityInfo?.city}
           </span>
         </span>
-
         <button
-          onClick={updateLocation}
-          className="rounded-2xl border border-gray-500 shadow-sm hover:bg-sky-100 hover:shadow-md bg-white text-black
-          text-xs px-2 py-1
-          md:text-base md:px-3 md:py-1"
+          onClick={() => updateLocation()}
+          className="rounded-2xl border border-gray-500 shadow-sm hover:bg-sky-100 hover:shadow-md bg-white text-black text-xs px-2 py-1 md:text-base md:px-3 md:py-1"
         >
           Set Location
         </button>
       </div>
-
       <div className="pt-4">
         <div className="w-full h-[300px] md:h-[400px]">
           <GoogleMap
@@ -47,7 +33,6 @@ const CurrentLocationMap = ({
           />
         </div>
       </div>
-
       <p className="pt-3 text-sm md:text-lg text-gray-500">
         Only same city travelers are available
       </p>
