@@ -1,6 +1,6 @@
 export const userLocationService = {
   async updateUserLocation(city: string, state: string) {
-    const res = await fetch('/api/location/update', {
+    const res = await fetch('/api/user/location/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ city, state }),
