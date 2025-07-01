@@ -5,29 +5,6 @@ import { useSession } from 'next-auth/react';
 import { userLocationService } from '../services/userLocationService';
 import { getCurrentLocationData } from '../utils/location';
 
-interface Location {
-  lat: number;
-  lng: number;
-}
-
-interface CityInfo {
-  city: string;
-  state: string;
-}
-
-interface GeocodingResult {
-  types: string[];
-  address_components: Array<{
-    long_name: string;
-    short_name: string;
-    types: string[];
-  }>;
-}
-
-interface GeocodingResponse {
-  results: GeocodingResult[];
-}
-
 export const useUserLocation = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;

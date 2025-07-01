@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const currentData = userDoc.data();
   const currentLocation = currentData?.location || {};
 
-  const updateObj: Record<string, any> = {};
+  const updateObj: Record<string, string | Date> = {};
   if (currentLocation.city !== city) {
     updateObj['location.city'] = city;
   }
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  updateObj.updatedAt = new Date().toISOString();
+  updateObj.updatedAt = new Date();
   await userRef.update(updateObj);
 
   return NextResponse.json({ message: 'Location updated' });

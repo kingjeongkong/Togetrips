@@ -8,6 +8,11 @@ export interface CityInfo {
   state: string;
 }
 
+interface GeocodeResult {
+  types: string[];
+  address_components: { long_name: string; short_name: string; types: string[] }[];
+}
+
 export const getCurrentLocationData = async (): Promise<{
   currentLocation: Location;
   cityInfo: CityInfo;
@@ -32,8 +37,10 @@ export const getCurrentLocationData = async (): Promise<{
         }
 
         const data = await response.json();
-        const cityResult = data.results.find((result: any) => result.types.includes('locality'));
-        const stateResult = data.results.find((result: any) =>
+        const cityResult = data.results.find((result: GeocodeResult) =>
+          result.types.includes('locality'),
+        );
+        const stateResult = data.results.find((result: GeocodeResult) =>
           result.types.includes('administrative_area_level_1'),
         );
 
