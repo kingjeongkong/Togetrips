@@ -33,7 +33,7 @@ export const profileService = {
     const formData = new FormData();
     formData.append('image', file);
 
-    const response = await fetch('/api/profile/upload-image', {
+    const response = await fetch('/api/user/profile/upload-image', {
       method: 'POST',
       body: formData,
     });
@@ -51,7 +51,7 @@ export const profileService = {
    * 유저 프로필 수정 (서버 API 호출)
    */
   async updateProfile(updates: Partial<User>): Promise<void> {
-    const response = await fetch('/api/profile/update', {
+    const response = await fetch('/api/user/profile/update', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
