@@ -2,6 +2,7 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import RequestModal from '@/features/home/components/RequestModal';
+import TravelerDetailModal from '@/features/home/components/TravelerDetailModal';
 import useProfile from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
@@ -17,14 +18,15 @@ interface TravelCardProps {
 }
 
 const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { profile } = useProfile(travelerID);
   const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
 
   const handleSendRequest = async (message: string) => {
     try {
       await sendRequest(message);
-      setIsModalOpen(false);
+      setIsRequestModalOpen(false);
     } catch (error) {
       console.error('Error sending request:', error);
       // TODO: 에러 처리 (예: 토스트 메시지)
@@ -33,7 +35,10 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
 
   return (
     <>
-      <div className="overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6">
+      <div
+        className="overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6 cursor-pointer transition-all duration-200"
+        onClick={() => setIsDetailModalOpen(true)}
+      >
         <div className="flex">
           <Image
             src={profile?.image || imageURL || '/default-traveler.png'}
@@ -58,7 +63,10 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
 
         <button
           className="w-full py-2 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          onClick={() => setIsModalOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsRequestModalOpen(true);
+          }}
           disabled={isRequestSent || isLoading}
         >
           {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
@@ -66,9 +74,15 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
         </button>
       </div>
 
+      <TravelerDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        travelerID={travelerID}
+      />
+
       <RequestModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
         onSubmit={handleSendRequest}
         receiverName={profile?.name || name || 'Traveler'}
       />
