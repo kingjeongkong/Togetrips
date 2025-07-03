@@ -6,6 +6,8 @@ interface LoadingIndicatorProps {
 const LoadingIndicator = ({ color = '#6366f1', size = 40 }: LoadingIndicatorProps) => {
   return (
     <div
+      role="loading"
+      aria-label="loading"
       className="animate-spin rounded-full border-4 border-gray-200"
       style={{
         borderTopColor: color,

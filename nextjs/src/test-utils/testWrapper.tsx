@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import React from 'react';
+import DataFetchErrorBoundary from '../components/ErrorBoundary/DataFetchErrorBoundary';
 
 // Mock useSession
 const mockUseSession = jest.fn();
@@ -36,7 +37,11 @@ export function TestWrapper({
 }: TestWrapperProps): React.ReactElement {
   return (
     <SessionProvider session={session}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <DataFetchErrorBoundary fallback={<p data-testid="error-fallback">문제가 발생했습니다</p>}>
+          {children}
+        </DataFetchErrorBoundary>
+      </QueryClientProvider>
     </SessionProvider>
   );
 }
