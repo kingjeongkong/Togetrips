@@ -7,6 +7,7 @@ import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };
@@ -42,8 +43,9 @@ const RequestCard = ({ request }: RequestCardProps) => {
       await respondToRequest(request.id, 'accept');
       onStatusChange();
       updateTravelerCard();
+      toast.success('Request accepted successfully! Chat room is created.');
     } catch (error) {
-      // TODO: 사용자에게 에러를 알려주는 토스트 메시지 추가
+      toast.error('Failed to accept request. Please try again.');
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to accept request:', error);
       }
@@ -59,7 +61,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
       onStatusChange();
       updateTravelerCard();
     } catch (error) {
-      // TODO: 사용자에게 에러를 알려주는 토스트 메시지 추가
+      toast.error('Failed to decline request. Please try again.');
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to decline request:', error);
       }
