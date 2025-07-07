@@ -1,27 +1,43 @@
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const { email, password, name } = await req.json();
+
   try {
-    const userRecord = await adminAuth.createUser({
+    const supabase = createServerSupabaseClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.admin.createUser({
       email,
       password,
-      displayName: name,
+      user_metadata: { full_name: name },
+      email_confirm: true,
     });
-    await adminDb
-      .collection('users')
-      .doc(userRecord.uid)
-      .set({
-        name,
-        email,
-        image: '',
-        tags: '',
-        bio: '',
-        location: { city: '', state: '' },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+
+    if (authError || !user) {
+      throw new Error(authError?.message || 'Failed to create user');
+    }
+
+    const { error: profileError } = await supabase.from('users').insert({
+      id: user.id,
+      name,
+      email,
+      image: '',
+      tags: '',
+      bio: '',
+      location_city: '',
+      location_state: '',
+    });
+
+    if (profileError) {
+      // 프로필 생성 실패 시 사용자도 삭제
+      await supabase.auth.admin.deleteUser(user.id);
+      throw new Error(profileError.message);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
