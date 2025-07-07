@@ -26,6 +26,7 @@ function SignUpForm() {
       <form onSubmit={onSubmit}>
         <InputField
           type="text"
+          ariaLabel="Full Name"
           placeholder="Full Name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -33,6 +34,7 @@ function SignUpForm() {
         />
         <InputField
           type="email"
+          ariaLabel="Email Address"
           placeholder="Email Address"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -40,6 +42,7 @@ function SignUpForm() {
         />
         <InputField
           type="password"
+          ariaLabel="Password"
           placeholder="Password"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -47,6 +50,7 @@ function SignUpForm() {
         />
         <InputField
           type="password"
+          ariaLabel="Confirm Password"
           placeholder="Confirm Password"
           value={form.confirmPassword}
           onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}

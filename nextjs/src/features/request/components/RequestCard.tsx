@@ -101,6 +101,11 @@ const RequestCard = ({ request }: RequestCardProps) => {
           className="w-full py-2 text-white bg-green-600 rounded-3xl shadow-sm hover:bg-green-700 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleAccept}
           disabled={isLoading}
+          aria-label={
+            isLoading
+              ? 'Processing accept'
+              : `Accept request from ${request.sender.name || 'traveler'}`
+          }
         >
           {isLoading ? 'Processing...' : 'Accept'}
         </button>
@@ -109,6 +114,11 @@ const RequestCard = ({ request }: RequestCardProps) => {
           className="w-full py-2 text-white bg-red-600 rounded-3xl shadow-sm hover:bg-red-700 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleDecline}
           disabled={isLoading}
+          aria-label={
+            isLoading
+              ? 'Processing decline'
+              : `Decline request from ${request.sender.name || 'traveler'}`
+          }
         >
           {isLoading ? 'Processing...' : 'Decline'}
         </button>

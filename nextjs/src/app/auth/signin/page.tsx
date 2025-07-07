@@ -34,6 +34,7 @@ function SignInForm() {
       <form onSubmit={onSubmit}>
         <InputField
           type="email"
+          ariaLabel="Email Address"
           placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -42,6 +43,7 @@ function SignInForm() {
         />
         <InputField
           type="password"
+          ariaLabel="Password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

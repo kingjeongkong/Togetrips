@@ -68,6 +68,13 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
             setIsRequestModalOpen(true);
           }}
           disabled={isRequestSent || isLoading}
+          aria-label={
+            isLoading
+              ? `Loading request to ${profile?.name || name || 'traveler'}`
+              : isRequestSent
+                ? `Request pending to ${profile?.name || name || 'traveler'}`
+                : `Send request to ${profile?.name || name || 'traveler'}`
+          }
         >
           {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
           {isLoading ? 'Loading...' : isRequestSent ? 'Request Pending' : 'Send Request'}
