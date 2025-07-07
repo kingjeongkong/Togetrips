@@ -78,6 +78,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
 
         <input
           type="text"
+          aria-label="Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           className="text-2xl md:text-3xl font-semibold text-center bg-transparent border-b-2 border-indigo-500 focus:outline-none text-black"
@@ -86,6 +87,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
 
         <input
           type="text"
+          aria-label="Tags"
           value={formData.tags}
           onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           className="p-2 text-sm border-none rounded focus:border-2 focus:border-indigo-500 w-3/5 md:w-1/3 text-black bg-white"
@@ -93,6 +95,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
         />
 
         <textarea
+          aria-label="Bio"
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
           className="text-gray-600 w-4/5 h-72 text-base md:w-1/2 md:text-lg p-2 border-none rounded focus:border-2 focus:border-indigo-500 bg-white"

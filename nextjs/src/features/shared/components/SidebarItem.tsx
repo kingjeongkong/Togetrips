@@ -20,6 +20,7 @@ const SidebarItem = ({ title, icon: Icon, to }: SidebarItemProps) => {
       className={`flex flex-row items-center justify-center px-2 py-4 rounded w-11/12 ${
         isActive ? 'bg-sky-700 text-white' : 'text-gray-600 hover:bg-sky-600 hover:text-white'
       }`}
+      aria-label={`Navigate to ${title.toLowerCase()}`}
     >
       <Icon className="text-lg mr-2" />
       <span className="hidden md:inline">{title}</span>

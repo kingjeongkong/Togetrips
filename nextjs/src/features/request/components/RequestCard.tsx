@@ -7,6 +7,7 @@ import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };
@@ -42,8 +43,9 @@ const RequestCard = ({ request }: RequestCardProps) => {
       await respondToRequest(request.id, 'accept');
       onStatusChange();
       updateTravelerCard();
+      toast.success('Request accepted successfully! Chat room is created.');
     } catch (error) {
-      // TODO: 사용자에게 에러를 알려주는 토스트 메시지 추가
+      toast.error('Failed to accept request. Please try again.');
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to accept request:', error);
       }
@@ -59,7 +61,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
       onStatusChange();
       updateTravelerCard();
     } catch (error) {
-      // TODO: 사용자에게 에러를 알려주는 토스트 메시지 추가
+      toast.error('Failed to decline request. Please try again.');
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to decline request:', error);
       }
@@ -99,6 +101,11 @@ const RequestCard = ({ request }: RequestCardProps) => {
           className="w-full py-2 text-white bg-green-600 rounded-3xl shadow-sm hover:bg-green-700 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleAccept}
           disabled={isLoading}
+          aria-label={
+            isLoading
+              ? 'Processing accept'
+              : `Accept request from ${request.sender.name || 'traveler'}`
+          }
         >
           {isLoading ? 'Processing...' : 'Accept'}
         </button>
@@ -107,6 +114,11 @@ const RequestCard = ({ request }: RequestCardProps) => {
           className="w-full py-2 text-white bg-red-600 rounded-3xl shadow-sm hover:bg-red-700 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleDecline}
           disabled={isLoading}
+          aria-label={
+            isLoading
+              ? 'Processing decline'
+              : `Decline request from ${request.sender.name || 'traveler'}`
+          }
         >
           {isLoading ? 'Processing...' : 'Decline'}
         </button>

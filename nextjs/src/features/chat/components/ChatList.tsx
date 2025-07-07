@@ -25,7 +25,7 @@ const ChatList = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" aria-label="Chat list">
       <div className="sticky top-0 z-50 bg-gray-100">
         <h1 className="px-4 py-2 text-xl font-semibold md:px-4 md:py-4 md:text-2xl text-gray-900">
           Messages
@@ -45,11 +45,9 @@ const ChatList = () => {
           </div>
         ) : (
           chatRooms.map((chatRoom) => (
-            <ChatListItem
-              key={chatRoom.id}
-              chatRoom={chatRoom}
-              onClick={() => handleChatClick(chatRoom.id)}
-            />
+            <div key={chatRoom.id} aria-label={`Chat room ${chatRoom.id}`}>
+              <ChatListItem chatRoom={chatRoom} onClick={() => handleChatClick(chatRoom.id)} />
+            </div>
           ))
         )}
       </div>

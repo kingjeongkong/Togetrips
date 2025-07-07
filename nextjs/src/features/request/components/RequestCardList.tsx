@@ -36,9 +36,14 @@ const RequestCardList = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 w-full px-5 md:px-10 md:grid-cols-3 md:gap-8">
+    <div
+      className="grid grid-cols-1 gap-5 w-full px-5 md:px-10 md:grid-cols-3 md:gap-8"
+      aria-label="Request card list"
+    >
       {requests.map((request, index) => (
-        <RequestCard key={index} request={request} />
+        <div key={index} aria-label={`Request card from ${request.sender.name || 'unknown user'}`}>
+          <RequestCard request={request} />
+        </div>
       ))}
     </div>
   );

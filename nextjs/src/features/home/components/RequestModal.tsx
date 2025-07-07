@@ -22,21 +22,29 @@ const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalP
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-        <div className="mb-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        className="bg-white rounded-2xl p-6 w-full max-w-md mx-4"
+      >
+        <div className="mb-4" id="modal-title">
           <span className="text-gray-500">Send Request to</span>
           <span className="text-xl font-semibold ml-2">{receiverName}</span>
         </div>
 
         <form onSubmit={handleSubmit}>
           <textarea
+            id="request-message"
+            aria-label="Message"
             className="w-full h-32 p-3 border rounded-xl mb-2 resize-none focus:border-none focus:outline-none focus:ring-2 focus:ring-orange-500"
             placeholder="Write a message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             maxLength={MAX_LENGTH}
+            aria-describedby="message-counter"
           />
-          <div className="text-right text-sm text-gray-500 mb-4">
+          <div id="message-counter" className="text-right text-sm text-gray-500 mb-4">
             {message.length} / {MAX_LENGTH}
           </div>
 
@@ -45,12 +53,14 @@ const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalP
               type="button"
               onClick={onClose}
               className="flex-1 py-2 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200"
+              aria-label="Cancel request"
             >
               Cancel
             </button>
             <button
               type="submit"
               className="flex-1 py-2 text-white bg-orange-500 rounded-xl hover:bg-orange-600"
+              aria-label="Send request"
             >
               Send
             </button>
