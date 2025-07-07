@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@auth/firebase-adapter": "^2.9.1",
+    "@auth/supabase-adapter": "^1.10.0",
     "@firebase/auth": "^1.10.6",
     "@firebase/firestore": "^4.7.17",
     "@firebase/storage": "^0.13.12",

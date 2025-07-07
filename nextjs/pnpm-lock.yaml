@@ -11,6 +11,9 @@ importers:
       '@auth/firebase-adapter':
         specifier: ^2.9.1
         version: 2.9.1(firebase-admin@13.4.0)
+      '@auth/supabase-adapter':
+        specifier: ^1.10.0
+        version: 1.10.0(@supabase/supabase-js@2.50.3)
       '@firebase/auth':
         specifier: ^1.10.6
         version: 1.10.6(@firebase/app@0.13.1)
@@ -157,10 +160,29 @@ packages:
       nodemailer:
         optional: true
 
+  '@auth/core@0.40.0':
+    resolution: {integrity: sha512-n53uJE0RH5SqZ7N1xZoMKekbHfQgjd0sAEyUbE+IYJnmuQkbvuZnXItCU7d+i7Fj8VGOgqvNO7Mw4YfBTlZeQw==}
+    peerDependencies:
+      '@simplewebauthn/browser': ^9.0.1
+      '@simplewebauthn/server': ^9.0.2
+      nodemailer: ^6.8.0
+    peerDependenciesMeta:
+      '@simplewebauthn/browser':
+        optional: true
+      '@simplewebauthn/server':
+        optional: true
+      nodemailer:
+        optional: true
+
   '@auth/firebase-adapter@2.9.1':
     resolution: {integrity: sha512-OHpib9AI8uzUp5cIrIPeqXbvYFHEfLTF33VY+P/V8ctj+8TFheLPhbA0kUYaZ+e/sD/0MuUUXShx7nuEMOyHtA==}
     peerDependencies:
       firebase-admin: ^12.0.0
+
+  '@auth/supabase-adapter@1.10.0':
+    resolution: {integrity: sha512-Gix/dTRBjuj3/zqbMKVhu8z8j93QI3baZS0Fs5VIqpBoeSIxIAyXKJnZBy24B7Uazecp1VUIolbyt5yrR18gFw==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.43.1
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -4042,10 +4064,27 @@ snapshots:
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
 
+  '@auth/core@0.40.0':
+    dependencies:
+      '@panva/hkdf': 1.2.1
+      jose: 6.0.11
+      oauth4webapi: 3.5.2
+      preact: 10.24.3
+      preact-render-to-string: 6.5.11(preact@10.24.3)
+
   '@auth/firebase-adapter@2.9.1(firebase-admin@13.4.0)':
     dependencies:
       '@auth/core': 0.39.1
       firebase-admin: 13.4.0
+    transitivePeerDependencies:
+      - '@simplewebauthn/browser'
+      - '@simplewebauthn/server'
+      - nodemailer
+
+  '@auth/supabase-adapter@1.10.0(@supabase/supabase-js@2.50.3)':
+    dependencies:
+      '@auth/core': 0.40.0
+      '@supabase/supabase-js': 2.50.3
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'
