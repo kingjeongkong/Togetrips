@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test';
 // 필요시 테스트 계정/시드 데이터 유틸 import
 // import { seedTestUsers } from './utils/seed';
 
-test.describe('요청 수락 → 채팅 생성 → 채팅 송수신', () => {
+test.describe('사용자 매칭 플로우', () => {
   test.setTimeout(100000);
-  test('A가 B에게 요청, B가 수락, 채팅방 생성 및 실시간 채팅', async ({ browser }) => {
+  test('요청 → 수락 → 채팅방 생성 → 실시간 채팅', async ({ browser }) => {
     // Playwright 위치 권한 및 좌표(서울) 부여
     // 1. A 유저 로그인 및 요청 전송
     const context = await browser.newContext({
