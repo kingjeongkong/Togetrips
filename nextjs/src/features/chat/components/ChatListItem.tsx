@@ -45,12 +45,14 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
   useEffect(() => {
     if (!userId) return;
 
-    // 읽지 않은 메시지 수 구독
-    const unsubscribeUnread = chatService.subscribeToUnreadCount(chatRoom.id, userId, (count) =>
-      setUnreadCount(count),
+    // 읽지 않은 메시지 수 구독 (Supabase)
+    const unsubscribeUnread = chatService.subscribeToUnreadCountSupabase(
+      chatRoom.id,
+      userId,
+      (count) => setUnreadCount(count),
     );
 
-    // 마지막 메시지와 시간 구독
+    // 마지막 메시지와 시간 구독 (기존 로직 유지)
     const unsubscribeLastMessage = chatService.subscribeToLastMessage(
       chatRoom.id,
       ({ lastMessage, lastMessageTime }) => {

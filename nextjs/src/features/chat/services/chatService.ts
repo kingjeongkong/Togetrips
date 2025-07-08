@@ -244,6 +244,7 @@ export const chatService = {
   // ===== Supabase Realtime 방식 (개선됨) =====
 
   // Supabase Realtime 메시지 구독 (session 파라미터로 인증)
+  // ToDo : Supabase access token 인증 로직 추가 후 rls 삭제
   subscribeToMessagesSupabase(
     chatRoomID: string,
     onMessage: (messages: Message[]) => void,
@@ -363,6 +364,82 @@ export const chatService = {
       if (channel) {
         channel.unsubscribe();
       }
+    };
+  },
+
+  // Supabase 기반 읽지 않은 메시지 수 실시간 구독
+  subscribeToUnreadCountSupabase(
+    chatRoomID: string,
+    userID: string,
+    callback: (count: number) => void,
+  ) {
+    let channel: RealtimeChannel | null = null;
+    let isSubscribed = true;
+    let timer: NodeJS.Timeout;
+
+    const fetchUnreadCount = async () => {
+      const { count, error } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('chat_room_id', chatRoomID)
+        .neq('sender_id', userID)
+        .eq('read', false);
+
+      if (!error && typeof count === 'number') {
+        callback(count);
+      } else {
+        callback(0);
+      }
+    };
+
+    const debouncedFetch = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        fetchUnreadCount();
+      }, 300);
+    };
+
+    const setupSubscription = () => {
+      channel = supabase
+        .channel(`unread-messages:${chatRoomID}:${userID}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `chat_room_id=eq.${chatRoomID}`,
+          },
+          ({ new: row }) => {
+            if (row.sender_id !== userID && row.read === false) {
+              debouncedFetch();
+            }
+          },
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `chat_room_id=eq.${chatRoomID}`,
+          },
+          ({ new: row, old }) => {
+            if (row.sender_id !== userID && old.read === false && row.read === true) {
+              debouncedFetch();
+            }
+          },
+        )
+        .subscribe();
+    };
+
+    fetchUnreadCount();
+    setupSubscription();
+
+    return () => {
+      isSubscribed = false;
+      channel?.unsubscribe();
+      clearTimeout(timer);
     };
   },
 };
