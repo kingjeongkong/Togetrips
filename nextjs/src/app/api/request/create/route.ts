@@ -1,6 +1,5 @@
-import { adminDb } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
-import { FieldValue } from 'firebase-admin/firestore';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -26,34 +25,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Message is too long' }, { status: 400 });
     }
 
-    const requestsRef = adminDb.collection('requests');
+    const supabase = createServerSupabaseClient();
 
-    const existingRequestQuery = await requestsRef
-      .where('senderID', '==', senderID)
-      .where('receiverID', '==', receiverID)
-      .where('status', 'in', ['pending', 'accepted', 'declined'])
+    // 중복 요청 체크
+    const { data: existing, error: existingError } = await supabase
+      .from('requests')
+      .select('id, status')
+      .eq('sender_id', senderID)
+      .eq('receiver_id', receiverID)
+      .in('status', ['pending', 'accepted', 'declined'])
       .limit(1)
-      .get();
+      .maybeSingle();
 
-    if (!existingRequestQuery.empty) {
-      const existingStatus = existingRequestQuery.docs[0].data().status;
+    if (existing) {
       return NextResponse.json(
-        { error: `A request with '${existingStatus}' status already exists.` },
+        { error: `A request with '${existing.status}' status already exists.` },
         { status: 409 },
       );
     }
 
-    const newRequest = {
-      senderID,
-      receiverID,
-      message: message || '',
-      status: 'pending',
-      createdAt: FieldValue.serverTimestamp(),
-    };
+    // 요청 생성
+    const { data, error } = await supabase
+      .from('requests')
+      .insert({
+        sender_id: senderID,
+        receiver_id: receiverID,
+        message: message || '',
+        status: 'pending',
+      })
+      .select('id')
+      .single();
 
-    const docRef = await requestsRef.add(newRequest);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    return NextResponse.json({ message: 'Request sent successfully', requestID: docRef.id });
+    return NextResponse.json({ message: 'Request sent successfully', requestID: data.id });
   } catch (error) {
     console.error('Error creating request:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
