@@ -1,5 +1,5 @@
-import { adminDb } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -21,46 +21,55 @@ export async function POST(req: Request) {
       );
     }
 
-    const requestRef = adminDb.collection('requests').doc(requestID);
-    const requestDoc = await requestRef.get();
+    const supabase = createServerSupabaseClient();
 
-    if (!requestDoc.exists) {
+    // 요청 조회
+    const { data: request, error: requestError } = await supabase
+      .from('requests')
+      .select('*')
+      .eq('id', requestID)
+      .single();
+
+    if (requestError || !request) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
-    const requestData = requestDoc.data();
-    if (requestData?.receiverID !== userId) {
+    if (request.receiver_id !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-    if (requestData?.status !== 'pending') {
+    if (request.status !== 'pending') {
       return NextResponse.json({ error: 'Request is not in pending state' }, { status: 409 });
     }
 
     if (action === 'accept') {
-      const batch = adminDb.batch();
+      // 트랜잭션 함수 호출
+      const { data: chatRoomID, error: rpcError } = await supabase.rpc(
+        'accept_request_and_create_chat',
+        {
+          req_id: requestID,
+          sender: request.sender_id,
+          receiver: request.receiver_id,
+        },
+      );
 
-      // 1. 요청 상태 'accepted'로 업데이트
-      batch.update(requestRef, { status: 'accepted' });
-
-      // 2. 채팅방 생성
-      const chatRoomRef = adminDb.collection('chatRooms').doc();
-      batch.set(chatRoomRef, {
-        participants: [requestData.senderID, requestData.receiverID],
-        createdAt: new Date().toISOString(),
-        lastMessage: '',
-        lastMessageTime: '',
-      });
-
-      await batch.commit();
+      if (rpcError) {
+        throw new Error(rpcError.message);
+      }
 
       return NextResponse.json(
-        { message: 'Request accepted and chat room created', chatRoomID: chatRoomRef.id },
+        { message: 'Request accepted and chat room created', chatRoomID },
         { status: 200 },
       );
     }
 
     if (action === 'decline') {
-      await requestRef.update({ status: 'declined' });
+      const { error: declineError } = await supabase
+        .from('requests')
+        .update({ status: 'declined' })
+        .eq('id', requestID);
+      if (declineError) {
+        throw new Error(declineError.message);
+      }
       return NextResponse.json({ message: 'Request declined' }, { status: 200 });
     }
   } catch (error) {
