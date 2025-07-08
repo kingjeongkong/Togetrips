@@ -1,49 +1,76 @@
 import { db } from '@/lib/firebase-config';
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore';
+import { collection, doc, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { ChatRoom, Message } from '../types/chatTypes';
 
 export const chatService = {
+  // 채팅방 목록 조회
   async getChatRooms(userID: string): Promise<ChatRoom[]> {
-    const q = query(
-      collection(db, 'chatRooms'),
-      where('participants', 'array-contains', userID),
-      orderBy('lastMessageTime', 'desc'),
-    );
-    const snapshot = await getDocs(q);
+    try {
+      const response = await fetch('/api/chat/rooms', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    return snapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        }) as ChatRoom,
-    );
-  },
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch chat rooms');
+      }
 
-  async getChatRoom(chatRoomID: string): Promise<ChatRoom | null> {
-    const docRef = doc(db, 'chatRooms', chatRoomID);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return {
-        id: docSnap.id,
-        ...docSnap.data(),
-      } as ChatRoom;
+      const result = await response.json();
+      return result.chatRooms.map((room: any) => ({
+        id: room.id,
+        participants: room.participants,
+        createdAt: room.created_at,
+        lastMessage: room.last_message || '',
+        lastMessageTime: room.last_message_time || room.created_at,
+      }));
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching chat rooms:', error);
+      }
+      toast.error('Failed to fetch chat rooms');
+      return [];
     }
-
-    return null;
   },
 
+  // 특정 채팅방 정보 조회
+  async getChatRoom(chatRoomID: string): Promise<ChatRoom | null> {
+    try {
+      const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch chat room');
+      }
+
+      const result = await response.json();
+      const room = result.chatRoom;
+
+      return {
+        id: room.id,
+        participants: room.participants,
+        createdAt: room.created_at,
+        lastMessage: room.last_message || '',
+        lastMessageTime: room.last_message_time || room.created_at,
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching chat room:', error);
+      }
+      toast.error('Failed to fetch chat room');
+      return null;
+    }
+  },
+
+  // 메시지 읽음 처리
   async markMessagesAsRead(chatRoomID: string, retries = 3): Promise<void> {
     try {
       const response = await fetch('/api/chat/mark-read', {
@@ -78,6 +105,7 @@ export const chatService = {
     }
   },
 
+  // 메시지 전송
   async sendMessage(chatRoomID: string, content: string): Promise<boolean> {
     try {
       const response = await fetch('/api/chat/send-message', {
@@ -106,6 +134,7 @@ export const chatService = {
     }
   },
 
+  // 실시간 메시지 구독 (Firebase 방식 유지)
   subscribeToMessages(
     chatRoomID: string,
     onMessage: (messages: Message[]) => void,
@@ -147,6 +176,7 @@ export const chatService = {
     );
   },
 
+  // 읽지 않은 메시지 수 구독 (Firebase 방식 유지)
   subscribeToUnreadCount(chatRoomID: string, userID: string, callback: (count: number) => void) {
     const q = query(
       collection(db, `chatRooms/${chatRoomID}/messages`),
@@ -168,6 +198,7 @@ export const chatService = {
     );
   },
 
+  // 마지막 메시지 구독 (Firebase 방식 유지)
   subscribeToLastMessage(
     chatRoomID: string,
     callback: (data: { lastMessage: string; lastMessageTime: string }) => void,
