@@ -1,6 +1,4 @@
 import type { User } from '@/features/shared/types/User';
-import { db } from '@/lib/firebase-config';
-import { doc, getDoc } from 'firebase/firestore';
 
 export const profileService = {
   /**
@@ -8,18 +6,22 @@ export const profileService = {
    */
   async getProfile(userId: string): Promise<User | null> {
     try {
-      const userRef = doc(db, 'users', userId);
-      const userDoc = await getDoc(userRef);
+      const response = await fetch(`/api/users/profile?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        return {
-          id: userDoc.id,
-          ...data,
-        } as User;
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error('Failed to fetch profile');
       }
 
-      return null;
+      const data = await response.json();
+      return data.user as User;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;

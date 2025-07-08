@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { FirestoreAdapter } from '@auth/firebase-adapter';
+import { SupabaseAdapter } from '@auth/supabase-adapter';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { NextAuthOptions } from 'next-auth';
@@ -78,12 +78,16 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  adapter: FirestoreAdapter({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+  // adapter: FirestoreAdapter({
+  //   credential: cert({
+  //     projectId: process.env.FIREBASE_PROJECT_ID,
+  //     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  //     privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  //   }),
+  // }),
+  adapter: SupabaseAdapter({
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
   }),
   pages: {
     signIn: '/auth/signin',

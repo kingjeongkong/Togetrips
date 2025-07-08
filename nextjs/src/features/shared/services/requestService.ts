@@ -1,6 +1,4 @@
 import type { Request } from '@/features/shared/types/Request';
-import { db } from '@/lib/firebase-config';
-import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export async function createRequest({
   receiverID,
@@ -33,32 +31,28 @@ export async function fetchRequestsBetweenUsers(
   userBID: string,
   status: string[],
 ): Promise<Request[]> {
-  const requestsRef = collection(db, 'requests');
-  const q = query(
-    requestsRef,
-    where('senderID', 'in', [userAID, userBID]),
-    where('receiverID', 'in', [userAID, userBID]),
-    where('status', 'in', status),
-  );
-  const snap = await getDocs(q);
+  try {
+    const statusParam = status.join(',');
+    const response = await fetch(
+      `/api/requests/between-users?userAId=${userAID}&userBId=${userBID}&status=${statusParam}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
 
-  return snap.docs
-    .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Request, 'id'>) }))
-    .filter((req) => {
-      if (!req.senderID || !req.receiverID || !req.status) {
-        return false;
-      }
+    if (!response.ok) {
+      throw new Error('Failed to fetch requests');
+    }
 
-      const isBetweenUsers =
-        (req.senderID === userAID && req.receiverID === userBID) ||
-        (req.senderID === userBID && req.receiverID === userAID);
-
-      if (!isBetweenUsers) {
-        return false;
-      }
-
-      return status.includes(req.status);
-    });
+    const data = await response.json();
+    return data.requests as Request[];
+  } catch (error) {
+    console.error('Error fetching requests:', error);
+    return [];
+  }
 }
 
 export async function getMyRequests() {
