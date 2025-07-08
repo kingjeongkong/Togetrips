@@ -3,7 +3,10 @@ import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { chatRoomID: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ chatRoomID: string }> },
+) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -11,7 +14,7 @@ export async function GET(request: NextRequest, { params }: { params: { chatRoom
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { chatRoomID } = params;
+    const { chatRoomID } = await params;
 
     if (!chatRoomID) {
       return NextResponse.json({ error: 'Chat room ID is required' }, { status: 400 });

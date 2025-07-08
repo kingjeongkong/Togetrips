@@ -43,14 +43,14 @@ const ChatRoom = () => {
     gcTime: 10 * 60 * 1000,
   });
 
-  // 실시간 메시지 구독
+  // Supabase 실시간 메시지 구독
   useEffect(() => {
     if (!chatRoomID || !userId) return;
 
     // ChatRoom 입장 시 메시지 읽음 update
     chatService.markMessagesAsRead(chatRoomID);
 
-    const unsubscribe = chatService.subscribeToMessages(
+    const unsubscribe = chatService.subscribeToMessagesSupabase(
       chatRoomID,
       (messages) => {
         setMessages(messages);
@@ -60,10 +60,12 @@ const ChatRoom = () => {
           setSubscriptionFailed(true);
         }
       },
+      3,
+      session,
     );
 
     return () => unsubscribe();
-  }, [chatRoomID, userId]);
+  }, [chatRoomID, userId, session]);
 
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;
