@@ -1,9 +1,10 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { chatService } from '../services/chatService';
 import ChatListItem from './ChatListItem';
 
@@ -11,6 +12,13 @@ const ChatList = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!userId) return;
+    const unsubscribe = chatService.subscribeToChatRoomListUpdates(userId, queryClient);
+    return () => unsubscribe();
+  }, [userId, queryClient]);
 
   const { data: chatRooms = [], isLoading } = useQuery({
     queryKey: ['chatRooms', userId],

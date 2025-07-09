@@ -1,7 +1,9 @@
 import { db } from '@/lib/firebase-config';
 import { supabase } from '@/lib/supabase-client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { QueryClient } from '@tanstack/react-query';
 import { collection, doc, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { debounce } from 'lodash';
 import { toast } from 'react-toastify';
 import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
 
@@ -365,6 +367,33 @@ export const chatService = {
       if (channel) {
         channel.unsubscribe();
       }
+    };
+  },
+
+  /**
+   * Supabase Realtime을 이용한 채팅방 목록 실시간 갱신 구독
+   * @param userId 사용자 ID
+   * @param queryClient React Query의 QueryClient 인스턴스
+   * @returns 구독 해제 함수
+   */
+  subscribeToChatRoomListUpdates(userId: string, queryClient: QueryClient): () => void {
+    const debouncedInvalidate = debounce(() => {
+      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+    }, 300);
+
+    const channel: RealtimeChannel = supabase
+      .channel('chat_rooms_updates')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () =>
+        debouncedInvalidate(),
+      )
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () =>
+        debouncedInvalidate(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      debouncedInvalidate.cancel();
     };
   },
 };
