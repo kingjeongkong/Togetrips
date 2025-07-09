@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase-client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { collection, doc, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { toast } from 'react-toastify';
-import { ChatRoom, Message } from '../types/chatTypes';
+import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
 
 // 헬퍼 함수: DB row를 Message 타입으로 변환
 const mapRowToMessage = (row: any): Message => ({
@@ -16,7 +16,7 @@ const mapRowToMessage = (row: any): Message => ({
 
 export const chatService = {
   // 채팅방 목록 조회
-  async getChatRooms(userID: string): Promise<ChatRoom[]> {
+  async getChatRooms(userID: string): Promise<ChatRoomListItem[]> {
     try {
       const response = await fetch('/api/chat/rooms', {
         method: 'GET',
@@ -37,6 +37,7 @@ export const chatService = {
         createdAt: room.created_at,
         lastMessage: room.last_message || '',
         lastMessageTime: room.last_message_time || room.created_at,
+        unreadCount: room.unreadCount ?? 0,
       }));
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -364,82 +365,6 @@ export const chatService = {
       if (channel) {
         channel.unsubscribe();
       }
-    };
-  },
-
-  // Supabase 기반 읽지 않은 메시지 수 실시간 구독
-  subscribeToUnreadCountSupabase(
-    chatRoomID: string,
-    userID: string,
-    callback: (count: number) => void,
-  ) {
-    let channel: RealtimeChannel | null = null;
-    let isSubscribed = true;
-    let timer: NodeJS.Timeout;
-
-    const fetchUnreadCount = async () => {
-      const { count, error } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('chat_room_id', chatRoomID)
-        .neq('sender_id', userID)
-        .eq('read', false);
-
-      if (!error && typeof count === 'number') {
-        callback(count);
-      } else {
-        callback(0);
-      }
-    };
-
-    const debouncedFetch = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        fetchUnreadCount();
-      }, 300);
-    };
-
-    const setupSubscription = () => {
-      channel = supabase
-        .channel(`unread-messages:${chatRoomID}:${userID}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `chat_room_id=eq.${chatRoomID}`,
-          },
-          ({ new: row }) => {
-            if (row.sender_id !== userID && row.read === false) {
-              debouncedFetch();
-            }
-          },
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'messages',
-            filter: `chat_room_id=eq.${chatRoomID}`,
-          },
-          ({ new: row, old }) => {
-            if (row.sender_id !== userID && old.read === false && row.read === true) {
-              debouncedFetch();
-            }
-          },
-        )
-        .subscribe();
-    };
-
-    fetchUnreadCount();
-    setupSubscription();
-
-    return () => {
-      isSubscribed = false;
-      channel?.unsubscribe();
-      clearTimeout(timer);
     };
   },
 };

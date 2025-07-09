@@ -32,9 +32,26 @@ export async function GET(request: NextRequest) {
       throw new Error(error.message);
     }
 
+    // 각 채팅방의 unreadCount(내가 안 읽은 메시지 개수) 집계
+    // ToDo : Supabase에서 집계 쿼리 적용(N+1 문제 해결)
+    const chatRoomsWithUnread = await Promise.all(
+      (chatRooms || []).map(async (room) => {
+        const { data: unreadMessages, error: unreadError } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('chat_room_id', room.id)
+          .eq('read', false)
+          .neq('sender_id', session.user.id);
+        return {
+          ...room,
+          unreadCount: unreadMessages ? unreadMessages.length : 0,
+        };
+      }),
+    );
+
     return NextResponse.json({
       success: true,
-      chatRooms: chatRooms || [],
+      chatRooms: chatRoomsWithUnread,
     });
   } catch (error) {
     console.error('Error fetching chat rooms:', error);

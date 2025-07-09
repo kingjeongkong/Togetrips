@@ -2,7 +2,7 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { profileService } from '@/features/shared/services/profileService';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ const ChatRoom = () => {
   const userId = session?.user?.id;
   const [messages, setMessages] = useState<Message[]>([]);
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch Chat Room data
   const { data: chatRoomData, isLoading: isLoadingRoom } = useQuery({
@@ -48,7 +49,9 @@ const ChatRoom = () => {
     if (!chatRoomID || !userId) return;
 
     // ChatRoom 입장 시 메시지 읽음 update
-    chatService.markMessagesAsRead(chatRoomID);
+    chatService.markMessagesAsRead(chatRoomID).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+    });
 
     const unsubscribe = chatService.subscribeToMessagesSupabase(
       chatRoomID,
@@ -70,7 +73,10 @@ const ChatRoom = () => {
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;
 
-    await chatService.sendMessage(chatRoomID, message);
+    const success = await chatService.sendMessage(chatRoomID, message);
+    if (success) {
+      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+    }
   };
 
   if (isLoadingRoom || isLoadingProfile) {
