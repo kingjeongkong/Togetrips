@@ -11,7 +11,9 @@ export default function Home() {
       <DataFetchErrorBoundary>
         <HomeProfile />
       </DataFetchErrorBoundary>
-      <CurrentLocationMap />
+      <DataFetchErrorBoundary>
+        <CurrentLocationMap />
+      </DataFetchErrorBoundary>
       <DataFetchErrorBoundary>
         <TravelerCardList />
       </DataFetchErrorBoundary>
