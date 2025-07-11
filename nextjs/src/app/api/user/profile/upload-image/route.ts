@@ -1,6 +1,8 @@
-import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
-import { createHash } from 'crypto';
+import {
+  createServerSupabaseClient,
+  createServerSupabaseStorageClient,
+} from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -56,6 +58,11 @@ function validateImageDimensions(buffer: Buffer): Promise<boolean> {
   });
 }
 
+// 파일명에서 한글, 공백, 특수문자 등 Supabase에서 허용하지 않는 문자를 _로 치환하는 함수
+function sanitizeFileName(fileName: string): string {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -102,69 +109,76 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid image file format' }, { status: 400 });
     }
 
-    // 1. 현재 사용자의 기존 프로필 이미지 URL 가져오기
-    const userRef = adminDb.collection('users').doc(currentUserId);
-    const userDoc = await userRef.get();
+    // Supabase 클라이언트 초기화
+    const supabase = createServerSupabaseClient();
+    const supabaseStorage = createServerSupabaseStorageClient();
 
-    if (!userDoc.exists) {
+    // 1. 현재 사용자의 기존 프로필 이미지 URL 가져오기 (Supabase)
+    const { data: currentUser, error: userError } = await supabase
+      .from('users')
+      .select('image')
+      .eq('id', currentUserId)
+      .single();
+
+    if (userError && userError.code !== 'PGRST116') {
+      // PGRST116는 데이터가 없는 경우
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const currentData = userDoc.data();
-    const currentImageUrl = currentData?.image;
+    const currentImageUrl = currentUser?.image;
 
-    // 2. 이미지 변경사항 확인 (파일 해시 비교)
-    const fileHash = await calculateFileHash(buffer);
-    const currentImageHash = currentData?.imageHash;
+    // 2. Supabase Storage에 업로드
+    const safeName = sanitizeFileName(file.name);
+    const fileName = `profiles/${currentUserId}/${Date.now()}_${safeName}`;
 
-    // 같은 해시값이면 이미지가 동일함
-    if (currentImageHash && currentImageHash === fileHash) {
-      return NextResponse.json({
-        message: 'Image is identical to current profile image. No upload needed.',
-        imageUrl: currentImageUrl,
-        noChanges: true,
-      });
-    }
-
-    // 3. Firebase Storage에 업로드
-    const bucket = adminStorage.bucket();
-    const fileName = `profiles/${currentUserId}/${Date.now()}_${file.name}`;
-    const fileUpload = bucket.file(fileName);
-
-    await fileUpload.save(buffer, {
-      metadata: {
+    const { error: uploadError } = await supabaseStorage.storage
+      .from('profile-images')
+      .upload(fileName, buffer, {
         contentType: file.type,
         metadata: {
           uploadedBy: currentUserId,
           uploadedAt: new Date().toISOString(),
-          fileHash: fileHash, // 파일 해시 저장
         },
-      },
-    });
+      });
 
-    // 4. 영구 공개 URL 생성
-    await fileUpload.makePublic();
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+    }
 
-    // 5. 사용자 프로필에 이미지 URL과 해시 업데이트
-    await userRef.update({
-      image: publicUrl,
-      imageHash: fileHash, // 파일 해시 저장
-      updatedAt: new Date().toISOString(),
-    });
+    // 3. 공개 URL 생성
+    const { data: urlData } = supabaseStorage.storage.from('profile-images').getPublicUrl(fileName);
 
-    // 6. 기존 이미지가 있으면 삭제 (스토리지 정리)
-    if (currentImageUrl && currentImageUrl.includes('storage.googleapis.com')) {
+    const publicUrl = urlData.publicUrl;
+
+    // 4. 사용자 프로필에 이미지 URL 업데이트 (Supabase)
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        image: publicUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', currentUserId);
+
+    if (updateError) {
+      console.error('Supabase update error:', updateError);
+      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+    }
+
+    // 5. 기존 이미지가 있으면 삭제 (Supabase Storage 정리)
+    if (currentImageUrl && currentImageUrl.includes('supabase.co')) {
       try {
         // URL에서 파일 경로 추출
         const urlParts = currentImageUrl.split('/');
         const oldFileName = urlParts.slice(-2).join('/'); // profiles/userId/filename
-        const oldFile = bucket.file(oldFileName);
 
-        // 파일이 존재하는지 확인 후 삭제
-        const [exists] = await oldFile.exists();
-        if (exists) {
-          await oldFile.delete();
+        const { error: deleteError } = await supabaseStorage.storage
+          .from('profile-images')
+          .remove([oldFileName]);
+
+        if (deleteError) {
+          console.warn('Failed to delete old profile image:', deleteError);
+        } else {
           console.log(`Deleted old profile image: ${oldFileName}`);
         }
       } catch (deleteError) {
@@ -181,9 +195,4 @@ export async function POST(req: Request) {
     console.error('Error uploading profile image:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
-
-// 파일 해시 계산 함수 (간단한 해시)
-async function calculateFileHash(buffer: Buffer): Promise<string> {
-  return createHash('md5').update(buffer).digest('hex');
 }

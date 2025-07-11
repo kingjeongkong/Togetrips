@@ -1,7 +1,4 @@
-export interface Location {
-  city: string;
-  state: string;
-}
+import type { Location } from './profileTypes';
 
 export interface User {
   id: string;

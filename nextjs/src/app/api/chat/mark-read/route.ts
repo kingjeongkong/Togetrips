@@ -1,5 +1,5 @@
-import { adminDb } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -18,41 +18,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Chat room ID is required' }, { status: 400 });
     }
 
-    // 채팅방 존재 및 참가자 검증
-    const chatRoomRef = adminDb.collection('chatRooms').doc(chatRoomID);
-    const chatRoomDoc = await chatRoomRef.get();
+    const supabase = createServerSupabaseClient();
 
-    if (!chatRoomDoc.exists) {
+    // 채팅방 존재 및 참가자 검증
+    const { data: chatRoom, error: chatRoomError } = await supabase
+      .from('chat_rooms')
+      .select('id, participants')
+      .eq('id', chatRoomID)
+      .single();
+
+    if (chatRoomError || !chatRoom) {
       return NextResponse.json({ error: 'Chat room not found' }, { status: 404 });
     }
 
-    const chatRoomData = chatRoomDoc.data();
-    if (!chatRoomData?.participants?.includes(session.user.id)) {
+    if (!chatRoom.participants.includes(session.user.id)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // 읽지 않은 메시지 조회 (자신이 보낸 메시지 제외)
-    const unreadMessagesQuery = await chatRoomRef
-      .collection('messages')
-      .where('senderID', '!=', session.user.id)
-      .where('read', '==', false)
-      .get();
+    const { data: unreadMessages, error: unreadError } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('chat_room_id', chatRoomID)
+      .eq('read', false)
+      .neq('sender_id', session.user.id);
 
-    if (unreadMessagesQuery.empty) {
+    if (unreadError) {
+      throw new Error(unreadError.message);
+    }
+
+    if (!unreadMessages || unreadMessages.length === 0) {
       return NextResponse.json({ success: true, updatedCount: 0 });
     }
 
-    // 배치로 읽음 처리
-    const batch = adminDb.batch();
-    unreadMessagesQuery.docs.forEach((doc) => {
-      batch.update(doc.ref, { read: true });
-    });
+    // 읽지 않은 메시지들 일괄 업데이트
+    const ids = unreadMessages.map((msg) => msg.id);
+    const { error: updateError } = await supabase
+      .from('messages')
+      .update({ read: true })
+      .in('id', ids);
 
-    await batch.commit();
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
 
     return NextResponse.json({
       success: true,
-      updatedCount: unreadMessagesQuery.docs.length,
+      updatedCount: ids.length,
     });
   } catch (error) {
     console.error('Error marking messages as read:', error);

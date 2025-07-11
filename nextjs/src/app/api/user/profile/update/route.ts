@@ -1,5 +1,5 @@
-import { adminDb } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -14,14 +14,16 @@ export async function PUT(req: Request) {
     const updates = await req.json();
 
     // 현재 사용자 데이터 가져오기
-    const userRef = adminDb.collection('users').doc(currentUserId);
-    const userDoc = await userRef.get();
+    const supabase = createServerSupabaseClient();
+    const { data: currentData, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', currentUserId)
+      .single();
 
-    if (!userDoc.exists) {
+    if (fetchError || !currentData) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
-    const currentData = userDoc.data() as Record<string, unknown>;
 
     // 업데이트할 필드들 검증 및 변경사항 확인
     const validatedUpdates: Record<string, unknown> = {};
@@ -76,14 +78,21 @@ export async function PUT(req: Request) {
     }
 
     // 업데이트 시간 추가
-    validatedUpdates.updatedAt = new Date().toISOString();
+    validatedUpdates.updated_at = new Date().toISOString();
 
     // 프로필 업데이트
-    await userRef.update(validatedUpdates);
+    const { error: updateError } = await supabase
+      .from('users')
+      .update(validatedUpdates)
+      .eq('id', currentUserId);
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
 
     return NextResponse.json({
       message: 'Profile updated successfully',
-      updatedFields: Object.keys(validatedUpdates).filter((key) => key !== 'updatedAt'),
+      updatedFields: Object.keys(validatedUpdates).filter((key) => key !== 'updated_at'),
     });
   } catch (error) {
     let errorMessage = 'Internal Server Error';

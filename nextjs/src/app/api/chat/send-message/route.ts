@@ -1,5 +1,5 @@
-import { adminDb } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -29,45 +29,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid message content' }, { status: 400 });
     }
 
-    // 채팅방 존재 및 참가자 검증
-    const chatRoomRef = adminDb.collection('chatRooms').doc(chatRoomID);
-    const chatRoomDoc = await chatRoomRef.get();
+    const supabase = createServerSupabaseClient();
 
-    if (!chatRoomDoc.exists) {
+    // 채팅방 존재 및 참가자 검증
+    const { data: chatRoom, error: chatRoomError } = await supabase
+      .from('chat_rooms')
+      .select('id, participants')
+      .eq('id', chatRoomID)
+      .single();
+
+    if (chatRoomError || !chatRoom) {
       return NextResponse.json({ error: 'Chat room not found' }, { status: 404 });
     }
 
-    const chatRoomData = chatRoomDoc.data();
-    if (!chatRoomData?.participants?.includes(session.user.id)) {
+    if (!chatRoom.participants.includes(session.user.id)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // 새 메시지 생성
-    const newMessage = {
-      senderID: session.user.id,
-      content: content.trim(),
-      timestamp: new Date().toISOString(),
-      read: false,
-    };
+    const { data: message, error: messageError } = await supabase
+      .from('messages')
+      .insert({
+        chat_room_id: chatRoomID,
+        sender_id: session.user.id,
+        content: content.trim(),
+        timestamp: new Date().toISOString(),
+        read: false,
+      })
+      .select('id')
+      .single();
 
-    // 메시지 추가 및 채팅방 업데이트 (배치 처리)
-    const batch = adminDb.batch();
-
-    // 메시지 추가
-    const messageRef = chatRoomRef.collection('messages').doc();
-    batch.set(messageRef, newMessage);
+    if (messageError) {
+      throw new Error(messageError.message);
+    }
 
     // 채팅방 lastMessage 업데이트
-    batch.update(chatRoomRef, {
-      lastMessage: content.trim(),
-      lastMessageTime: new Date().toISOString(),
-    });
+    const { error: updateError } = await supabase
+      .from('chat_rooms')
+      .update({
+        last_message: content.trim(),
+        last_message_time: new Date().toISOString(),
+      })
+      .eq('id', chatRoomID);
 
-    await batch.commit();
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
 
     return NextResponse.json({
       success: true,
-      messageID: messageRef.id,
+      messageID: message.id,
     });
   } catch (error) {
     console.error('Error sending message:', error);

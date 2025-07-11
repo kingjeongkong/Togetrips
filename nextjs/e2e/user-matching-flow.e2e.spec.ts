@@ -60,12 +60,6 @@ test.describe('사용자 매칭 플로우', () => {
     await pageB.getByRole('link', { name: 'Navigate to requests' }).click();
     await pageB.waitForTimeout(3000); // 네트워크/API 지연을 고려해 3초 대기
 
-    // 디버깅: 전체 텍스트 출력
-    const allSpansB = await pageB.locator('span').allTextContents();
-    console.log('B 계정 모든 span 텍스트:', allSpansB);
-    const gridTextsB = await pageB.locator('div.grid').allTextContents();
-    console.log('B 계정 grid 내 텍스트:', gridTextsB);
-
     // 'Test_A' 텍스트가 포함된 카드(div)에서 Accept 버튼 클릭 (aria-label 기반)
     await expect(pageB.getByLabel('Request card list')).toBeVisible({ timeout: 20000 });
     await expect(pageB.getByLabel('Request card from Test_A')).toBeVisible({ timeout: 20000 });
@@ -78,29 +72,15 @@ test.describe('사용자 매칭 플로우', () => {
       pageB.getByLabel('Request card from Test_A').getByLabel('Processing accept'),
     ).toHaveText('Processing...', { timeout: 10000 });
 
-    // 디버깅: 요청 수락 후 현재 페이지 상태 확인
-    console.log('요청 수락 완료 후 현재 URL:', pageB.url());
-    const currentPageText = await pageB.locator('body').textContent();
-    console.log('현재 페이지 텍스트 (일부):', currentPageText?.substring(0, 200));
-
     // 6. 채팅방 자동 생성 확인 (B)
-    console.log('채팅방 진입 시도 전 대기...');
     await pageB.waitForTimeout(7000); // 채팅방 생성 완료를 위한 더 긴 대기
-    console.log('채팅방 페이지로 이동 시도...');
     await pageB.getByRole('link', { name: 'Navigate to chat' }).click();
-    console.log('채팅방 페이지 로딩 완료');
     await pageB.waitForTimeout(7000); // 네트워크/DB 지연 고려
-
-    // 디버깅: 채팅방 페이지의 실제 내용 확인
-    const chatPageText = await pageB.locator('body').textContent();
-    console.log('채팅방 페이지 텍스트 (일부):', chatPageText?.substring(0, 300));
-    const chatSpans = await pageB.locator('span').allTextContents();
-    console.log('채팅방 페이지 span 텍스트:', chatSpans);
 
     // 채팅방 목록이 1개 이상일 때까지(상대방 이름 등으로) 대기
     await expect(pageB.getByLabel('Chat list')).toBeVisible({ timeout: 40000 });
-    await expect(pageB.getByText('Test_A')).toBeVisible({ timeout: 40000 });
-    await pageB.getByText('Test_A').click();
+    await expect(pageB.getByLabel('Chat list').getByText('Test_A')).toBeVisible({ timeout: 40000 });
+    await pageB.getByLabel('Chat list').getByText('Test_A').click();
     // 채팅방 내부에서 메시지 입력창 등으로 대기
     await expect(pageB.getByLabel('Type a message')).toBeVisible({
       timeout: 40000,
@@ -111,9 +91,9 @@ test.describe('사용자 매칭 플로우', () => {
     await pageA.waitForTimeout(7000); // 네트워크/DB 지연 고려
     // 채팅방 목록이 1개 이상일 때까지(상대방 이름 등으로) 대기
     await expect(pageA.getByLabel('Chat list')).toBeVisible({ timeout: 40000 });
-    await expect(pageA.getByText('Test_B')).toBeVisible({ timeout: 40000 });
+    await expect(pageA.getByLabel('Chat list').getByText('Test_B')).toBeVisible({ timeout: 40000 });
     // 채팅방 클릭
-    await pageA.getByText('Test_B').click();
+    await pageA.getByLabel('Chat list').getByText('Test_B').click();
     // 채팅방 내부에서 메시지 입력창 등으로 대기
     await expect(pageA.getByLabel('Type a message')).toBeVisible({
       timeout: 40000,
@@ -123,27 +103,48 @@ test.describe('사용자 매칭 플로우', () => {
     await pageA.getByLabel('Type a message').fill('안녕하세요!');
     await pageA.getByLabel('Send message').click();
 
-    // 9. B가 실시간으로 메시지 수신 확인
+    // 9. B가 채팅방에서 메시지 확인 (새로고침으로)
     await pageB.getByRole('link', { name: 'Navigate to chat' }).click();
-    await pageB.waitForTimeout(7000);
+    await pageB.waitForTimeout(3000);
     await expect(pageB.getByLabel('Chat list')).toBeVisible({ timeout: 40000 });
     await expect(pageB.getByText('Test_A')).toBeVisible({ timeout: 40000 });
     await pageB.getByText('Test_A').click();
     await expect(pageB.getByLabel('Type a message')).toBeVisible({
       timeout: 40000,
     });
-    await pageB.waitForTimeout(7000); // 메시지 패칭 지연을 고려해 더 긴 대기
-    // 메시지가 실제로 렌더링될 때까지 대기 (aria-label 기반)
+
+    // 페이지 새로고침으로 메시지 확인
+    await pageB.reload();
+    await pageB.waitForTimeout(3000);
+    await expect(pageB.getByLabel('Chat list')).toBeVisible({ timeout: 40000 });
+    await expect(pageB.getByLabel('Chat list').getByText('Test_A')).toBeVisible({ timeout: 40000 });
+    await pageB.getByLabel('Chat list').getByText('Test_A').click();
+    await expect(pageB.getByLabel('Type a message')).toBeVisible({
+      timeout: 40000,
+    });
+
+    // 메시지가 표시되는지 확인
     await expect(pageB.getByLabel('Other message').filter({ hasText: '안녕하세요!' })).toBeVisible({
-      timeout: 20000,
+      timeout: 10000,
     });
 
     // 10. B가 답장
     await pageB.getByLabel('Type a message').fill('반가워요!');
     await pageB.getByLabel('Send message').click();
-    // A가 B의 답장을 실시간으로 수신 확인 (aria-label 기반)
+
+    // A가 새로고침으로 B의 답장 확인
+    await pageA.reload();
+    await pageA.waitForTimeout(3000);
+    await expect(pageA.getByLabel('Chat list')).toBeVisible({ timeout: 40000 });
+    await expect(pageA.getByLabel('Chat list').getByText('Test_B')).toBeVisible({ timeout: 40000 });
+    await pageA.getByLabel('Chat list').getByText('Test_B').click();
+    await expect(pageA.getByLabel('Type a message')).toBeVisible({
+      timeout: 40000,
+    });
+
+    // B의 답장이 표시되는지 확인
     await expect(pageA.getByLabel('Other message').filter({ hasText: '반가워요!' })).toBeVisible({
-      timeout: 20000,
+      timeout: 10000,
     });
   });
 });

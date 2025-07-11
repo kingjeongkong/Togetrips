@@ -3,7 +3,7 @@
 import { profileService } from '@/features/shared/services/profileService';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export default function useProfile(userId: string | undefined) {
+export default function useUserProfileById(userId: string | undefined) {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({

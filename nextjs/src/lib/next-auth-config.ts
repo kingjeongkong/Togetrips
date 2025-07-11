@@ -1,4 +1,5 @@
-import { FirestoreAdapter } from '@auth/firebase-adapter';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
+import { SupabaseAdapter } from '@auth/supabase-adapter';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { NextAuthOptions } from 'next-auth';
@@ -36,17 +37,32 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Please enter your email and password.');
         }
 
+        // 먼저 Supabase에서 사용자 조회 시도
         try {
-          // 서버 사이드에서 Firebase Admin SDK를 사용하여 인증
+          const supabase = createServerSupabaseClient();
+          const {
+            data: { users },
+            error,
+          } = await supabase.auth.admin.listUsers();
+          const user = users.find((u) => u.email === credentials.email);
+
+          if (!error && user) {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.user_metadata?.full_name || user.email,
+            };
+          }
+        } catch (supabaseError) {
+          console.log('Supabase auth failed, trying Firebase:', supabaseError);
+        }
+
+        // Supabase에서 찾지 못하면 Firebase에서 조회
+        try {
           const { getAuth } = await import('firebase-admin/auth');
           const adminAuth = getAuth();
-
-          // 이메일로 사용자 조회
           const userRecord = await adminAuth.getUserByEmail(credentials.email);
 
-          // 비밀번호 검증 (Firebase Admin SDK는 직접적인 비밀번호 검증을 지원하지 않으므로
-          // 클라이언트 SDK를 사용하거나 다른 방법을 사용해야 함)
-          // 여기서는 간단히 사용자 존재 여부만 확인
           return {
             id: userRecord.uid,
             email: userRecord.email,
@@ -62,12 +78,16 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  adapter: FirestoreAdapter({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+  // adapter: FirestoreAdapter({
+  //   credential: cert({
+  //     projectId: process.env.FIREBASE_PROJECT_ID,
+  //     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  //     privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  //   }),
+  // }),
+  adapter: SupabaseAdapter({
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
   }),
   pages: {
     signIn: '/auth/signin',

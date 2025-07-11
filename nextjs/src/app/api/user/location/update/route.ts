@@ -1,5 +1,5 @@
-import { adminDb } from '@/lib/firebase-admin';
 import { authOptions } from '@/lib/next-auth-config';
+import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -10,22 +10,25 @@ export async function POST(req: NextRequest) {
   }
 
   const { city, state } = await req.json();
-  const userRef = adminDb.collection('users').doc(session.user.id);
-  const userDoc = await userRef.get();
+  const supabase = createServerSupabaseClient();
 
-  if (!userDoc.exists) {
+  // 현재 사용자 데이터 가져오기
+  const { data: currentData, error: fetchError } = await supabase
+    .from('users')
+    .select('location_city, location_state')
+    .eq('id', session.user.id)
+    .single();
+
+  if (fetchError || !currentData) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const currentData = userDoc.data();
-  const currentLocation = currentData?.location || {};
-
   const updateObj: Record<string, string | Date> = {};
-  if (currentLocation.city !== city) {
-    updateObj['location.city'] = city;
+  if (currentData.location_city !== city) {
+    updateObj.location_city = city;
   }
-  if (currentLocation.state !== state) {
-    updateObj['location.state'] = state;
+  if (currentData.location_state !== state) {
+    updateObj.location_state = state;
   }
 
   if (Object.keys(updateObj).length === 0) {
@@ -35,8 +38,15 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  updateObj.updatedAt = new Date();
-  await userRef.update(updateObj);
+  updateObj.updated_at = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from('users')
+    .update(updateObj)
+    .eq('id', session.user.id);
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ message: 'Location updated' });
 }

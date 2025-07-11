@@ -1,6 +1,6 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import LogoutMenu from '@/features/shared/components/LogoutMenu';
-import { useUserProfile } from '@/features/shared/hooks/useUserProfile';
+import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
 import { splitHashTags } from '@/features/shared/utils/HashTags';
 import { signOut } from 'next-auth/react';
@@ -35,7 +35,7 @@ const ProfileHeaderActions = ({
 );
 
 const MainProfile = () => {
-  const { profile, isLoading, updateProfile } = useUserProfile();
+  const { profile, isLoading, updateProfile } = useMyProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
