@@ -6,6 +6,10 @@ export interface ChatRoom {
   lastMessageTime: string;
 }
 
+export interface ChatRoomListItem extends ChatRoom {
+  unreadCount: number;
+}
+
 export interface Message {
   id: string;
   senderID: string;
