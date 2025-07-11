@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 
-export const useUserProfile = () => {
+export const useMyProfile = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const queryClient = useQueryClient();

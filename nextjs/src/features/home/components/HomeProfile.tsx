@@ -5,12 +5,12 @@ import { formatHashTags } from '@/features/shared/utils/HashTags';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import useProfile from '../hooks/useProfile';
+import useUserProfileById from '../hooks/useProfile';
 
 const HomeProfile = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const { profile, isLoading } = useProfile(userId as string);
+  const { profile, isLoading } = useUserProfileById(userId as string);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [maxLength, setMaxLength] = useState(200);
   const shouldShowMoreButton = profile?.bio && profile.bio.length > maxLength;

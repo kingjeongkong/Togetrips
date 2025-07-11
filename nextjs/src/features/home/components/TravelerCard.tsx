@@ -3,7 +3,7 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import RequestModal from '@/features/home/components/RequestModal';
 import TravelerDetailModal from '@/features/home/components/TravelerDetailModal';
-import useProfile from '@/features/home/hooks/useProfile';
+import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import Image from 'next/image';
@@ -20,7 +20,7 @@ interface TravelCardProps {
 const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const { profile } = useProfile(travelerID);
+  const { profile } = useUserProfileById(travelerID);
   const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
 
   const handleSendRequest = async (message: string) => {
