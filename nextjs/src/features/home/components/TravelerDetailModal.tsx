@@ -2,7 +2,7 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import RequestModal from '@/features/home/components/RequestModal';
-import useProfile from '@/features/home/hooks/useProfile';
+import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import Image from 'next/image';
@@ -17,7 +17,7 @@ interface TravelerDetailModalProps {
 
 const TravelerDetailModal = ({ isOpen, onClose, travelerID }: TravelerDetailModalProps) => {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const { profile, isLoading: profileLoading } = useProfile(travelerID);
+  const { profile, isLoading: profileLoading } = useUserProfileById(travelerID);
   const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
 
   const handleSendRequest = async (message: string) => {
