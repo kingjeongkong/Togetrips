@@ -1,9 +1,9 @@
 import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { getServerSession } from 'next-auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // ToDo : Supabase에서 집계 쿼리 적용(N+1 문제 해결)
     const chatRoomsWithUnread = await Promise.all(
       (chatRooms || []).map(async (room) => {
-        const { data: unreadMessages, error: unreadError } = await supabase
+        const { data: unreadMessages } = await supabase
           .from('messages')
           .select('id')
           .eq('chat_room_id', room.id)

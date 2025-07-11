@@ -68,7 +68,7 @@ const ChatRoom = () => {
     );
 
     return () => unsubscribe();
-  }, [chatRoomID, userId, session]);
+  }, [chatRoomID, userId, session, queryClient]);
 
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;

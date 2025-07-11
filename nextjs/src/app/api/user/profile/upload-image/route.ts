@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     const safeName = sanitizeFileName(file.name);
     const fileName = `profiles/${currentUserId}/${Date.now()}_${safeName}`;
 
-    const { data: uploadData, error: uploadError } = await supabaseStorage.storage
+    const { error: uploadError } = await supabaseStorage.storage
       .from('profile-images')
       .upload(fileName, buffer, {
         contentType: file.type,

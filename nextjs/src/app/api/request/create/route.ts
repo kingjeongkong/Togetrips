@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const supabase = createServerSupabaseClient();
 
     // 중복 요청 체크
-    const { data: existing, error: existingError } = await supabase
+    const { data: existing } = await supabase
       .from('requests')
       .select('id, status')
       .eq('sender_id', senderID)

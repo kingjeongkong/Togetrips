@@ -8,17 +8,17 @@ import { toast } from 'react-toastify';
 import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
 
 // 헬퍼 함수: DB row를 Message 타입으로 변환
-const mapRowToMessage = (row: any): Message => ({
-  id: row.id,
-  senderID: row.sender_id,
-  content: row.content,
-  timestamp: row.timestamp,
-  read: row.read,
+const mapRowToMessage = (row: Record<string, unknown>): Message => ({
+  id: row.id as string,
+  senderID: row.sender_id as string,
+  content: row.content as string,
+  timestamp: row.timestamp as string,
+  read: row.read as boolean,
 });
 
 export const chatService = {
   // 채팅방 목록 조회
-  async getChatRooms(userID: string): Promise<ChatRoomListItem[]> {
+  async getChatRooms(): Promise<ChatRoomListItem[]> {
     try {
       const response = await fetch('/api/chat/rooms', {
         method: 'GET',
@@ -33,7 +33,7 @@ export const chatService = {
       }
 
       const result = await response.json();
-      return result.chatRooms.map((room: any) => ({
+      return result.chatRooms.map((room: Record<string, unknown>) => ({
         id: room.id,
         participants: room.participants,
         createdAt: room.created_at,
@@ -303,10 +303,10 @@ export const chatService = {
               table: 'messages',
               filter: `chat_room_id=eq.${chatRoomID}`,
             },
-            (payload: any) => {
+            (payload: Record<string, unknown>) => {
               if (!isSubscribed) return;
               try {
-                const { new: row } = payload;
+                const { new: row } = payload as { new: Record<string, unknown> };
                 // 새 메시지 추가만 처리
                 const newMessage = mapRowToMessage(row);
                 currentMessages = [...currentMessages, newMessage];
