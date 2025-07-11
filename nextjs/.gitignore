@@ -37,4 +37,4 @@ yarn-error.log*
 next-env.d.ts
 
 # Supabase schema (보안상 민감한 정보 포함)
-supabase-schema.sql
+*.sql
