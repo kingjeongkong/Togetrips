@@ -4,14 +4,13 @@ import {
   createRequest,
   fetchRequestsBetweenUsers,
 } from '@/features/shared/services/requestService';
+import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 
 export const useSendRequest = (otherUserId: string) => {
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
-  const currentUserId = session?.user?.id;
+  const { userId: currentUserId } = useSession();
 
   // 서버의 중복 체크와 별개로, UI 업데이트를 위해 기존 요청 상태를 조회
   const { data: hasExistingRequest, isLoading: isChecking } = useQuery({

@@ -1,8 +1,8 @@
 'use client';
 
 import SidebarItem from '@/features/shared/components/SidebarItem';
+import { useAuthActions } from '@/hooks/useAuthActions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { IconType } from 'react-icons';
@@ -22,6 +22,7 @@ const Sidebar = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { handleSignOut } = useAuthActions();
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
@@ -61,7 +62,7 @@ const Sidebar = () => {
           </button>
           {settingsOpen && (
             <LogoutMenu
-              onLogout={() => signOut({ callbackUrl: '/auth/signin' })}
+              onLogout={handleSignOut}
               onClose={() => setSettingsOpen(false)}
               direction="up"
             />

@@ -3,12 +3,12 @@
 import AuthLayout from '@/features/auth/components/AuthLayout';
 import InputField from '@/features/auth/components/InputField';
 import SubmitButton from '@/features/auth/components/SubmitButton';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuthActions } from '@/hooks/useAuthActions';
 import Link from 'next/link';
 import { Suspense, useState } from 'react';
 
 function SignUpForm() {
-  const { isLoading, errors, authError, handleSignUp } = useAuth();
+  const { isLoading, authError, errors, handleSignUp } = useAuthActions();
   const [form, setForm] = useState({
     name: '',
     email: '',

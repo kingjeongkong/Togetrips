@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase-config';
-import { supabase } from '@/lib/supabase-client';
+import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
 import { collection, doc, onSnapshot, orderBy, query, where } from 'firebase/firestore';
@@ -246,14 +246,14 @@ export const chatService = {
 
   // ===== Supabase Realtime 방식 (개선됨) =====
 
-  // Supabase Realtime 메시지 구독 (session 파라미터로 인증)
+  // Supabase Realtime 메시지 구독 (userId 파라미터로 인증)
   // ToDo : Supabase access token 인증 로직 추가 후 rls 삭제
   subscribeToMessagesSupabase(
     chatRoomID: string,
     onMessage: (messages: Message[]) => void,
     onError?: (failedCount: number) => void,
     maxRetries = 3,
-    session?: { user?: { id: string } } | null,
+    userId?: string,
   ) {
     let failedCount = 0;
     let currentMessages: Message[] = [];
@@ -262,10 +262,10 @@ export const chatService = {
 
     // 인증 상태 확인 (파라미터로 전달)
     const checkAuth = () => {
-      if (!session || !session.user?.id) {
+      if (!userId) {
         throw new Error('Authentication required');
       }
-      return session;
+      return { user: { id: userId } };
     };
 
     // 초기 메시지 로딩 (최근 50개만 로드)

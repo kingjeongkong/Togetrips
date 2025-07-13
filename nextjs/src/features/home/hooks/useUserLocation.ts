@@ -1,13 +1,12 @@
 'use client';
 
+import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { userLocationService } from '../services/userLocationService';
 import { getCurrentLocationData } from '../utils/location';
 
 export const useUserLocation = () => {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
 
   // 위치 정보 fetch + DB 업데이트
   const {

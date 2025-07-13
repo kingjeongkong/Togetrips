@@ -1,16 +1,15 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
+import { useSession } from '@/providers/SessionProvider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { chatService } from '../services/chatService';
 import ChatListItem from './ChatListItem';
 
 const ChatList = () => {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
 

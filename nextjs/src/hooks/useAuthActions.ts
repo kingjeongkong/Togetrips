@@ -1,5 +1,7 @@
 'use client';
 
+import { FormErrors } from '@/features/auth/types/auth';
+import { validateSignInForm, validateSignUpForm } from '@/features/auth/utils/auth-validators';
 import { createBrowserSupabaseClient } from '@/lib/supabase-config';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -10,6 +12,7 @@ export const useAuthActions = () => {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [authError, setAuthError] = useState('');
 
   const supabase = createBrowserSupabaseClient();
@@ -23,6 +26,7 @@ export const useAuthActions = () => {
   // Google 로그인
   const handleGoogleSignIn = async () => {
     setAuthError('');
+    setErrors({});
     setIsLoading(true);
     setIsRedirecting(true);
 
@@ -54,6 +58,15 @@ export const useAuthActions = () => {
     confirmPassword: string;
   }) => {
     setAuthError('');
+    setErrors({});
+
+    // 폼 검증
+    const validationErrors = validateSignUpForm(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -88,6 +101,15 @@ export const useAuthActions = () => {
   // 이메일/비밀번호 로그인
   const handleSignIn = async (email: string, password: string) => {
     setAuthError('');
+    setErrors({});
+
+    // 폼 검증
+    const validationErrors = validateSignInForm({ email, password });
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -135,9 +157,10 @@ export const useAuthActions = () => {
     isLoading,
     isRedirecting,
     authError,
-    handleGoogleSignIn,
-    handleSignUp,
+    errors,
     handleSignIn,
+    handleSignUp,
+    handleGoogleSignIn,
     handleSignOut,
   };
 };
