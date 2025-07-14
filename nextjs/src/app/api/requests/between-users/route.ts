@@ -10,7 +10,14 @@ export async function GET(request: NextRequest) {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    if (!session?.user?.id) {
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -24,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 현재 사용자가 두 사용자 중 하나인지 확인
-    if (session.user.id !== userAId && session.user.id !== userBId) {
+    if (user.id !== userAId && user.id !== userBId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

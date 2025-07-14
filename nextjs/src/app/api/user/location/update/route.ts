@@ -9,7 +9,15 @@ export async function POST(request: NextRequest) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session?.user?.id) {
+
+  let user = null;
+  if (session?.access_token) {
+    const { data, error } = await supabase.auth.getUser(session.access_token);
+    if (!error) {
+      user = data.user;
+    }
+  }
+  if (!user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -19,7 +27,7 @@ export async function POST(request: NextRequest) {
   const { data: currentData, error: fetchError } = await supabase
     .from('users')
     .select('location_city, location_state')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (fetchError || !currentData) {
@@ -42,10 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   updateObj.updated_at = new Date().toISOString();
-  const { error: updateError } = await supabase
-    .from('users')
-    .update(updateObj)
-    .eq('id', session.user.id);
+  const { error: updateError } = await supabase.from('users').update(updateObj).eq('id', user.id);
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });

@@ -10,9 +10,17 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
+  let user = null;
+  if (session?.access_token) {
+    const { data, error } = await supabase.auth.getUser(session.access_token);
+    if (!error) {
+      user = data.user;
+    }
+  }
+
   // 루트 경로 처리
   if (request.nextUrl.pathname === '/') {
-    if (session) {
+    if (user) {
       return NextResponse.redirect(new URL('/home', request.url));
     } else {
       return NextResponse.redirect(new URL('/auth/signin', request.url));
@@ -28,13 +36,13 @@ export async function middleware(request: NextRequest) {
   const protectedPaths = ['/home', '/profile', '/chat', '/request'];
   const isProtectedPath = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
-  // 인증이 필요한 경로인데 세션이 없으면 로그인 페이지로 리다이렉트
-  if (isProtectedPath && !session) {
+  // 인증이 필요한 경로인데 user가 없으면 로그인 페이지로 리다이렉트
+  if (isProtectedPath && !user) {
     return NextResponse.redirect(new URL('/auth/signin', request.url));
   }
 
   // 이미 로그인된 사용자가 로그인/회원가입 페이지에 접근하면 홈으로 리다이렉트
-  if (session && request.nextUrl.pathname.startsWith('/auth')) {
+  if (user && request.nextUrl.pathname.startsWith('/auth')) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
 

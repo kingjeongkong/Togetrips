@@ -10,10 +10,17 @@ export async function POST(request: NextRequest) {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    if (!session?.user?.id) {
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const senderID = session.user.id;
+    const senderID = user.id;
 
     const { receiverID, message }: { receiverID: string; message: string } = await request.json();
 

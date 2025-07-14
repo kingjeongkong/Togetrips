@@ -11,7 +11,14 @@ export async function GET(request: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!session?.user?.id) {
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -27,7 +34,7 @@ export async function GET(request: NextRequest) {
         last_message_time
       `,
       )
-      .contains('participants', [session.user.id])
+      .contains('participants', [user.id])
       .order('last_message_time', { ascending: false });
 
     if (error) {
@@ -43,7 +50,7 @@ export async function GET(request: NextRequest) {
           .select('id')
           .eq('chat_room_id', room.id)
           .eq('read', false)
-          .neq('sender_id', session.user.id);
+          .neq('sender_id', user.id);
         return {
           ...room,
           unreadCount: unreadMessages ? unreadMessages.length : 0,

@@ -11,7 +11,14 @@ export async function POST(request: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!session?.user?.id) {
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -44,7 +51,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Chat room not found' }, { status: 404 });
     }
 
-    if (!chatRoom.participants.includes(session.user.id)) {
+    if (!chatRoom.participants.includes(user.id)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -53,7 +60,7 @@ export async function POST(request: NextRequest) {
       .from('messages')
       .insert({
         chat_room_id: chatRoomID,
-        sender_id: session.user.id,
+        sender_id: user.id,
         content: content.trim(),
         timestamp: new Date().toISOString(),
         read: false,

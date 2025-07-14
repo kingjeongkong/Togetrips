@@ -32,7 +32,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         data: { session },
       } = await supabase.auth.getSession();
       setSession(session);
-      setUser(session?.user ?? null);
+      let verifiedUser: User | null = null;
+      if (session?.access_token) {
+        const { data, error } = await supabase.auth.getUser(session.access_token);
+        if (!error) {
+          verifiedUser = data.user;
+        }
+      }
+      setUser(verifiedUser);
       setIsLoading(false);
     };
 
@@ -43,7 +50,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      let verifiedUser: User | null = null;
+      if (session?.access_token) {
+        const { data, error } = await supabase.auth.getUser(session.access_token);
+        if (!error) {
+          verifiedUser = data.user;
+        }
+      }
+      setUser(verifiedUser);
       setIsLoading(false);
     });
 

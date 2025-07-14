@@ -9,11 +9,17 @@ export async function PUT(request: NextRequest) {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-
-    if (!session?.user?.id) {
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const currentUserId = session.user.id;
+    const currentUserId = user.id;
 
     const updates = await request.json();
 
