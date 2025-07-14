@@ -31,10 +31,12 @@ export const useAuthActions = () => {
     setIsRedirecting(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectUrl = `${window.location.origin}/auth/callback?next=${getCallbackUrl()}`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}${getCallbackUrl()}`,
+          redirectTo: redirectUrl,
         },
       });
 
