@@ -2,8 +2,8 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { profileService } from '@/features/shared/services/profileService';
+import { useSession } from '@/providers/SessionProvider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { chatService } from '../services/chatService';
@@ -15,8 +15,7 @@ import ChatRoomMessageList from './ChatRoomMessageList';
 const ChatRoom = () => {
   const params = useParams();
   const chatRoomID = params.chatRoomID as string;
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const queryClient = useQueryClient();
@@ -64,11 +63,11 @@ const ChatRoom = () => {
         }
       },
       3,
-      session,
+      userId,
     );
 
     return () => unsubscribe();
-  }, [chatRoomID, userId, session, queryClient]);
+  }, [chatRoomID, userId, queryClient]);
 
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;

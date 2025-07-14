@@ -3,13 +3,12 @@
 import { profileService } from '@/features/shared/services/profileService';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
 import type { User } from '@/features/shared/types/User';
+import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 
 export const useMyProfile = () => {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading } = useQuery({

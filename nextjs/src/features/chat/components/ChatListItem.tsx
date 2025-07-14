@@ -2,8 +2,8 @@
 
 import { profileService } from '@/features/shared/services/profileService';
 import type { User } from '@/features/shared/types/User';
+import { useSession } from '@/providers/SessionProvider';
 import { formatRelativeTime } from '@/utils/dateUtils';
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -15,8 +15,7 @@ interface ChatListItemProps {
 }
 
 const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
   const pathname = usePathname();
   const isSelected = pathname.includes(chatRoom.id);
   const [otherUserProfile, setOtherUserProfile] = useState<{

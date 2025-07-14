@@ -2,15 +2,14 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/providers/SessionProvider';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import useUserProfileById from '../hooks/useProfile';
 
 const HomeProfile = () => {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
-  const { profile, isLoading } = useUserProfileById(userId as string);
+  const { userId } = useSession();
+  const { profile, isLoading } = useUserProfileById(userId);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [maxLength, setMaxLength] = useState(200);
   const shouldShowMoreButton = profile?.bio && profile.bio.length > maxLength;

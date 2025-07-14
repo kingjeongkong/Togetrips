@@ -3,14 +3,14 @@
 import AuthLayout from '@/features/auth/components/AuthLayout';
 import InputField from '@/features/auth/components/InputField';
 import SubmitButton from '@/features/auth/components/SubmitButton';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuthActions } from '@/hooks/useAuthActions';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense, useState } from 'react';
 
 function SignInForm() {
-  const { isLoading, isRedirecting, errors, authError, handleSignIn, handleGoogleSignIn } =
-    useAuth();
+  const { isLoading, isRedirecting, authError, errors, handleSignIn, handleGoogleSignIn } =
+    useAuthActions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -53,24 +53,34 @@ function SignInForm() {
         />
         <SubmitButton title="Sign In" isLoading={isLoading} />
       </form>
-      <div className="flex items-center justify-between text-sm mt-6">
-        <Link href="#" className="text-indigo-500 hover:underline transition">
-          Forgot password?
-        </Link>
-        <Link href="/auth/signup" className="text-indigo-500 hover:underline transition">
-          Don't have an account?
-        </Link>
-      </div>
+
       <div className="mt-6">
-        <button
-          onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-200 shadow-sm rounded-lg px-4 py-2 font-medium hover:bg-gray-50 transition disabled:opacity-50"
-          disabled={isLoading || isRedirecting}
-        >
-          <Image src="/google-logo.png" alt="Google" width={24} height={24} className="w-6 h-6" />
-          Continue with Google
-        </button>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <button
+            onClick={handleGoogleSignIn}
+            className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <Image src="/google-logo.png" alt="Google" width={20} height={20} className="mr-2" />
+            Google
+          </button>
+        </div>
       </div>
+
+      <p className="mt-6 text-center text-sm text-gray-600">
+        Don't have an account?{' '}
+        <Link href="/auth/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+          Sign up
+        </Link>
+      </p>
     </AuthLayout>
   );
 }

@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
 
-// fetch mock 추가
 global.fetch = jest.fn();
 
 // Supabase 모듈들을 mock으로 대체
@@ -11,8 +10,10 @@ jest.mock('@supabase/supabase-js', () => {
         signInWithPassword: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        getSession: jest.fn(),
-        onAuthStateChange: jest.fn(),
+        getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+        onAuthStateChange: jest.fn(() => ({
+          data: { subscription: { unsubscribe: jest.fn() } },
+        })),
         admin: {
           listUsers: jest.fn(),
         },
@@ -41,14 +42,17 @@ jest.mock('@supabase/supabase-js', () => {
   };
 });
 
-jest.mock('@/lib/supabase-client', () => ({
-  supabase: {
+// supabase-config mock 구조 보완
+jest.mock('@/lib/supabase-config', () => {
+  const supabaseMock = {
     auth: {
       signInWithPassword: jest.fn(),
       signUp: jest.fn(),
       signOut: jest.fn(),
-      getSession: jest.fn(),
-      onAuthStateChange: jest.fn(),
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } },
+      })),
       admin: {
         listUsers: jest.fn(),
       },
@@ -73,15 +77,9 @@ jest.mock('@/lib/supabase-client', () => ({
         getPublicUrl: jest.fn(),
       })),
     },
-  },
-}));
-
-jest.mock('@/lib/supabase-config', () => ({
-  createServerSupabaseClient: jest.fn(() => ({
-    auth: {
-      admin: {
-        listUsers: jest.fn(),
-      },
-    },
-  })),
-}));
+  };
+  return {
+    createBrowserSupabaseClient: jest.fn(() => supabaseMock),
+    createServerSupabaseClient: jest.fn(() => supabaseMock),
+  };
+});

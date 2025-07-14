@@ -1,10 +1,9 @@
-import { authOptions } from '@/lib/next-auth-config';
 import {
   createServerSupabaseClient,
   createServerSupabaseStorageClient,
 } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+
+import { NextRequest, NextResponse } from 'next/server';
 
 // 파일 유효성 검사 함수들
 function validateFileType(mimeType: string): boolean {
@@ -63,15 +62,27 @@ function sanitizeFileName(fileName: string): string {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
 }
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const currentUserId = session.user.id;
+    const currentUserId = user.id;
 
-    const formData = await req.formData();
+    const formData = await request.formData();
     const file = formData.get('image') as File;
 
     if (!file) {
@@ -110,7 +121,6 @@ export async function POST(req: Request) {
     }
 
     // Supabase 클라이언트 초기화
-    const supabase = createServerSupabaseClient();
     const supabaseStorage = createServerSupabaseStorageClient();
 
     // 1. 현재 사용자의 기존 프로필 이미지 URL 가져오기 (Supabase)

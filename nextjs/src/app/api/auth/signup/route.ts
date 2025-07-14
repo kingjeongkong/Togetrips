@@ -1,40 +1,54 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-  const { email, password, name } = await req.json();
+export async function POST(request: NextRequest) {
+  const { email, password, name } = await request.json();
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServerSupabaseClient(request);
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.admin.createUser({
+    // emailRedirectTo 설정
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const emailRedirectTo = `${siteUrl}/auth/callback`;
+
+    // 일반 유저 회원가입
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      user_metadata: { full_name: name },
-      email_confirm: true,
+      options: {
+        data: { full_name: name },
+        emailRedirectTo,
+      },
     });
 
-    if (authError || !user) {
-      throw new Error(authError?.message || 'Failed to create user');
+    if (signUpError) {
+      throw new Error(signUpError.message || 'Failed to sign up');
     }
 
-    const { error: profileError } = await supabase.from('users').insert({
-      id: user.id,
-      name,
-      email,
-      image: '',
-      tags: '',
-      bio: '',
-      location_city: '',
-      location_state: '',
-    });
+    if (!data.user) {
+      throw new Error('No user data returned from signup');
+    }
+
+    console.log('User created:', data.user.id);
+
+    // 프로필 생성 (upsert 방식으로 중복 방지)
+    const { error: profileError } = await supabase.from('users').upsert(
+      {
+        id: data.user.id,
+        name,
+        email,
+        image: '',
+        tags: '',
+        bio: '',
+        location_city: '',
+        location_state: '',
+      },
+      {
+        onConflict: 'id',
+      },
+    );
 
     if (profileError) {
-      // 프로필 생성 실패 시 사용자도 삭제
-      await supabase.auth.admin.deleteUser(user.id);
       throw new Error(profileError.message);
     }
 

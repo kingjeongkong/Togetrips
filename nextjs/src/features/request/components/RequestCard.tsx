@@ -3,8 +3,8 @@
 import { respondToRequest } from '@/features/shared/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
+import { useSession } from '@/providers/SessionProvider';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -15,8 +15,7 @@ interface RequestCardProps {
 
 const RequestCard = ({ request }: RequestCardProps) => {
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const isFetching = useIsFetching({ queryKey: ['requests', userId] });

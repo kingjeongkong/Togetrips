@@ -1,13 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Session } from 'next-auth';
-import { SessionProvider } from 'next-auth/react';
 import React from 'react';
 import DataFetchErrorBoundary from '../components/ErrorBoundary/DataFetchErrorBoundary';
 
 // Mock useSession
 const mockUseSession = jest.fn();
-jest.mock('next-auth/react', () => ({
-  ...jest.requireActual('next-auth/react'),
+
+// SessionProvider를 완전히 mock으로 대체
+jest.mock('@/providers/SessionProvider', () => ({
+  SessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useSession: () => mockUseSession(),
 }));
 
@@ -28,21 +28,15 @@ const createQueryClient = () => {
 
 interface TestWrapperProps {
   children: React.ReactNode;
-  session?: Session | null;
 }
 
-export function TestWrapper({
-  children,
-  session = { user: { id: 'test-user-id' } } as Session,
-}: TestWrapperProps): React.ReactElement {
+export function TestWrapper({ children }: TestWrapperProps): React.ReactElement {
   return (
-    <SessionProvider session={session}>
-      <QueryClientProvider client={queryClient}>
-        <DataFetchErrorBoundary fallback={<p data-testid="error-fallback">문제가 발생했습니다</p>}>
-          {children}
-        </DataFetchErrorBoundary>
-      </QueryClientProvider>
-    </SessionProvider>
+    <QueryClientProvider client={queryClient}>
+      <DataFetchErrorBoundary fallback={<p data-testid="error-fallback">문제가 발생했습니다</p>}>
+        {children}
+      </DataFetchErrorBoundary>
+    </QueryClientProvider>
   );
 }
 
@@ -58,13 +52,31 @@ export const cleanupTestEnvironment = () => {
 };
 
 export const mockSessionDefault = () => {
-  mockUseSession.mockReturnValue({ data: { user: { id: 'test-user-id' } } as Session });
+  mockUseSession.mockReturnValue({
+    user: { id: 'test-user-id', email: 'test@example.com', name: 'Test User' },
+    session: { access_token: 'test-token' },
+    isLoading: false,
+    isAuthenticated: true,
+    userId: 'test-user-id',
+  });
 };
 
 export const mockSessionNone = () => {
-  mockUseSession.mockReturnValue({ data: null });
+  mockUseSession.mockReturnValue({
+    user: null,
+    session: null,
+    isLoading: false,
+    isAuthenticated: false,
+    userId: undefined,
+  });
 };
 
-export const mockSessionCustom = (sessionData: Session) => {
-  mockUseSession.mockReturnValue({ data: sessionData });
+export const mockSessionCustom = (sessionData: {
+  user: { id: string; email?: string; name?: string };
+  session: { access_token: string };
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  userId?: string;
+}) => {
+  mockUseSession.mockReturnValue(sessionData);
 };

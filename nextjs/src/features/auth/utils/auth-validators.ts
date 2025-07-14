@@ -36,16 +36,14 @@ export const validateSignUpForm = (data: SignUpFormData): FormErrors => {
 
 export const getErrorMessage = (code: string): string => {
   switch (code) {
-    case 'auth/email-already-in-use':
+    case 'email_already_exists':
       return 'Email already in use';
-    case 'auth/invalid-credential':
+    case 'invalid_login_credentials':
       return 'Invalid email or password';
-    case 'auth/popup-closed-by-user':
+    case 'popup_closed_by_user':
       return 'Sign in was cancelled';
-    case 'auth/popup-blocked':
+    case 'popup_blocked':
       return 'Popup was blocked by the browser';
-    case 'auth/account-exists-with-different-credential':
-      return 'An account already exists with the same email address but different sign-in credentials';
     default:
       return 'An error occurred. Please try again.';
   }

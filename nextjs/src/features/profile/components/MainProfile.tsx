@@ -3,7 +3,7 @@ import LogoutMenu from '@/features/shared/components/LogoutMenu';
 import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
 import { splitHashTags } from '@/features/shared/utils/HashTags';
-import { signOut } from 'next-auth/react';
+import { useAuthActions } from '@/hooks/useAuthActions';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FiEdit, FiSettings } from 'react-icons/fi';
@@ -12,9 +12,11 @@ import EditProfileForm from './EditProfileForm';
 const ProfileHeaderActions = ({
   settingsOpen,
   setSettingsOpen,
+  handleLogout,
 }: {
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
+  handleLogout: () => void;
 }) => (
   <div className="absolute top-4 right-4 md:top-7 md:right-7">
     <button
@@ -25,11 +27,7 @@ const ProfileHeaderActions = ({
       <FiSettings className="w-6 h-6 md:w-8 md:h-8 text-white" />
     </button>
     {settingsOpen && (
-      <LogoutMenu
-        onLogout={() => signOut({ callbackUrl: '/auth/signin' })}
-        onClose={() => setSettingsOpen(false)}
-        direction="down"
-      />
+      <LogoutMenu onLogout={handleLogout} onClose={() => setSettingsOpen(false)} direction="down" />
     )}
   </div>
 );
@@ -38,6 +36,7 @@ const MainProfile = () => {
   const { profile, isLoading, updateProfile } = useMyProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { handleSignOut } = useAuthActions();
 
   const handleSubmit = async (data: EditableProfileFields) => {
     await updateProfile(data);
@@ -54,7 +53,11 @@ const MainProfile = () => {
   if (isLoading || !profile) {
     return (
       <div className="flex flex-col items-center w-full pt-10 relative">
-        <ProfileHeaderActions settingsOpen={settingsOpen} setSettingsOpen={setSettingsOpen} />
+        <ProfileHeaderActions
+          settingsOpen={settingsOpen}
+          setSettingsOpen={setSettingsOpen}
+          handleLogout={handleSignOut}
+        />
         {loadingIndicator}
       </div>
     );
@@ -62,7 +65,11 @@ const MainProfile = () => {
 
   return (
     <div className="flex flex-col items-center w-full pt-10 relative">
-      <ProfileHeaderActions settingsOpen={settingsOpen} setSettingsOpen={setSettingsOpen} />
+      <ProfileHeaderActions
+        settingsOpen={settingsOpen}
+        setSettingsOpen={setSettingsOpen}
+        handleLogout={handleSignOut}
+      />
 
       {isEditing ? (
         <EditProfileForm

@@ -1,22 +1,33 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
+
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+export async function POST(request: NextRequest) {
+  const supabase = createServerSupabaseClient(request);
+
+  // Supabase 세션 확인
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  let user = null;
+  if (session?.access_token) {
+    const { data, error } = await supabase.auth.getUser(session.access_token);
+    if (!error) {
+      user = data.user;
+    }
+  }
+  if (!user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { city, state } = await req.json();
-  const supabase = createServerSupabaseClient();
+  const { city, state } = await request.json();
 
   // 현재 사용자 데이터 가져오기
   const { data: currentData, error: fetchError } = await supabase
     .from('users')
     .select('location_city, location_state')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (fetchError || !currentData) {
@@ -39,10 +50,7 @@ export async function POST(req: NextRequest) {
   }
 
   updateObj.updated_at = new Date().toISOString();
-  const { error: updateError } = await supabase
-    .from('users')
-    .update(updateObj)
-    .eq('id', session.user.id);
+  const { error: updateError } = await supabase.from('users').update(updateObj).eq('id', user.id);
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });

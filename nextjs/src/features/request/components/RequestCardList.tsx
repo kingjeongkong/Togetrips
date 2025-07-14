@@ -3,13 +3,12 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { getMyRequests } from '@/features/shared/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
+import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import RequestCard from './RequestCard';
 
 const RequestCardList = () => {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { userId } = useSession();
 
   const { data: requests = [], isLoading } = useQuery<(Request & { sender: RequestUserProfile })[]>(
     {
