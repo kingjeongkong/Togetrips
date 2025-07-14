@@ -1,8 +1,6 @@
-import { db } from '@/lib/firebase-config';
 import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
-import { collection, doc, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { debounce } from 'lodash';
 import { toast } from 'react-toastify';
 import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
@@ -147,104 +145,6 @@ export const chatService = {
       return false;
     }
   },
-
-  // ===== Firebase 방식 (기존) =====
-
-  // 실시간 메시지 구독 (Firebase 방식)
-  subscribeToMessages(
-    chatRoomID: string,
-    onMessage: (messages: Message[]) => void,
-    onError?: (failedCount: number) => void,
-    retries = 3,
-    failedCount = 0,
-  ) {
-    const q = query(
-      collection(db, `chatRooms/${chatRoomID}/messages`),
-      orderBy('timestamp', 'asc'),
-    );
-
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        const messages = snapshot.docs.map(
-          (doc) =>
-            ({
-              id: doc.id,
-              ...doc.data(),
-            }) as Message,
-        );
-        onMessage(messages);
-      },
-      (error) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error in messages subscription:', error);
-        }
-
-        toast.error('Failed to fetch messages');
-        onError?.(failedCount);
-
-        if (retries > 0) {
-          setTimeout(() => {
-            this.subscribeToMessages(chatRoomID, onMessage, onError, retries - 1, failedCount + 1);
-          }, 500);
-        }
-      },
-    );
-  },
-
-  // 읽지 않은 메시지 수 구독 (Firebase 방식)
-  subscribeToUnreadCount(chatRoomID: string, userID: string, callback: (count: number) => void) {
-    const q = query(
-      collection(db, `chatRooms/${chatRoomID}/messages`),
-      where('senderID', '!=', userID),
-      where('read', '==', false),
-    );
-
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        callback(snapshot.docs.length);
-      },
-      (error) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error fetching unread count:', error);
-        }
-        callback(0);
-      },
-    );
-  },
-
-  // 마지막 메시지 구독 (Firebase 방식)
-  subscribeToLastMessage(
-    chatRoomID: string,
-    callback: (data: { lastMessage: string; lastMessageTime: string }) => void,
-  ) {
-    const chatRoomRef = doc(db, 'chatRooms', chatRoomID);
-
-    return onSnapshot(
-      chatRoomRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          callback({
-            lastMessage: data.lastMessage,
-            lastMessageTime: data.lastMessageTime,
-          });
-        }
-      },
-      (error) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error fetching last message:', error);
-        }
-        callback({
-          lastMessage: '',
-          lastMessageTime: '',
-        });
-      },
-    );
-  },
-
-  // ===== Supabase Realtime 방식 (개선됨) =====
 
   // Supabase Realtime 메시지 구독 (userId 파라미터로 인증)
   // ToDo : Supabase access token 인증 로직 추가 후 rls 삭제
