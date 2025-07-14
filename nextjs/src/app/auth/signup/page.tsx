@@ -57,7 +57,7 @@ function SignUpForm() {
           fieldError={errors.confirmPassword}
           isLast
         />
-        {authError && <p className="text-red-500 text-sm mt-2">{authError}</p>}
+        {authError && <p className="text-red-500 text-sm mb-2">{authError}</p>}
         <SubmitButton title="Sign Up" isLoading={isLoading} />
       </form>
       <div className="text-center text-sm mt-6">

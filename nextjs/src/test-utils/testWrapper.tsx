@@ -1,12 +1,13 @@
-import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import DataFetchErrorBoundary from '../components/ErrorBoundary/DataFetchErrorBoundary';
 
 // Mock useSession
 const mockUseSession = jest.fn();
+
+// SessionProvider를 완전히 mock으로 대체
 jest.mock('@/providers/SessionProvider', () => ({
-  ...jest.requireActual('@/providers/SessionProvider'),
+  SessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useSession: () => mockUseSession(),
 }));
 
@@ -41,13 +42,11 @@ export function TestWrapper({
   },
 }: TestWrapperProps): React.ReactElement {
   return (
-    <SessionProvider>
-      <QueryClientProvider client={queryClient}>
-        <DataFetchErrorBoundary fallback={<p data-testid="error-fallback">문제가 발생했습니다</p>}>
-          {children}
-        </DataFetchErrorBoundary>
-      </QueryClientProvider>
-    </SessionProvider>
+    <QueryClientProvider client={queryClient}>
+      <DataFetchErrorBoundary fallback={<p data-testid="error-fallback">문제가 발생했습니다</p>}>
+        {children}
+      </DataFetchErrorBoundary>
+    </QueryClientProvider>
   );
 }
 

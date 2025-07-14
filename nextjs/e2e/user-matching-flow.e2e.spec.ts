@@ -17,7 +17,7 @@ test.describe('사용자 매칭 플로우', () => {
 
     // 접근성 기반 로그인
     await pageA.getByLabel('Email Address').fill('a@test.com');
-    await pageA.getByLabel('Password').fill('passwordA');
+    await pageA.getByLabel('Password').fill('asdasd');
     await pageA.getByRole('button', { name: 'Sign In' }).click();
     await pageA.waitForURL('**/home');
 
@@ -52,7 +52,7 @@ test.describe('사용자 매칭 플로우', () => {
 
     // 접근성 기반 로그인
     await pageB.getByLabel('Email Address').fill('b@test.com');
-    await pageB.getByLabel('Password').fill('passwordB');
+    await pageB.getByLabel('Password').fill('asdasd');
     await pageB.getByRole('button', { name: 'Sign In' }).click();
     await pageB.waitForURL('**/home');
 
