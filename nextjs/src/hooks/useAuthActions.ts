@@ -33,7 +33,7 @@ export const useAuthActions = () => {
     try {
       const redirectUrl = `${window.location.origin}/auth/callback?next=${getCallbackUrl()}`;
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,

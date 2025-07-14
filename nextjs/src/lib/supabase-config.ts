@@ -26,7 +26,7 @@ export const createServerSupabaseClient = (request?: NextRequest, response?: Nex
             value: cookie.value,
           }));
         },
-        setAll: (cookies: { name: string; value: string; options?: any }[]) => {
+        setAll: (cookies: { name: string; value: string; options?: Record<string, unknown> }[]) => {
           if (response) {
             cookies.forEach(({ name, value, options }) => {
               response.cookies.set(name, value, {

@@ -28,19 +28,9 @@ const createQueryClient = () => {
 
 interface TestWrapperProps {
   children: React.ReactNode;
-  session?: {
-    user: { id: string; email?: string; name?: string };
-    session: any;
-  } | null;
 }
 
-export function TestWrapper({
-  children,
-  session = {
-    user: { id: 'test-user-id', email: 'test@example.com', name: 'Test User' },
-    session: { access_token: 'test-token' },
-  },
-}: TestWrapperProps): React.ReactElement {
+export function TestWrapper({ children }: TestWrapperProps): React.ReactElement {
   return (
     <QueryClientProvider client={queryClient}>
       <DataFetchErrorBoundary fallback={<p data-testid="error-fallback">문제가 발생했습니다</p>}>
@@ -81,6 +71,12 @@ export const mockSessionNone = () => {
   });
 };
 
-export const mockSessionCustom = (sessionData: any) => {
+export const mockSessionCustom = (sessionData: {
+  user: { id: string; email?: string; name?: string };
+  session: { access_token: string };
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  userId?: string;
+}) => {
   mockUseSession.mockReturnValue(sessionData);
 };

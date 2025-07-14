@@ -13,8 +13,8 @@ export async function POST(nextRequest: NextRequest) {
 
     let user = null;
     if (session?.access_token) {
-      const { data, error } = await supabase.auth.getUser(session.access_token);
-      if (!error) {
+      const { data } = await supabase.auth.getUser(session.access_token);
+      if (data && data.user) {
         user = data.user;
       }
     }
@@ -74,7 +74,7 @@ export async function POST(nextRequest: NextRequest) {
 
     // 거절 처리 등 추가 로직 필요시 여기에 작성
     return NextResponse.json({ message: 'Request declined' }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
