@@ -1,11 +1,15 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -28,8 +32,6 @@ export async function POST(request: NextRequest) {
     if (dangerousPatterns.test(content)) {
       return NextResponse.json({ error: 'Invalid message content' }, { status: 400 });
     }
-
-    const supabase = createServerSupabaseClient();
 
     // 채팅방 존재 및 참가자 검증
     const { data: chatRoom, error: chatRoomError } = await supabase

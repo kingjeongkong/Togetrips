@@ -1,17 +1,19 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
 
-export async function GET() {
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const currentUserId = session.user.id;
-
-    const supabase = createServerSupabaseClient();
 
     // 1. pending 상태의 요청들 가져오기
     const { data: requests, error: requestsError } = await supabase

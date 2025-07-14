@@ -1,16 +1,19 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
+
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+export async function POST(request: NextRequest) {
+  const supabase = createServerSupabaseClient(request);
+
+  // Supabase 세션 확인
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { city, state } = await req.json();
-  const supabase = createServerSupabaseClient();
+  const { city, state } = await request.json();
 
   // 현재 사용자 데이터 가져오기
   const { data: currentData, error: fetchError } = await supabase

@@ -1,20 +1,23 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || session.user.id;
 
     // 본인 프로필이거나 다른 사용자 프로필 조회 가능
-    const supabase = createServerSupabaseClient();
     const { data: user, error } = await supabase
       .from('users')
       .select('*')

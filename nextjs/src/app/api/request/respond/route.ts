@@ -1,18 +1,22 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(nextRequest: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createServerSupabaseClient(nextRequest);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = session.user.id;
 
     const { requestID, action }: { requestID: string; action: 'accept' | 'decline' } =
-      await req.json();
+      await nextRequest.json();
 
     if (!requestID || !action || !['accept', 'decline'].includes(action)) {
       return NextResponse.json(
@@ -20,8 +24,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
-    const supabase = createServerSupabaseClient();
 
     // 요청 조회
     const { data: request, error: requestError } = await supabase

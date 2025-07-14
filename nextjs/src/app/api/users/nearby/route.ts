@@ -1,17 +1,21 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const currentUserId = session.user.id;
 
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const city = searchParams.get('city');
     const state = searchParams.get('state');
 
@@ -20,7 +24,6 @@ export async function GET(req: Request) {
     }
 
     // 1. 같은 도시의 모든 사용자 가져오기 (본인 제외)
-    const supabase = createServerSupabaseClient();
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')

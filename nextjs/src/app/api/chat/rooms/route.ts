@@ -1,17 +1,19 @@
-import { authOptions } from '@/lib/next-auth-config';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
 
-export async function GET() {
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const supabase = createServerSupabaseClient();
 
     // 사용자가 참여한 채팅방 목록 조회 (최신 메시지 순으로 정렬)
     const { data: chatRooms, error } = await supabase
