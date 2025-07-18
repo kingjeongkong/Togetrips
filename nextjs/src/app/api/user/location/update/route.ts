@@ -21,12 +21,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { city, state } = await request.json();
+  const { city, state, lat, lng } = await request.json();
 
   // 현재 사용자 데이터 가져오기
   const { data: currentData, error: fetchError } = await supabase
     .from('users')
-    .select('location_city, location_state')
+    .select('location_city, location_state, location_lat, location_lng')
     .eq('id', user.id)
     .single();
 
@@ -34,12 +34,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const updateObj: Record<string, string | Date> = {};
+  const updateObj: Record<string, string | number | Date> = {};
+
+  // city, state 변경 확인
   if (currentData.location_city !== city) {
     updateObj.location_city = city;
   }
   if (currentData.location_state !== state) {
     updateObj.location_state = state;
+  }
+
+  // 좌표 변경 확인 (lat, lng이 제공된 경우에만)
+  if (lat !== undefined && lng !== undefined) {
+    if (currentData.location_lat !== lat) {
+      updateObj.location_lat = lat;
+    }
+    if (currentData.location_lng !== lng) {
+      updateObj.location_lng = lng;
+    }
   }
 
   if (Object.keys(updateObj).length === 0) {

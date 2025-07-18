@@ -54,3 +54,20 @@ export const getCurrentLocationData = async (): Promise<{
     }, reject);
   });
 };
+
+/**
+ * 거리를 표시할 텍스트로 변환하는 함수
+ * @param distance - 미터 단위의 거리
+ * @returns 거리 표시 텍스트 또는 null
+ */
+export const getDistanceText = (distance?: number): string | null => {
+  if (distance === undefined) return null;
+
+  if (distance < 1000) {
+    return 'Within 1km';
+  } else {
+    // 거리를 km로 변환하고 정수로 반올림
+    const distanceInKm = Math.round(distance / 1000);
+    return `${distanceInKm}km away`;
+  }
+};

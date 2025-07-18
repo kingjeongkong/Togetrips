@@ -8,6 +8,7 @@ export interface User {
   tags: string;
   bio: string;
   location: Location;
+  distance?: number; // 현재 사용자와의 거리 (미터 단위, 선택적)
   createdAt: string;
   updatedAt: string;
 }

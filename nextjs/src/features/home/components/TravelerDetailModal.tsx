@@ -4,6 +4,7 @@ import LoadingIndicator from '@/components/LoadingIndicator';
 import RequestModal from '@/features/home/components/RequestModal';
 import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
+import { getDistanceText } from '@/features/home/utils/location';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -13,9 +14,15 @@ interface TravelerDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   travelerID: string;
+  distance?: number; // 거리 정보 추가
 }
 
-const TravelerDetailModal = ({ isOpen, onClose, travelerID }: TravelerDetailModalProps) => {
+const TravelerDetailModal = ({
+  isOpen,
+  onClose,
+  travelerID,
+  distance,
+}: TravelerDetailModalProps) => {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { profile, isLoading: profileLoading } = useUserProfileById(travelerID);
   const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
@@ -29,6 +36,8 @@ const TravelerDetailModal = ({ isOpen, onClose, travelerID }: TravelerDetailModa
       // TODO: 에러 처리 (예: 토스트 메시지)
     }
   };
+
+  const distanceText = getDistanceText(distance);
 
   if (!isOpen) return null;
 
@@ -64,9 +73,13 @@ const TravelerDetailModal = ({ isOpen, onClose, travelerID }: TravelerDetailModa
                     className="w-20 h-20 rounded-full object-cover"
                     alt={profile?.name || 'Traveler'}
                   />
-                  <h2 className="flex-1 text-xl font-bold text-gray-800">
-                    {profile?.name || 'Traveler'}
-                  </h2>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {profile?.name || 'Traveler'}
+                    </h2>
+                    {/* 거리 정보 표시 */}
+                    {distanceText && <p className="text-sm text-gray-500 mt-1">{distanceText}</p>}
+                  </div>
                 </div>
               </div>
 
