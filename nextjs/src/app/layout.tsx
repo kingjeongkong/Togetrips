@@ -1,5 +1,6 @@
 'use client';
 
+import { MapInitializer } from '@/components/MapInitializer';
 import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
+            <MapInitializer />
             {children}
             <ToastContainer
               position="top-right"
