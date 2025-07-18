@@ -137,8 +137,8 @@ const TravelerDetailModal = ({
                   <UserInfoView bio={profile?.bio} tags={profile?.tags} />
                 ) : userLocation ? (
                   <UserLocationView
-                    latitude={userLocation.latitude}
-                    longitude={userLocation.longitude}
+                    otherUserLatitude={userLocation.latitude}
+                    otherUserLongitude={userLocation.longitude}
                     userName={profile?.name}
                   />
                 ) : (

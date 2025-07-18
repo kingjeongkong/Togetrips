@@ -13,7 +13,13 @@ interface MapStore {
   initializeMap: () => Promise<void>;
   updateMapCenter: (lat: number, lng: number) => void;
   clearCircles: () => void;
-  addLocationCircle: (lat: number, lng: number) => google.maps.Circle;
+  addLocationCircle: (
+    lat: number,
+    lng: number,
+    color: string,
+    fillOpacity: number,
+    radius: number,
+  ) => google.maps.Circle;
   showMap: (containerId: string) => void;
   hideMap: () => void;
   reset: () => void;
@@ -86,6 +92,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
     const { map } = get();
     if (map) {
       map.setCenter({ lat, lng });
+      map.setZoom(13);
     }
   },
 
@@ -97,19 +104,25 @@ export const useMapStore = create<MapStore>((set, get) => ({
   },
 
   // 위치 원 추가
-  addLocationCircle: (lat: number, lng: number): google.maps.Circle => {
+  addLocationCircle: (
+    lat: number,
+    lng: number,
+    color: string = '#FF0000',
+    fillOpacity: number = 0.15,
+    radius: number = 700,
+  ): google.maps.Circle => {
     const { map } = get();
     if (!map) throw new Error('Map not initialized');
 
     const circle = new google.maps.Circle({
-      strokeColor: '#FF0000',
+      strokeColor: color,
       strokeOpacity: 0.8,
       strokeWeight: 2,
-      fillColor: '#FF0000',
-      fillOpacity: 0.15,
+      fillColor: color,
+      fillOpacity,
       map,
       center: { lat, lng },
-      radius: 700, // 700m 반지름
+      radius,
     });
 
     set((state) => ({
