@@ -34,6 +34,7 @@ export const useUserLocation = () => {
   });
 
   // nearbyUsers fetch
+  // ToDo : 거리별 필터를 적용함 -> 같은 도시 내의 유저를 기반으로 필터링함 -> 분리가 필요할 듯
   const {
     data: users,
     isLoading: usersLoading,
