@@ -18,7 +18,13 @@ export const useUserLocation = () => {
     queryKey: ['userLocation', userId],
     queryFn: async () => {
       const { currentLocation, cityInfo } = await getCurrentLocationData();
-      await userLocationService.updateUserLocation(cityInfo.city, cityInfo.state);
+      // 좌표 정보도 함께 전송
+      await userLocationService.updateUserLocation(
+        cityInfo.city,
+        cityInfo.state,
+        currentLocation.lat,
+        currentLocation.lng,
+      );
       return { ...currentLocation, ...cityInfo };
     },
     enabled: !!userId,

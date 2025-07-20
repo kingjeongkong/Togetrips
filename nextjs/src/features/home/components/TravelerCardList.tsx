@@ -30,6 +30,7 @@ const TravelerCardList = () => {
               name={user.name}
               bio={user.bio}
               tags={user.tags}
+              distance={user.distance}
             />
           </div>
         ))

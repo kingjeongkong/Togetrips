@@ -75,7 +75,12 @@ describe('useUserLocation', () => {
 
     // 모킹된 함수들이 호출되었는지 확인
     expect(mockLocationUtils.getCurrentLocationData).toHaveBeenCalled();
-    expect(mockUserLocationService.updateUserLocation).toHaveBeenCalledWith('Seoul', 'Seoul');
+    expect(mockUserLocationService.updateUserLocation).toHaveBeenCalledWith(
+      'Seoul',
+      'Seoul',
+      37.5,
+      127,
+    );
     expect(mockUserLocationService.fetchNearbyUsers).toHaveBeenCalledWith('Seoul', 'Seoul');
   });
 
@@ -98,7 +103,12 @@ describe('useUserLocation', () => {
 
     // enabled 플래그로 자동 실행되었는지 확인
     expect(mockLocationUtils.getCurrentLocationData).toHaveBeenCalled();
-    expect(mockUserLocationService.updateUserLocation).toHaveBeenCalledWith('Seoul', 'Seoul');
+    expect(mockUserLocationService.updateUserLocation).toHaveBeenCalledWith(
+      'Seoul',
+      'Seoul',
+      37.5,
+      127,
+    );
     expect(mockUserLocationService.fetchNearbyUsers).toHaveBeenCalledWith('Seoul', 'Seoul');
   });
 
@@ -127,7 +137,12 @@ describe('useUserLocation', () => {
     await waitFor(() => expect(result.current.usersError).toBeDefined());
 
     // 위치는 성공했으므로 updateUserLocation은 호출되어야 함
-    expect(mockUserLocationService.updateUserLocation).toHaveBeenCalledWith('Seoul', 'Seoul');
+    expect(mockUserLocationService.updateUserLocation).toHaveBeenCalledWith(
+      'Seoul',
+      'Seoul',
+      37.5,
+      127,
+    );
     // fetchNearbyUsers도 호출되었지만 에러가 발생
     expect(mockUserLocationService.fetchNearbyUsers).toHaveBeenCalledWith('Seoul', 'Seoul');
   });

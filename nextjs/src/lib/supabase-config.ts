@@ -38,7 +38,6 @@ export const createServerSupabaseClient = (request?: NextRequest, response?: Nex
               });
             });
           }
-          console.log('🔍 Setting cookies:', cookies);
         },
       },
     },

@@ -1,9 +1,15 @@
 export const userLocationService = {
-  async updateUserLocation(city: string, state: string) {
+  async updateUserLocation(city: string, state: string, lat?: number, lng?: number) {
+    const body: any = { city, state };
+    if (lat !== undefined && lng !== undefined) {
+      body.lat = lat;
+      body.lng = lng;
+    }
+
     const res = await fetch('/api/user/location/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ city, state }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error('Failed to update location');
     return res.json();

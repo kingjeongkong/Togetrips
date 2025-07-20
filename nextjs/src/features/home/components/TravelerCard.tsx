@@ -5,6 +5,7 @@ import RequestModal from '@/features/home/components/RequestModal';
 import TravelerDetailModal from '@/features/home/components/TravelerDetailModal';
 import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
+import { getDistanceText } from '@/features/home/utils/location';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -15,9 +16,10 @@ interface TravelCardProps {
   name?: string;
   bio?: string;
   tags?: string;
+  distance?: number; // 거리 정보 추가
 }
 
-const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps) => {
+const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: TravelCardProps) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { profile } = useUserProfileById(travelerID);
@@ -29,16 +31,21 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
       setIsRequestModalOpen(false);
     } catch (error) {
       console.error('Error sending request:', error);
-      // TODO: 에러 처리 (예: 토스트 메시지)
     }
   };
+
+  const distanceText = getDistanceText(distance);
 
   return (
     <>
       <div
-        className="overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6 cursor-pointer transition-all duration-200"
+        className="relative overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6 cursor-pointer transition-all duration-200"
         onClick={() => setIsDetailModalOpen(true)}
       >
+        {distanceText && (
+          <div className="absolute top-5 right-7 z-10 text-xs text-gray-600">{distanceText}</div>
+        )}
+
         <div className="flex">
           <Image
             src={profile?.image || imageURL || '/default-traveler.png'}
@@ -85,6 +92,7 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags }: TravelCardProps
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         travelerID={travelerID}
+        distance={distance}
       />
 
       <RequestModal
