@@ -12,7 +12,7 @@ export interface ChatRoomListItem extends ChatRoom {
 
 export interface Message {
   id: string;
-  senderID: string;
+  senderId: string;
   content: string;
   timestamp: string;
   read: boolean;

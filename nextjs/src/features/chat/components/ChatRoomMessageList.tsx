@@ -46,7 +46,7 @@ const ChatRoomMessageList = ({ messages, currentUserID }: ChatRoomMessageListPro
             <ChatRoomMessage
               key={message.id}
               message={message}
-              isOwnMessage={message.senderID === currentUserID}
+              isOwnMessage={message.senderId === currentUserID}
             />
           ))}
         </div>

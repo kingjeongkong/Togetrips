@@ -26,7 +26,7 @@ export const useSendRequest = (otherUserId: string) => {
   });
 
   const { mutate: sendRequest, isPending: isSending } = useMutation({
-    mutationFn: (message: string) => createRequest({ receiverID: otherUserId, message }),
+    mutationFn: (message: string) => createRequest({ receiverId: otherUserId, message }),
     onSuccess: () => {
       toast.success('Request sent successfully!');
       queryClient.setQueryData(['existingRequest', otherUserId, currentUserId], true);
