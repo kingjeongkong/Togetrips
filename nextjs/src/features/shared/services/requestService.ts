@@ -1,10 +1,10 @@
 import type { Request } from '@/features/shared/types/Request';
 
 export async function createRequest({
-  receiverID,
+  receiverId,
   message,
 }: {
-  receiverID: string;
+  receiverId: string;
   message: string;
 }) {
   const response = await fetch('/api/request/create', {
@@ -12,7 +12,7 @@ export async function createRequest({
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ receiverID, message }),
+    body: JSON.stringify({ receiverID: receiverId, message }),
   });
 
   if (!response.ok) {

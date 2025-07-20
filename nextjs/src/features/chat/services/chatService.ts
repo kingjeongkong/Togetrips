@@ -8,7 +8,7 @@ import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
 // 헬퍼 함수: DB row를 Message 타입으로 변환
 const mapRowToMessage = (row: Record<string, unknown>): Message => ({
   id: row.id as string,
-  senderID: row.sender_id as string,
+  senderId: row.sender_id as string,
   content: row.content as string,
   timestamp: row.timestamp as string,
   read: row.read as boolean,
