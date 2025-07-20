@@ -68,8 +68,8 @@ export async function GET(request: NextRequest) {
     // 클라이언트 호환성을 위한 데이터 변환
     const transformedRequests = filteredRequests.map((req) => ({
       id: req.id,
-      senderID: req.sender_id,
-      receiverID: req.receiver_id,
+      senderId: req.sender_id,
+      receiverId: req.receiver_id,
       message: req.message,
       status: req.status,
       createdAt: req.created_at,

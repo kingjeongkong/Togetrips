@@ -57,7 +57,10 @@ export async function GET(request: NextRequest) {
         name: user.name || '',
         image: user.image || '',
         tags: user.tags || '',
-        location: { city: user.location_city || '', state: user.location_state || '' },
+        location: {
+          city: user.location_city || '',
+          state: user.location_state || '',
+        },
       });
     });
 
@@ -71,8 +74,8 @@ export async function GET(request: NextRequest) {
       };
       return {
         id: req.id,
-        senderID: req.sender_id,
-        receiverID: req.receiver_id,
+        senderId: req.sender_id,
+        receiverId: req.receiver_id,
         status: req.status,
         message: req.message || '',
         createdAt: req.created_at,

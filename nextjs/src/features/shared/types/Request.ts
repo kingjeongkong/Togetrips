@@ -2,8 +2,8 @@ import type { User } from './User';
 
 export interface Request {
   id: string;
-  senderID: string;
-  receiverID: string;
+  senderId: string;
+  receiverId: string;
   status: 'pending' | 'accepted' | 'declined';
   message?: string;
   createdAt: string;
