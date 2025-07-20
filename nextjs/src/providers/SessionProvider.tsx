@@ -23,7 +23,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   // 메모이제이션으로 성능 최적화
   const isAuthenticated = useMemo(() => !!user, [user]);
-  const userId = useMemo(() => user?.id, [user]);
+  const userId = user?.id;
 
   useEffect(() => {
     // 초기 세션 가져오기

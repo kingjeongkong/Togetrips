@@ -28,8 +28,10 @@ export const useUserLocation = () => {
       return { ...currentLocation, ...cityInfo };
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10분으로 증가
+    gcTime: 30 * 60 * 1000, // 30분으로 증가
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
+    refetchOnMount: false, // 마운트 시 리페치 비활성화
     throwOnError: true,
   });
 
@@ -47,8 +49,10 @@ export const useUserLocation = () => {
       return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
     },
     enabled: !!userId && !!locationData?.city && !!locationData?.state,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10분으로 증가
+    gcTime: 30 * 60 * 1000, // 30분으로 증가
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
+    refetchOnMount: false, // 마운트 시 리페치 비활성화
     throwOnError: true,
   });
 
