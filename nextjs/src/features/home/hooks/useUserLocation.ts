@@ -28,12 +28,15 @@ export const useUserLocation = () => {
       return { ...currentLocation, ...cityInfo };
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10분으로 증가
+    gcTime: 30 * 60 * 1000, // 30분으로 증가
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
+    refetchOnMount: false, // 마운트 시 리페치 비활성화
     throwOnError: true,
   });
 
   // nearbyUsers fetch
+  // ToDo : 거리별 필터를 적용함 -> 같은 도시 내의 유저를 기반으로 필터링함 -> 분리가 필요할 듯
   const {
     data: users,
     isLoading: usersLoading,
@@ -46,8 +49,10 @@ export const useUserLocation = () => {
       return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
     },
     enabled: !!userId && !!locationData?.city && !!locationData?.state,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10분으로 증가
+    gcTime: 30 * 60 * 1000, // 30분으로 증가
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
+    refetchOnMount: false, // 마운트 시 리페치 비활성화
     throwOnError: true,
   });
 

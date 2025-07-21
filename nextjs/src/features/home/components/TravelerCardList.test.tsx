@@ -13,8 +13,9 @@ jest.mock('../hooks/useUserLocation');
 jest.mock('../hooks/useSendRequest');
 
 const mockUsers = [
-  { id: '1', name: 'Alice', image: '/alice.png', bio: 'Hi', tags: 'tag1' },
-  { id: '2', name: 'Bob', image: '/bob.png', bio: 'Hello', tags: 'tag2' },
+  { id: '1', name: 'Alice', image: '/alice.png', bio: 'Hi', tags: 'tag1', distance: 1000 },
+  { id: '2', name: 'Bob', image: '/bob.png', bio: 'Hello', tags: 'tag2', distance: 2000 },
+  { id: '3', name: 'James', image: '/james.png', bio: 'No distance', tags: 'tag3' },
 ];
 
 describe('TravelerCardList', () => {
@@ -40,7 +41,7 @@ describe('TravelerCardList', () => {
     expect(screen.getByRole('loading')).toBeInTheDocument(); // LoadingIndicator
   });
 
-  it('유저 목록이 있으면 TravelerCard가 모두 렌더링된다', () => {
+  it('유저 목록이 있으면 TravelerCard가 모두 렌더링된다(distance가 없는 유저는 렌더링되지 않는다)', () => {
     (useUserLocationModule.useUserLocation as jest.Mock).mockReturnValue({
       users: mockUsers,
       usersLoading: false,
@@ -48,6 +49,7 @@ describe('TravelerCardList', () => {
     render(<TravelerCardList />, { wrapper: TestWrapper });
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
+    expect(screen.queryByText('James')).not.toBeInTheDocument();
   });
 
   it('유저가 없으면 TravelerCard가 렌더링되지 않는다', () => {
