@@ -2,6 +2,8 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import type { User } from '@/features/shared/types/User';
+import { useSession } from '@/providers/SessionProvider';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { FaMapMarkedAlt } from 'react-icons/fa';
 import { HiFilter } from 'react-icons/hi';
@@ -13,9 +15,20 @@ import FilterModal from './FilterModal';
 import TravelerCard from './TravelerCard';
 
 const TravelerCardList = () => {
-  const { users, usersLoading } = useUserLocation();
+  const { users, usersLoading, cityInfo } = useUserLocation();
   const { distanceFilter, applyDistanceFilter } = useFilter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { userId } = useSession();
+
+  const handleRequestSent = (travelerID: string) => {
+    if (!users || !cityInfo || !userId) return;
+
+    queryClient.setQueryData(
+      ['nearbyUsers', cityInfo?.city, cityInfo?.state, userId],
+      (old: User[] | undefined) => (old ? old.filter((u) => u.id !== travelerID) : []),
+    );
+  };
 
   // 사용자 목록을 거리 필터에 따라 필터링
   const filteredUsers = useMemo(() => {
@@ -83,6 +96,7 @@ const TravelerCardList = () => {
                 bio={user.bio}
                 tags={user.tags}
                 distance={user.distance}
+                onRequestSent={handleRequestSent}
               />
             </div>
           ))

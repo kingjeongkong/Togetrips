@@ -16,10 +16,19 @@ interface TravelCardProps {
   name?: string;
   bio?: string;
   tags?: string;
-  distance?: number; // 거리 정보 추가
+  distance?: number;
+  onRequestSent?: (travelerID: string) => void;
 }
 
-const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: TravelCardProps) => {
+const TravelerCard = ({
+  travelerID,
+  imageURL,
+  name,
+  bio,
+  tags,
+  distance,
+  onRequestSent,
+}: TravelCardProps) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { profile } = useUserProfileById(travelerID);
@@ -29,6 +38,7 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: Trave
     try {
       await sendRequest(message);
       setIsRequestModalOpen(false);
+      onRequestSent?.(travelerID);
     } catch (error) {
       console.error('Error sending request:', error);
     }
