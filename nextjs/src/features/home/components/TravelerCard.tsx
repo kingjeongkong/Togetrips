@@ -23,7 +23,7 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: Trave
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { profile } = useUserProfileById(travelerID);
-  const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
+  const { sendRequest, isLoading } = useSendRequest(travelerID);
 
   const handleSendRequest = async (message: string) => {
     try {
@@ -74,17 +74,15 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: Trave
             e.stopPropagation();
             setIsRequestModalOpen(true);
           }}
-          disabled={isRequestSent || isLoading}
+          disabled={isLoading}
           aria-label={
             isLoading
               ? `Loading request to ${profile?.name || name || 'traveler'}`
-              : isRequestSent
-                ? `Request pending to ${profile?.name || name || 'traveler'}`
-                : `Send request to ${profile?.name || name || 'traveler'}`
+              : `Send request to ${profile?.name || name || 'traveler'}`
           }
         >
           {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
-          {isLoading ? 'Loading...' : isRequestSent ? 'Request Pending' : 'Send Request'}
+          {isLoading ? 'Loading...' : 'Send Request'}
         </button>
       </div>
 

@@ -1,29 +1,13 @@
 'use client';
 
-import {
-  createRequest,
-  fetchRequestsBetweenUsers,
-} from '@/features/shared/services/requestService';
+import { createRequest } from '@/features/shared/services/requestService';
 import { useSession } from '@/providers/SessionProvider';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 export const useSendRequest = (otherUserId: string) => {
   const queryClient = useQueryClient();
   const { userId: currentUserId } = useSession();
-
-  // 서버의 중복 체크와 별개로, UI 업데이트를 위해 기존 요청 상태를 조회
-  const { data: hasExistingRequest, isLoading: isChecking } = useQuery({
-    queryKey: ['existingRequest', otherUserId, currentUserId],
-    queryFn: async () => {
-      if (!currentUserId) return false;
-      const requests = await fetchRequestsBetweenUsers(currentUserId, otherUserId, ['pending']);
-      return requests.length > 0;
-    },
-    enabled: !!currentUserId && !!otherUserId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
 
   const { mutate: sendRequest, isPending: isSending } = useMutation({
     mutationFn: (message: string) => createRequest({ receiverId: otherUserId, message }),
@@ -38,7 +22,6 @@ export const useSendRequest = (otherUserId: string) => {
 
   return {
     sendRequest,
-    isLoading: isSending || isChecking,
-    isRequestSent: hasExistingRequest,
+    isLoading: isSending,
   };
 };

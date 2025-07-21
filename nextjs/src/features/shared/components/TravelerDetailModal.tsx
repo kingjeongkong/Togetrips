@@ -31,7 +31,7 @@ const TravelerDetailModal = ({
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const { profile, isLoading: profileLoading } = useUserProfileById(travelerID);
   const { users } = useUserLocation();
-  const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
+  const { sendRequest, isLoading } = useSendRequest(travelerID);
 
   // 모달이 열릴 때 탭을 'info'로 초기화
   useEffect(() => {
@@ -155,14 +155,10 @@ const TravelerDetailModal = ({
                 <button
                   className="w-full py-3 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-200"
                   onClick={() => setIsRequestModalOpen(true)}
-                  disabled={isRequestSent || isLoading}
+                  disabled={isLoading}
                 >
                   {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
-                  {isLoading
-                    ? 'Loading...'
-                    : isRequestSent
-                      ? 'Request Pending'
-                      : 'Send Travel Request'}
+                  {isLoading ? 'Loading...' : 'Send Travel Request'}
                 </button>
               </div>
             </>
