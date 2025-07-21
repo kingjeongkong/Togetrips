@@ -11,9 +11,10 @@ import { toast } from 'react-toastify';
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };
+  onClick?: () => void;
 }
 
-const RequestCard = ({ request }: RequestCardProps) => {
+const RequestCard = ({ request, onClick }: RequestCardProps) => {
   const queryClient = useQueryClient();
   const { userId } = useSession();
 
@@ -70,7 +71,13 @@ const RequestCard = ({ request }: RequestCardProps) => {
   };
 
   return (
-    <div className="overflow-hidden flex flex-col h-full px-5 py-4 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6">
+    <div
+      className="overflow-hidden flex flex-col h-full px-5 py-4 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6 cursor-pointer"
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      style={onClick ? { outline: 'none' } : undefined}
+    >
       <div className="flex">
         <Image
           src={request.sender.image || '/default-traveler.png'}

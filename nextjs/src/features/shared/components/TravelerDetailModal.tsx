@@ -1,13 +1,13 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import UserInfoView from '@/features/home/components/DetailInfoView';
-import UserLocationView from '@/features/home/components/DetailLocationView';
 import RequestModal from '@/features/home/components/RequestModal';
 import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { useUserLocation } from '@/features/home/hooks/useUserLocation';
 import { getDistanceText } from '@/features/home/utils/location';
+import UserInfoView from '@/features/shared/components/DetailInfoView';
+import UserLocationView from '@/features/shared/components/DetailLocationView';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { IoClose, IoLocationOutline, IoPersonOutline } from 'react-icons/io5';

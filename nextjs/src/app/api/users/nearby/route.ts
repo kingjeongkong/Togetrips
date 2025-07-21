@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
       .select('receiver_id')
       .eq('sender_id', currentUserId)
       .in('receiver_id', otherUserIds)
-      .in('status', ['accepted', 'declined']);
+      .in('status', ['accepted', 'declined', 'pending']);
 
     // 나에게 온 요청들 조회
     const { data: receivedRequests } = await supabase
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       .select('sender_id')
       .eq('receiver_id', currentUserId)
       .in('sender_id', otherUserIds)
-      .in('status', ['accepted', 'declined']);
+      .in('status', ['accepted', 'declined', 'pending']);
 
     // 4. completed 요청이 있는 사용자 ID 수집
     const completedUserIds = new Set();

@@ -2,10 +2,10 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import RequestModal from '@/features/home/components/RequestModal';
-import TravelerDetailModal from '@/features/home/components/TravelerDetailModal';
 import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { getDistanceText } from '@/features/home/utils/location';
+import TravelerDetailModal from '@/features/shared/components/TravelerDetailModal';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import Image from 'next/image';
 import { useState } from 'react';
