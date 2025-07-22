@@ -11,24 +11,34 @@ import Image from 'next/image';
 import { useState } from 'react';
 
 interface TravelCardProps {
-  travelerID: string;
+  travelerId: string;
   imageURL?: string;
   name?: string;
   bio?: string;
   tags?: string;
-  distance?: number; // 거리 정보 추가
+  distance?: number;
+  onRequestSent?: (travelerID: string) => void;
 }
 
-const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: TravelCardProps) => {
+const TravelerCard = ({
+  travelerId,
+  imageURL,
+  name,
+  bio,
+  tags,
+  distance,
+  onRequestSent,
+}: TravelCardProps) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const { profile } = useUserProfileById(travelerID);
-  const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
+  const { profile } = useUserProfileById(travelerId);
+  const { sendRequest, isLoading } = useSendRequest(travelerId);
 
   const handleSendRequest = async (message: string) => {
     try {
       await sendRequest(message);
       setIsRequestModalOpen(false);
+      onRequestSent?.(travelerId);
     } catch (error) {
       console.error('Error sending request:', error);
     }
@@ -74,25 +84,24 @@ const TravelerCard = ({ travelerID, imageURL, name, bio, tags, distance }: Trave
             e.stopPropagation();
             setIsRequestModalOpen(true);
           }}
-          disabled={isRequestSent || isLoading}
+          disabled={isLoading}
           aria-label={
             isLoading
               ? `Loading request to ${profile?.name || name || 'traveler'}`
-              : isRequestSent
-                ? `Request pending to ${profile?.name || name || 'traveler'}`
-                : `Send request to ${profile?.name || name || 'traveler'}`
+              : `Send request to ${profile?.name || name || 'traveler'}`
           }
         >
           {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
-          {isLoading ? 'Loading...' : isRequestSent ? 'Request Pending' : 'Send Request'}
+          {isLoading ? 'Loading...' : 'Send Request'}
         </button>
       </div>
 
       <TravelerDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        travelerID={travelerID}
+        travelerId={travelerId}
         distance={distance}
+        showRequestButton={true}
       />
 
       <RequestModal

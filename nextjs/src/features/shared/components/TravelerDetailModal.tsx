@@ -15,8 +15,9 @@ import { IoClose, IoLocationOutline, IoPersonOutline } from 'react-icons/io5';
 interface TravelerDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  travelerID: string;
+  travelerId: string;
   distance?: number;
+  showRequestButton: boolean;
 }
 
 type TabType = 'info' | 'location';
@@ -24,14 +25,15 @@ type TabType = 'info' | 'location';
 const TravelerDetailModal = ({
   isOpen,
   onClose,
-  travelerID,
+  travelerId,
   distance,
+  showRequestButton,
 }: TravelerDetailModalProps) => {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('info');
-  const { profile, isLoading: profileLoading } = useUserProfileById(travelerID);
+  const { profile, isLoading: profileLoading } = useUserProfileById(travelerId);
   const { users } = useUserLocation();
-  const { sendRequest, isRequestSent, isLoading } = useSendRequest(travelerID);
+  const { sendRequest, isLoading } = useSendRequest(travelerId);
 
   // 모달이 열릴 때 탭을 'info'로 초기화
   useEffect(() => {
@@ -43,7 +45,7 @@ const TravelerDetailModal = ({
   // users 데이터에서 해당 사용자 정보 찾기
   const userLocation = useMemo(() => {
     if (!users) return null;
-    const user = users.find((u: any) => u.id === travelerID);
+    const user = users.find((u: any) => u.id === travelerId);
     if (user && user.location_lat && user.location_lng) {
       return {
         latitude: user.location_lat,
@@ -51,7 +53,7 @@ const TravelerDetailModal = ({
       };
     }
     return null;
-  }, [users, travelerID]);
+  }, [users, travelerId]);
 
   const handleSendRequest = async (message: string) => {
     try {
@@ -151,20 +153,18 @@ const TravelerDetailModal = ({
                 )}
               </div>
 
-              <div className="pt-4 border-t border-gray-200 shrink-0 px-6 pb-6">
-                <button
-                  className="w-full py-3 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-200"
-                  onClick={() => setIsRequestModalOpen(true)}
-                  disabled={isRequestSent || isLoading}
-                >
-                  {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
-                  {isLoading
-                    ? 'Loading...'
-                    : isRequestSent
-                      ? 'Request Pending'
-                      : 'Send Travel Request'}
-                </button>
-              </div>
+              {showRequestButton && (
+                <div className="pt-4 border-t border-gray-200 shrink-0 px-6 pb-6">
+                  <button
+                    className="w-full py-3 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-200"
+                    onClick={() => setIsRequestModalOpen(true)}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
+                    {isLoading ? 'Loading...' : 'Send Travel Request'}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
