@@ -90,7 +90,7 @@ const TravelerCardList = () => {
               aria-label={`Traveler card for ${user.name || 'unknown user'}`}
             >
               <TravelerCard
-                travelerID={user.id}
+                travelerId={user.id}
                 imageURL={user.image}
                 name={user.name}
                 bio={user.bio}

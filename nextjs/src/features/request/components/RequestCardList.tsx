@@ -59,7 +59,8 @@ const RequestCardList = () => {
       <TravelerDetailModal
         isOpen={!!selectedTravelerId}
         onClose={() => setSelectedTravelerId(null)}
-        travelerID={selectedTravelerId ?? ''}
+        travelerId={selectedTravelerId ?? ''}
+        showRequestButton={false}
       />
     </>
   );

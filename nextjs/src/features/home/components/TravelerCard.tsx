@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 
 interface TravelCardProps {
-  travelerID: string;
+  travelerId: string;
   imageURL?: string;
   name?: string;
   bio?: string;
@@ -21,7 +21,7 @@ interface TravelCardProps {
 }
 
 const TravelerCard = ({
-  travelerID,
+  travelerId,
   imageURL,
   name,
   bio,
@@ -31,14 +31,14 @@ const TravelerCard = ({
 }: TravelCardProps) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const { profile } = useUserProfileById(travelerID);
-  const { sendRequest, isLoading } = useSendRequest(travelerID);
+  const { profile } = useUserProfileById(travelerId);
+  const { sendRequest, isLoading } = useSendRequest(travelerId);
 
   const handleSendRequest = async (message: string) => {
     try {
       await sendRequest(message);
       setIsRequestModalOpen(false);
-      onRequestSent?.(travelerID);
+      onRequestSent?.(travelerId);
     } catch (error) {
       console.error('Error sending request:', error);
     }
@@ -99,8 +99,9 @@ const TravelerCard = ({
       <TravelerDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        travelerID={travelerID}
+        travelerId={travelerId}
         distance={distance}
+        showRequestButton={true}
       />
 
       <RequestModal
