@@ -32,7 +32,9 @@ const TravelerCardList = () => {
 
   const sortedUsersByDistance = useMemo(() => {
     if (!users) return [];
-    return users.sort((a: User, b: User) => (a.distance || 0) - (b.distance || 0));
+    return users
+      .filter((u: User) => u.distance !== undefined)
+      .sort((a: User, b: User) => (a.distance || 0) - (b.distance || 0));
   }, [users]);
 
   const usersQueryKey =
