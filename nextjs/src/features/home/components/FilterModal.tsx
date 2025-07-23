@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { HiXMark } from 'react-icons/hi2';
-import { DEFAULT_DISTANCE_FILTER, type DistanceFilter } from '../types/filterTypes';
+import { type DistanceFilter } from '../types/filterTypes';
 import { distanceToSliderValue, sliderValueToDistance } from '../utils/filterUtils';
 
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (filter: DistanceFilter) => void;
-  currentFilter: DistanceFilter;
+  onApply: (type: 'city' | 'radius', filter: DistanceFilter) => void;
+  filterType: 'city' | 'radius';
+  distanceFilter: DistanceFilter;
   maxDistance?: number;
 }
 
@@ -17,47 +18,49 @@ const FilterModal = ({
   isOpen,
   onClose,
   onApply,
-  currentFilter,
+  filterType: initialType,
+  distanceFilter: initialFilter,
   maxDistance = 50,
 }: FilterModalProps) => {
+  const [filterType, setFilterType] = useState<'city' | 'radius'>(initialType);
   const [sliderValue, setSliderValue] = useState(0);
-  const [tempFilter, setTempFilter] = useState<DistanceFilter>(currentFilter);
+  const [tempFilter, setTempFilter] = useState<DistanceFilter>(initialFilter);
 
-  // 모달이 열릴 때 현재 필터로 초기화
   useEffect(() => {
     if (isOpen) {
-      setTempFilter(currentFilter);
-      const value = distanceToSliderValue(currentFilter.maxDistance, maxDistance);
+      setFilterType(initialType);
+      setTempFilter(initialFilter);
+      const value = distanceToSliderValue(initialFilter.maxDistance, maxDistance);
       setSliderValue(value);
     }
-  }, [isOpen, currentFilter, maxDistance]);
+  }, [isOpen, initialType, initialFilter, maxDistance]);
 
-  // 슬라이더 값 변경 시 임시 필터 업데이트
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     setSliderValue(value);
-
     const maxDistanceValue = sliderValueToDistance(value, maxDistance);
-    setTempFilter({
-      minDistance: 0,
-      maxDistance: maxDistanceValue,
-    });
+    setTempFilter({ minDistance: 0, maxDistance: maxDistanceValue });
   };
 
-  // 필터 적용
   const handleApply = () => {
-    onApply(tempFilter);
+    onApply(filterType, tempFilter);
     onClose();
   };
 
-  // 필터 초기화
   const handleReset = () => {
-    const defaultFilter = DEFAULT_DISTANCE_FILTER;
-    setTempFilter(defaultFilter);
-    setSliderValue(distanceToSliderValue(defaultFilter.maxDistance, maxDistance));
+    setFilterType('city');
+    setTempFilter({ minDistance: 0, maxDistance: 30 });
+    setSliderValue((30 / maxDistance) * 100);
   };
 
   if (!isOpen) return null;
+
+  const getDistanceRangeText = (filter: DistanceFilter) => {
+    if (filterType === 'city') {
+      return 'Same City';
+    }
+    return `Within ${filter.maxDistance}km`;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -69,32 +72,50 @@ const FilterModal = ({
           </button>
         </div>
 
+        <div className="flex gap-2 mb-4">
+          <button
+            className={`flex-1 py-2 rounded-lg ${filterType === 'city' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'}`}
+            onClick={() => setFilterType('city')}
+          >
+            Same City
+          </button>
+          <button
+            className={`flex-1 py-2 rounded-lg ${filterType === 'radius' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'}`}
+            onClick={() => setFilterType('radius')}
+          >
+            Radius
+          </button>
+        </div>
+
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Current Distance</p>
-          <p className="text-lg font-medium text-gray-800">Within {tempFilter.maxDistance}km</p>
+          <p className="text-sm text-gray-600 mb-1">Current Setting</p>
+          <p className="text-lg font-medium text-gray-800">{getDistanceRangeText(tempFilter)}</p>
         </div>
 
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-gray-600">0km</span>
-            <span className="text-sm font-medium text-orange-600">{tempFilter.maxDistance}km</span>
-            <span className="text-sm text-gray-600">{maxDistance}km</span>
+        {filterType === 'radius' && (
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600">0km</span>
+              <span className="text-sm font-medium text-orange-600">
+                {tempFilter.maxDistance}km
+              </span>
+              <span className="text-sm text-gray-600">{maxDistance}km</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliderValue}
+                onChange={handleSliderChange}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300"
+                style={{
+                  background: `linear-gradient(to right, #f97316 0%, #f97316 ${sliderValue}%, #e5e7eb ${sliderValue}%, #e5e7eb 100%)`,
+                }}
+              />
+            </div>
           </div>
-
-          <div className="relative">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={sliderValue}
-              onChange={handleSliderChange}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300"
-              style={{
-                background: `linear-gradient(to right, #f97316 0%, #f97316 ${sliderValue}%, #e5e7eb ${sliderValue}%, #e5e7eb 100%)`,
-              }}
-            />
-          </div>
-        </div>
+        )}
 
         <div className="flex gap-3">
           <button
