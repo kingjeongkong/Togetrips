@@ -8,6 +8,7 @@ import { useUserLocation } from '@/features/home/hooks/useUserLocation';
 import { getDistanceText } from '@/features/home/utils/location';
 import UserInfoView from '@/features/shared/components/DetailInfoView';
 import UserLocationView from '@/features/shared/components/DetailLocationView';
+import { User } from '@/features/shared/types/User';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { IoClose, IoLocationOutline, IoPersonOutline } from 'react-icons/io5';
@@ -44,16 +45,25 @@ const TravelerDetailModal = ({
 
   // users 데이터에서 해당 사용자 정보 찾기
   const userLocation = useMemo(() => {
-    if (!users) return null;
-    const user = users.find((u: any) => u.id === travelerId);
-    if (user && user.location_lat && user.location_lng) {
+    // 1. users 배열에서 찾기
+    if (users) {
+      const user = users.find((u: User) => u.id === travelerId);
+      if (user && user.location?.lat && user.location?.lng) {
+        return {
+          latitude: user.location.lat,
+          longitude: user.location.lng,
+        };
+      }
+    }
+    // 2. users에 없으면 profile에서 fallback (location_lat/lng)
+    if (profile?.location?.lat && profile?.location?.lng) {
       return {
-        latitude: user.location_lat,
-        longitude: user.location_lng,
+        latitude: profile.location.lat,
+        longitude: profile.location.lng,
       };
     }
     return null;
-  }, [users, travelerId]);
+  }, [users, travelerId, profile]);
 
   const handleSendRequest = async (message: string) => {
     try {

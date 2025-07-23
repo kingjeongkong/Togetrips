@@ -112,7 +112,15 @@ export async function GET(request: NextRequest) {
             user.location_lng,
           );
         }
-        return { ...user, distance };
+        // location 필드 가공
+        const location = {
+          lat: user.location_lat,
+          lng: user.location_lng,
+          city: user.location_city,
+          state: user.location_state,
+        };
+        const { location_lat, location_lng, location_city, location_state, ...rest } = user;
+        return { ...rest, location, distance };
       });
 
     return NextResponse.json({ users: filteredUsers });

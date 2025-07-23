@@ -36,7 +36,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ user: userData });
+    // location 필드 가공
+    const { location_lat, location_lng, location_city, location_state, ...rest } = userData;
+    const location = {
+      lat: location_lat,
+      lng: location_lng,
+      city: location_city,
+      state: location_state,
+    };
+
+    return NextResponse.json({ user: { ...rest, location } });
   } catch (error) {
     console.error('Error fetching profile:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
