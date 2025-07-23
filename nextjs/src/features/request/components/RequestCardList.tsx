@@ -1,17 +1,14 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import TravelerDetailModal from '@/features/shared/components/TravelerDetailModal';
 import { getMyRequests } from '@/features/shared/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 import RequestCard from './RequestCard';
 
 const RequestCardList = () => {
   const { userId } = useSession();
-  const [selectedTravelerId, setSelectedTravelerId] = useState<string | null>(null);
 
   const { data: requests = [], isLoading } = useQuery<(Request & { sender: RequestUserProfile })[]>(
     {
@@ -48,20 +45,10 @@ const RequestCardList = () => {
             key={index}
             aria-label={`Request card from ${request.sender.name || 'unknown user'}`}
           >
-            <RequestCard
-              request={request}
-              onClick={() => setSelectedTravelerId(request.senderId)}
-            />
+            <RequestCard request={request} />
           </div>
         ))}
       </div>
-
-      <TravelerDetailModal
-        isOpen={!!selectedTravelerId}
-        onClose={() => setSelectedTravelerId(null)}
-        travelerId={selectedTravelerId ?? ''}
-        showRequestButton={false}
-      />
     </>
   );
 };
