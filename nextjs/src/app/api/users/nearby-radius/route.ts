@@ -1,37 +1,11 @@
+import {
+  addDistanceErrorKm,
+  calculateDistanceKm,
+  getBoundingBox,
+  getExcludedUserIds,
+} from '@/app/api/_utils/location';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
-
-const calculateDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-  const R = 6371;
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lng2 - lng1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
-
-const addDistanceErrorKm = (distanceInKm: number): number => {
-  let errorInKm: number;
-
-  if (distanceInKm < 1) {
-    const errorPercentage = 0.3 + Math.random() * 0.2;
-    errorInKm = distanceInKm * errorPercentage * (Math.random() - 0.5) * 2;
-  } else if (distanceInKm < 5) {
-    errorInKm = (Math.random() - 0.5) * 0.6;
-  } else if (distanceInKm < 10) {
-    errorInKm = (Math.random() - 0.5) * 1;
-  } else {
-    errorInKm = (Math.random() - 0.5) * 1.6;
-  }
-
-  return Math.max(0.1, distanceInKm + errorInKm);
-};
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,11 +39,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing or invalid lat/lng/radius' }, { status: 400 });
     }
 
-    // 1. 모든 사용자(본인 제외, 좌표 있는 유저만)
+    // 1. 바운딩 박스 계산
+    const { minLat, maxLat, minLng, maxLng } = getBoundingBox(lat, lng, radius);
+
+    // 2. 바운딩 박스 + 본인 제외 + 좌표 있는 유저만 쿼리
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
-      .neq('id', currentUserId);
+      .neq('id', currentUserId)
+      .gte('location_lat', minLat)
+      .lte('location_lat', maxLat)
+      .gte('location_lng', minLng)
+      .lte('location_lng', maxLng);
 
     if (usersError) {
       throw new Error(usersError.message);
@@ -79,20 +60,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ users: [] });
     }
 
-    // 2. 반경 내 유저 필터링 및 거리 계산 (단위: km)
+    // 3. 요청 상태 있는 유저 제외 (accepted, declined, pending)
+    const otherUserIds = users.map((u) => u.id);
+
+    const { data: sentRequests } = await supabase
+      .from('requests')
+      .select('receiver_id')
+      .eq('sender_id', currentUserId)
+      .in('receiver_id', otherUserIds)
+      .in('status', ['accepted', 'declined', 'pending']);
+
+    const { data: receivedRequests } = await supabase
+      .from('requests')
+      .select('sender_id')
+      .eq('receiver_id', currentUserId)
+      .in('sender_id', otherUserIds)
+      .in('status', ['accepted', 'declined', 'pending']);
+
+    const excludedUserIds = getExcludedUserIds(sentRequests || [], receivedRequests || []);
+
+    // 4. 남은 유저만 거리 계산
     const filteredUsers = users
-      .filter((user) => user.location_lat && user.location_lng)
-      .map((user) => {
-        const actualDistanceKm = calculateDistanceKm(
-          lat,
-          lng,
-          user.location_lat,
-          user.location_lng,
-        );
+      .filter((u) => !excludedUserIds.has(u.id) && u.location_lat && u.location_lng)
+      .map((u) => {
+        const actualDistanceKm = calculateDistanceKm(lat, lng, u.location_lat, u.location_lng);
         const distance = addDistanceErrorKm(actualDistanceKm);
-        return { ...user, distance };
+        return { ...u, distance };
       })
-      .filter((user) => user.distance <= radius);
+      .filter((u) => u.distance <= radius);
 
     return NextResponse.json({ users: filteredUsers });
   } catch (error) {

@@ -1,6 +1,21 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
+const calculateDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerSupabaseClient(request);
@@ -26,7 +41,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing city or state parameter' }, { status: 400 });
     }
 
-    // 1. 같은 도시의 모든 사용자 가져오기 (본인 제외)
+    // 1. 현재 유저의 위치(lat/lng) 가져오기
+    const { data: currentUserProfile } = await supabase
+      .from('users')
+      .select('location_lat, location_lng')
+      .eq('id', currentUserId)
+      .single();
+    const currentLat = currentUserProfile?.location_lat;
+    const currentLng = currentUserProfile?.location_lng;
+
+    // 2. 같은 도시의 모든 사용자 가져오기 (본인 제외)
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
@@ -71,7 +95,25 @@ export async function GET(request: NextRequest) {
     });
 
     // 5. completed 요청이 없는 사용자만 필터링하고 거리 정보 추가
-    const filteredUsers = users.filter((user) => !completedUserIds.has(user.id));
+    const filteredUsers = users
+      .filter((user) => !completedUserIds.has(user.id))
+      .map((user) => {
+        let distance = undefined;
+        if (
+          currentLat !== undefined &&
+          currentLng !== undefined &&
+          user.location_lat !== undefined &&
+          user.location_lng !== undefined
+        ) {
+          distance = calculateDistanceKm(
+            currentLat,
+            currentLng,
+            user.location_lat,
+            user.location_lng,
+          );
+        }
+        return { ...user, distance };
+      });
 
     return NextResponse.json({ users: filteredUsers });
   } catch (error) {
