@@ -112,7 +112,18 @@ export async function GET(request: NextRequest) {
             user.location_lng,
           );
         }
-        return { ...user, distance };
+        const location = {
+          lat: user.location_lat,
+          lng: user.location_lng,
+          city: user.location_city,
+          state: user.location_state,
+        };
+        const rest = { ...user };
+        delete rest.location_lat;
+        delete rest.location_lng;
+        delete rest.location_city;
+        delete rest.location_state;
+        return { ...rest, location, distance };
       });
 
     return NextResponse.json({ users: filteredUsers });

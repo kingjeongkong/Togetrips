@@ -85,7 +85,18 @@ export async function GET(request: NextRequest) {
       .map((u) => {
         const actualDistanceKm = calculateDistanceKm(lat, lng, u.location_lat, u.location_lng);
         const distance = addDistanceErrorKm(actualDistanceKm);
-        return { ...u, distance };
+        const location = {
+          lat: u.location_lat,
+          lng: u.location_lng,
+          city: u.location_city,
+          state: u.location_state,
+        };
+        const rest = { ...u };
+        delete rest.location_lat;
+        delete rest.location_lng;
+        delete rest.location_city;
+        delete rest.location_state;
+        return { ...rest, location, distance };
       })
       .filter((u) => u.distance <= radius);
 
