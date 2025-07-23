@@ -85,14 +85,17 @@ export async function GET(request: NextRequest) {
       .map((u) => {
         const actualDistanceKm = calculateDistanceKm(lat, lng, u.location_lat, u.location_lng);
         const distance = addDistanceErrorKm(actualDistanceKm);
-        // location 필드 가공
         const location = {
           lat: u.location_lat,
           lng: u.location_lng,
           city: u.location_city,
           state: u.location_state,
         };
-        const { location_lat, location_lng, location_city, location_state, ...rest } = u;
+        const rest = { ...u };
+        delete rest.location_lat;
+        delete rest.location_lng;
+        delete rest.location_city;
+        delete rest.location_state;
         return { ...rest, location, distance };
       })
       .filter((u) => u.distance <= radius);
