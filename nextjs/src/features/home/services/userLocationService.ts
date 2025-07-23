@@ -34,4 +34,22 @@ export const userLocationService = {
     const data = await response.json();
     return data.users;
   },
+
+  async fetchNearbyUsersByRadius(lat: number, lng: number, radius: number) {
+    const response = await fetch(
+      `/api/users/nearby-radius?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=${encodeURIComponent(radius)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch nearby users by radius');
+    }
+    const data = await response.json();
+    return data.users;
+  },
 };

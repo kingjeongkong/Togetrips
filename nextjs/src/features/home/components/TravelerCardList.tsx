@@ -7,49 +7,51 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { FaMapMarkedAlt } from 'react-icons/fa';
 import { HiFilter } from 'react-icons/hi';
-import { useFilter } from '../hooks/useFilter';
 import { useUserLocation } from '../hooks/useUserLocation';
-import type { DistanceFilter } from '../types/filterTypes';
-import { filterUsersByDistance } from '../utils/filterUtils';
+import { DEFAULT_DISTANCE_FILTER, type DistanceFilter } from '../types/filterTypes';
 import FilterModal from './FilterModal';
 import TravelerCard from './TravelerCard';
 
 const TravelerCardList = () => {
-  const { users, usersLoading, cityInfo } = useUserLocation();
-  const { distanceFilter, applyDistanceFilter } = useFilter();
+  const [filterType, setFilterType] = useState<'city' | 'radius'>('city');
+  const [distanceFilter, setDistanceFilter] = useState<DistanceFilter>(DEFAULT_DISTANCE_FILTER);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
   const { userId } = useSession();
 
-  const handleRequestSent = (travelerID: string) => {
-    if (!users || !cityInfo || !userId) return;
+  const { users, usersLoading, currentLocation, cityInfo } = useUserLocation({
+    sameCityOnly: filterType === 'city',
+    radius: filterType === 'radius' ? distanceFilter.maxDistance : undefined,
+  });
 
-    queryClient.setQueryData(
-      ['nearbyUsers', cityInfo?.city, cityInfo?.state, userId],
-      (old: User[] | undefined) => (old ? old.filter((u) => u.id !== travelerID) : []),
-    );
+  const handleApplyFilter = (type: 'city' | 'radius', distance: DistanceFilter) => {
+    setFilterType(type);
+    setDistanceFilter(distance);
+    setIsModalOpen(false);
   };
 
-  // 사용자 목록을 거리 필터에 따라 필터링
-  const filteredUsers = useMemo(() => {
+  const sortedUsersByDistance = useMemo(() => {
     if (!users) return [];
-    return filterUsersByDistance(users as User[], distanceFilter);
-  }, [users, distanceFilter]);
-
-  // 최대 거리 계산 (필터링된 사용자 중 가장 먼 거리 + 여유분)
-  const maxDistanceInUsers = useMemo(() => {
-    if (!users || users.length === 0) return 50;
-
-    const maxDistance = Math.max(
-      ...(users as User[]).map((user) => user.distance || 0).filter((distance) => distance > 0),
-    );
-
-    return Math.max((maxDistance / 1000) * 1.2, 50);
+    return users
+      .filter((u: User) => u.distance !== undefined)
+      .sort((a: User, b: User) => (a.distance || 0) - (b.distance || 0));
   }, [users]);
 
-  const handleApplyFilter = (newFilter: DistanceFilter) => {
-    applyDistanceFilter(newFilter);
-    setIsModalOpen(false);
+  const usersQueryKey =
+    filterType === 'city'
+      ? ['nearbyUsers', cityInfo?.city, cityInfo?.state, userId]
+      : [
+          'nearbyUsersByRadius',
+          currentLocation?.lat,
+          currentLocation?.lng,
+          userId,
+          distanceFilter.maxDistance,
+        ];
+
+  const handleRequestSent = (travelerId: string) => {
+    queryClient.setQueryData(usersQueryKey, (old: User[] | undefined) =>
+      old ? old.filter((u) => u.id !== travelerId) : [],
+    );
   };
 
   return (
@@ -78,13 +80,13 @@ const TravelerCardList = () => {
           <div className="col-span-2 md:col-span-3 h-[200px] flex items-center justify-center">
             <LoadingIndicator color="#f97361" size={60} />
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : sortedUsersByDistance === 0 ? (
           <div className="col-span-2 md:col-span-3 h-[200px] flex flex-col items-center justify-center text-center">
             <FaMapMarkedAlt className="w-16 h-16 text-gray-300" />
             <p className="text-lg font-medium text-gray-600 mb-1">No travelers found</p>
           </div>
         ) : (
-          filteredUsers.map((user, index) => (
+          sortedUsersByDistance.map((user: User, index: number) => (
             <div
               key={user.id || index}
               aria-label={`Traveler card for ${user.name || 'unknown user'}`}
@@ -106,9 +108,9 @@ const TravelerCardList = () => {
       <FilterModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onApply={handleApplyFilter}
-        currentFilter={distanceFilter}
-        maxDistance={maxDistanceInUsers}
+        filterType={filterType}
+        distanceFilter={distanceFilter}
+        onApply={(type, distance) => handleApplyFilter(type, distance)}
       />
     </div>
   );

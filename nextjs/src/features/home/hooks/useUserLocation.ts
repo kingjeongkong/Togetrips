@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { userLocationService } from '../services/userLocationService';
 import { getCurrentLocationData } from '../utils/location';
 
-export const useUserLocation = () => {
+export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: number }) => {
   const { userId } = useSession();
+  const sameCityOnly = options?.sameCityOnly ?? true;
+  const radius = options?.radius ?? 50;
 
   // 위치 정보 fetch + DB 업데이트
   const {
@@ -18,7 +20,6 @@ export const useUserLocation = () => {
     queryKey: ['userLocation', userId],
     queryFn: async () => {
       const { currentLocation, cityInfo } = await getCurrentLocationData();
-      // 좌표 정보도 함께 전송
       await userLocationService.updateUserLocation(
         cityInfo.city,
         cityInfo.state,
@@ -28,31 +29,40 @@ export const useUserLocation = () => {
       return { ...currentLocation, ...cityInfo };
     },
     enabled: !!userId,
-    staleTime: 10 * 60 * 1000, // 10분으로 증가
-    gcTime: 30 * 60 * 1000, // 30분으로 증가
-    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
-    refetchOnMount: false, // 마운트 시 리페치 비활성화
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     throwOnError: true,
   });
 
-  // nearbyUsers fetch
-  // ToDo : 거리별 필터를 적용함 -> 같은 도시 내의 유저를 기반으로 필터링함 -> 분리가 필요할 듯
+  // nearbyUsers fetch (sameCityOnly/city, state or 반경 기반 분기)
   const {
     data: users,
     isLoading: usersLoading,
     refetch: refetchUsers,
     error: usersError,
   } = useQuery({
-    queryKey: ['nearbyUsers', locationData?.city, locationData?.state, userId],
+    queryKey: sameCityOnly
+      ? ['nearbyUsers', locationData?.city, locationData?.state, userId]
+      : ['nearbyUsersByRadius', locationData?.lat, locationData?.lng, userId, radius],
     queryFn: () => {
-      if (!userId || !locationData?.city || !locationData?.state) return undefined;
-      return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
+      if (!userId || !locationData) return undefined;
+      if (sameCityOnly) {
+        return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
+      } else {
+        return userLocationService.fetchNearbyUsersByRadius(
+          locationData.lat,
+          locationData.lng,
+          radius,
+        );
+      }
     },
-    enabled: !!userId && !!locationData?.city && !!locationData?.state,
-    staleTime: 10 * 60 * 1000, // 10분으로 증가
-    gcTime: 30 * 60 * 1000, // 30분으로 증가
-    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
-    refetchOnMount: false, // 마운트 시 리페치 비활성화
+    enabled: !!userId && !!locationData,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     throwOnError: true,
   });
 

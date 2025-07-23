@@ -9,11 +9,8 @@ export const filterUsersByDistance = (users: User[], distanceFilter: DistanceFil
       return false;
     }
 
-    // user.distance는 미터 단위, distanceFilter는 km 단위이므로 변환 필요
-    // TODO: 거리 단위 통일 필요 (user.distance를 수정해야할 듯 -> km 단위로)
-    const userDistanceKm = user.distance / 1000;
     return (
-      userDistanceKm >= distanceFilter.minDistance && userDistanceKm <= distanceFilter.maxDistance
+      user.distance >= distanceFilter.minDistance && user.distance <= distanceFilter.maxDistance
     );
   });
 };
