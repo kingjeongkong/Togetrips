@@ -1,4 +1,3 @@
-import { isGoogleMapsLoaded, loadGoogleMapsScript } from '@/lib/google-maps';
 import { create } from 'zustand';
 
 interface MapStore {
@@ -43,19 +42,9 @@ export const useMapStore = create<MapStore>((set, get) => ({
     try {
       set({ isInitializing: true });
 
-      if (!isGoogleMapsLoaded()) {
-        await loadGoogleMapsScript();
-      }
-
-      // Google Maps API가 완전히 로드되었는지 다시 한번 확인
+      // Google Maps API가 이미 로드되어 있다고 가정
       if (!window.google || !window.google.maps || !window.google.maps.MapTypeId) {
-        console.warn('Google Maps API not fully loaded, retrying...');
-        // 잠시 대기 후 다시 시도
-        setTimeout(() => {
-          set({ isInitializing: false });
-          get().initializeMap();
-        }, 1000);
-        return;
+        throw new Error('Google Maps API is not loaded. Make sure <LoadScript> is used.');
       }
 
       // 지도 컨테이너 생성 (숨겨진 상태)
