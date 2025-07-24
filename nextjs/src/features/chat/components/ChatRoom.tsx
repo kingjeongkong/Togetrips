@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { chatService } from '../services/chatService';
-import { Message } from '../types/chatTypes';
+import { Message, PendingMessage } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -18,6 +18,7 @@ const ChatRoom = () => {
   const chatRoomID = params.chatRoomID as string;
   const { userId } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]); // 임시 메시지
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const queryClient = useQueryClient();
 
@@ -48,7 +49,6 @@ const ChatRoom = () => {
   useEffect(() => {
     if (!chatRoomID || !userId) return;
 
-    // 실시간 메시지 수신 시에 읽음 처리 (debounce 적용)
     const debouncedMarkAsRead = debounce((roomId: string) => {
       chatService.markMessagesAsRead(roomId).then(() => {
         queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
@@ -57,8 +57,17 @@ const ChatRoom = () => {
 
     const unsubscribe = chatService.subscribeToMessagesSupabase(
       chatRoomID,
-      (messages) => {
-        setMessages(messages);
+      (newMessages) => {
+        setMessages(newMessages); // 실제 메시지 전체 갱신
+        // 임시 메시지와 DB 메시지 중복 제거
+        setPendingMessages((prev) =>
+          prev.filter(
+            (pending) =>
+              !newMessages.some(
+                (real) => real.senderId === pending.senderId && real.content === pending.content,
+              ),
+          ),
+        );
         debouncedMarkAsRead(chatRoomID);
       },
       (failedCount) => {
@@ -79,9 +88,23 @@ const ChatRoom = () => {
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;
 
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: PendingMessage = {
+      id: tempId,
+      senderId: userId,
+      content: message,
+      timestamp: new Date().toISOString(),
+      read: true,
+      pending: true,
+    };
+    setPendingMessages((prev) => [...prev, optimisticMessage]);
+
     const success = await chatService.sendMessage(chatRoomID, message);
-    if (success) {
-      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+
+    if (!success) {
+      setPendingMessages((prev) =>
+        prev.map((msg) => (msg.id === tempId ? { ...msg, pending: false, error: true } : msg)),
+      );
     }
   };
 
@@ -102,7 +125,6 @@ const ChatRoom = () => {
         </p>
         <button
           onClick={() => {
-            // 페이지 새로고침으로 재시도
             window.location.reload();
           }}
           className="px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200"
@@ -119,7 +141,10 @@ const ChatRoom = () => {
         profileImage={otherUserProfile?.image || ''}
         name={otherUserProfile?.name || ''}
       />
-      <ChatRoomMessageList messages={messages} currentUserID={userId || ''} />
+      <ChatRoomMessageList
+        messages={[...messages, ...pendingMessages]}
+        currentUserID={userId || ''}
+      />
       <ChatRoomInput onSendMessage={handleSendMessage} />
     </div>
   );
