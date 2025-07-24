@@ -19,7 +19,7 @@ interface MapStore {
     color: string,
     fillOpacity: number,
     radius: number,
-  ) => google.maps.Circle;
+  ) => google.maps.Circle | undefined;
   showMap: (containerId: string) => void;
   hideMap: () => void;
   reset: () => void;
@@ -110,9 +110,12 @@ export const useMapStore = create<MapStore>((set, get) => ({
     color: string = '#FF0000',
     fillOpacity: number = 0.15,
     radius: number = 700,
-  ): google.maps.Circle => {
+  ): google.maps.Circle | undefined => {
     const { map } = get();
-    if (!map) throw new Error('Map not initialized');
+    if (!map || !(map instanceof google.maps.Map)) {
+      // map이 준비되지 않았으면 아무것도 하지 않음
+      return;
+    }
 
     const circle = new google.maps.Circle({
       strokeColor: color,
