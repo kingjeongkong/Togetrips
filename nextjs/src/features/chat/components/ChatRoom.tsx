@@ -4,6 +4,7 @@ import LoadingIndicator from '@/components/LoadingIndicator';
 import { profileService } from '@/features/shared/services/profileService';
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { debounce } from 'lodash';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { chatService } from '../services/chatService';
@@ -47,15 +48,18 @@ const ChatRoom = () => {
   useEffect(() => {
     if (!chatRoomID || !userId) return;
 
-    // ChatRoom 입장 시 메시지 읽음 update
-    chatService.markMessagesAsRead(chatRoomID).then(() => {
-      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
-    });
+    // 실시간 메시지 수신 시에 읽음 처리 (debounce 적용)
+    const debouncedMarkAsRead = debounce((roomId: string) => {
+      chatService.markMessagesAsRead(roomId).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+      });
+    }, 500);
 
     const unsubscribe = chatService.subscribeToMessagesSupabase(
       chatRoomID,
       (messages) => {
         setMessages(messages);
+        debouncedMarkAsRead(chatRoomID);
       },
       (failedCount) => {
         if (failedCount >= 3) {
@@ -66,7 +70,10 @@ const ChatRoom = () => {
       userId,
     );
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      debouncedMarkAsRead.cancel();
+    };
   }, [chatRoomID, userId, queryClient]);
 
   const handleSendMessage = async (message: string) => {
