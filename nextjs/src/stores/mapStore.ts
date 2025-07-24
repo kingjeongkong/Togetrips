@@ -8,6 +8,7 @@ interface MapStore {
   circles: google.maps.Circle[];
   currentContainerId: string | null;
   isInitializing: boolean;
+  retryCount: number;
 
   // 액션
   initializeMap: () => Promise<void>;
@@ -32,6 +33,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
   circles: [],
   currentContainerId: null,
   isInitializing: false,
+  retryCount: 0,
 
   // 지도 초기화
   initializeMap: async () => {
@@ -50,11 +52,17 @@ export const useMapStore = create<MapStore>((set, get) => ({
       // Google Maps API가 완전히 로드되었는지 다시 한번 확인
       if (!window.google || !window.google.maps || !window.google.maps.MapTypeId) {
         console.warn('Google Maps API not fully loaded, retrying...');
-        // 잠시 대기 후 다시 시도
-        setTimeout(() => {
+        // 재시도 횟수 제한 (최대 3회)
+        const retryCount = (get() as any).retryCount || 0;
+        if (retryCount < 3) {
+          set({ isInitializing: false, retryCount: retryCount + 1 });
+          setTimeout(() => {
+            get().initializeMap();
+          }, 2000); // 2초 대기
+        } else {
+          console.error('Failed to load Google Maps API after 3 retries');
           set({ isInitializing: false });
-          get().initializeMap();
-        }, 1000);
+        }
         return;
       }
 
@@ -80,6 +88,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
         map: newMap,
         isMapLoaded: true,
         isInitializing: false,
+        retryCount: 0, // 성공 시 재시도 카운트 리셋
       });
     } catch (error) {
       console.error('Failed to initialize Google Maps:', error);
@@ -186,6 +195,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
       circles: [],
       currentContainerId: null,
       isInitializing: false,
+      retryCount: 0,
     });
   },
 }));
