@@ -16,9 +16,6 @@ export interface Message {
   content: string;
   timestamp: string;
   read: boolean;
-}
-
-export interface PendingMessage extends Message {
   pending?: boolean; // Optimistic UI: 임시 메시지 여부
   error?: boolean; // Optimistic UI: 전송 실패 여부
 }

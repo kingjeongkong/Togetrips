@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { chatService } from '../services/chatService';
-import { Message, PendingMessage } from '../types/chatTypes';
+import { Message } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -18,7 +18,7 @@ const ChatRoom = () => {
   const chatRoomID = params.chatRoomID as string;
   const { userId } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]); // 임시 메시지
+  const [pendingMessages, setPendingMessages] = useState<Message[]>([]); // 임시 메시지
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const queryClient = useQueryClient();
 
@@ -89,7 +89,7 @@ const ChatRoom = () => {
     if (!userId || !chatRoomID) return;
 
     const tempId = `temp-${Date.now()}`;
-    const optimisticMessage: PendingMessage = {
+    const optimisticMessage: Message = {
       id: tempId,
       senderId: userId,
       content: message,
@@ -106,6 +106,11 @@ const ChatRoom = () => {
         prev.map((msg) => (msg.id === tempId ? { ...msg, pending: false, error: true } : msg)),
       );
     }
+  };
+
+  const handleResend = (message: Message) => {
+    setPendingMessages((prev) => prev.filter((msg) => msg.id !== message.id));
+    handleSendMessage(message.content);
   };
 
   if (isLoadingRoom || isLoadingProfile) {
@@ -144,6 +149,7 @@ const ChatRoom = () => {
       <ChatRoomMessageList
         messages={[...messages, ...pendingMessages]}
         currentUserID={userId || ''}
+        onResend={handleResend}
       />
       <ChatRoomInput onSendMessage={handleSendMessage} />
     </div>

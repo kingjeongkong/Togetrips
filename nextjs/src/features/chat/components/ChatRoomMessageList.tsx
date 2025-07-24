@@ -8,9 +8,10 @@ import ChatRoomMessage from './ChatRoomMessage';
 interface ChatRoomMessageListProps {
   messages: Message[];
   currentUserID: string;
+  onResend: (message: Message) => void;
 }
 
-const ChatRoomMessageList = ({ messages, currentUserID }: ChatRoomMessageListProps) => {
+const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -47,6 +48,7 @@ const ChatRoomMessageList = ({ messages, currentUserID }: ChatRoomMessageListPro
               key={message.id}
               message={message}
               isOwnMessage={message.senderId === currentUserID}
+              onResend={onResend}
             />
           ))}
         </div>
