@@ -55,9 +55,15 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
           className="w-12 h-12 rounded-full"
         />
       </div>
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 gap-1">
         <span className="text-gray-900">{otherUserProfile.name}</span>
-        <span className="line-clamp-1 text-sm text-gray-700">{chatRoom.lastMessage}</span>
+        <span
+          className={`line-lamp-1 text-sm ml-1 text-gray-700 ${
+            chatRoom.unreadCount > 0 ? 'font-bold' : ''
+          }`}
+        >
+          {chatRoom.lastMessage}
+        </span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <span className="text-sm text-gray-500">
@@ -66,7 +72,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
             : formatRelativeTime(chatRoom.createdAt)}
         </span>
         {chatRoom.unreadCount > 0 && (
-          <span className="text-sm rounded-full w-5 h-5 text-center text-white bg-orange-400">
+          <span className="text-sm rounded-full w-5 h-5 ml-5 text-center text-white bg-orange-400">
             {chatRoom.unreadCount}
           </span>
         )}
