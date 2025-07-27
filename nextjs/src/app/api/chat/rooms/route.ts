@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 각 채팅방의 unreadCount(내가 안 읽은 메시지 개수) 집계
-    // ToDo : Supabase에서 집계 쿼리 적용(N+1 문제 해결)
+    // ToDo : Supabase에서 집계 쿼리 적용(N+1 문제 해결) -> 대규모 트래픽 시 적용 필요
     const chatRoomsWithUnread = await Promise.all(
       (chatRooms || []).map(async (room) => {
         const { data: unreadMessages } = await supabase
