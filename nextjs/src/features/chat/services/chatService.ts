@@ -37,6 +37,7 @@ export const chatService = {
         lastMessage: room.last_message || '',
         lastMessageTime: room.last_message_time || room.created_at,
         unreadCount: room.unreadCount ?? 0,
+        otherUser: room.otherUser || null,
       }));
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {

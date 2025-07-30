@@ -8,6 +8,11 @@ export interface ChatRoom {
 
 export interface ChatRoomListItem extends ChatRoom {
   unreadCount: number;
+  otherUser?: {
+    id: string;
+    name: string;
+    image: string;
+  } | null;
 }
 
 export interface Message {
