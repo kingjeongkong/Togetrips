@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
-import { debounce } from 'lodash';
 import { toast } from 'react-toastify';
 import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
 
@@ -38,6 +37,7 @@ export const chatService = {
         lastMessage: room.last_message || '',
         lastMessageTime: room.last_message_time || room.created_at,
         unreadCount: room.unreadCount ?? 0,
+        otherUser: room.otherUser || null,
       }));
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -271,29 +271,98 @@ export const chatService = {
   },
 
   /**
-   * Supabase Realtime을 이용한 채팅방 목록 실시간 갱신 구독
+   * Supabase Realtime을 이용한 채팅방 목록 실시간 갱신 구독 (Optimistic Updates)
    * @param userId 사용자 ID
    * @param queryClient React Query의 QueryClient 인스턴스
    * @returns 구독 해제 함수
    */
   subscribeToChatRoomListUpdates(userId: string, queryClient: QueryClient): () => void {
-    const debouncedInvalidate = debounce(() => {
-      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
-    }, 300);
+    // Optimistic Updates: 특정 채팅방만 선택적으로 업데이트
+    const updateChatRoomOptimistically = (
+      chatRoomId: string,
+      updates: Partial<ChatRoomListItem>,
+    ) => {
+      queryClient.setQueryData(['chatRooms', userId], (oldData: ChatRoomListItem[] | undefined) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((room) => (room.id === chatRoomId ? { ...room, ...updates } : room));
+      });
+    };
+
+    // 사용자의 채팅방만 필터링하는 함수
+    const isUserChatRoom = (chatRoomId: string, oldData: ChatRoomListItem[] | undefined) => {
+      if (!oldData) return false;
+      const targetRoom = oldData.find((room) => room.id === chatRoomId);
+      return targetRoom?.participants.includes(userId) || false;
+    };
 
     const channel: RealtimeChannel = supabase
       .channel('chat_rooms_updates')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () =>
-        debouncedInvalidate(),
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const chatRoomId = payload.new.chat_room_id as string;
+          const content = payload.new.content as string;
+          const timestamp = payload.new.timestamp as string;
+          const senderId = payload.new.sender_id as string;
+
+          // 사용자의 채팅방인지 확인
+          const currentData = queryClient.getQueryData(['chatRooms', userId]) as
+            | ChatRoomListItem[]
+            | undefined;
+          if (!isUserChatRoom(chatRoomId, currentData)) return;
+
+          // 현재 채팅방 정보 찾기
+          const currentRoom = currentData?.find((room) => room.id === chatRoomId);
+          if (!currentRoom) return;
+
+          // 새 메시지: lastMessage, lastMessageTime, unreadCount 업데이트
+          updateChatRoomOptimistically(chatRoomId, {
+            lastMessage: content,
+            lastMessageTime: timestamp,
+            unreadCount:
+              senderId === userId ? currentRoom.unreadCount : currentRoom.unreadCount + 1,
+          });
+        },
       )
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () =>
-        debouncedInvalidate(),
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const chatRoomId = payload.new.chat_room_id as string;
+          const read = payload.new.read as boolean;
+          const oldRead = payload.old?.read as boolean;
+
+          // 사용자의 채팅방인지 확인
+          const currentData = queryClient.getQueryData(['chatRooms', userId]) as
+            | ChatRoomListItem[]
+            | undefined;
+          if (!isUserChatRoom(chatRoomId, currentData)) return;
+
+          // 읽음 처리: unreadCount만 업데이트
+          if (read !== oldRead && read === true) {
+            const currentRoom = currentData?.find((room) => room.id === chatRoomId);
+            if (!currentRoom) return;
+
+            updateChatRoomOptimistically(chatRoomId, {
+              unreadCount: Math.max(0, currentRoom.unreadCount - 1),
+            });
+          }
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
-      debouncedInvalidate.cancel();
     };
   },
 };
