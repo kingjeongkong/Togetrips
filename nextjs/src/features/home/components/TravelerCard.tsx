@@ -5,10 +5,22 @@ import RequestModal from '@/features/home/components/RequestModal';
 import useUserProfileById from '@/features/home/hooks/useProfile';
 import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { getDistanceText } from '@/features/home/utils/location';
-import TravelerDetailModal from '@/features/shared/components/TravelerDetailModal';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useState } from 'react';
+
+const TravelerDetailModal = dynamic(
+  () => import('@/features/shared/components/TravelerDetailModal'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center p-4">
+        <LoadingIndicator color="#6366f1" size={50} />
+      </div>
+    ),
+    ssr: false,
+  },
+);
 
 interface TravelCardProps {
   travelerId: string;

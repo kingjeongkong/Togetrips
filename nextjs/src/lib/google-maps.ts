@@ -17,6 +17,24 @@ export const isGoogleMapsLoaded = (): boolean => {
   );
 };
 
+// Google Maps API가 필요한 페이지인지 확인하는 함수
+export const shouldLoadGoogleMaps = (): boolean => {
+  // 이미 로드된 경우
+  if (isGoogleMapsLoaded()) {
+    return false;
+  }
+
+  // SSR 환경에서는 로드하지 않음
+  if (typeof window === 'undefined') return false;
+
+  const pathname = window.location.pathname;
+
+  // 지도 기능을 사용하는 페이지들
+  const mapPages = ['/home', '/request'];
+
+  return mapPages.some((page) => pathname.startsWith(page));
+};
+
 export const loadGoogleMapsScript = (): Promise<void> => {
   // 이미 로드된 경우
   if (isGoogleMapsLoaded()) {
@@ -65,4 +83,12 @@ export const loadGoogleMapsScript = (): Promise<void> => {
   });
 
   return scriptLoadPromise;
+};
+
+// 조건부로 Google Maps API를 로드하는 함수
+export const loadGoogleMapsIfNeeded = (): Promise<void> => {
+  if (shouldLoadGoogleMaps()) {
+    return loadGoogleMapsScript();
+  }
+  return Promise.resolve();
 };
