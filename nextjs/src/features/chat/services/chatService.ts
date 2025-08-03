@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
+import { ChatRoomListItem, Message } from '../types/chatTypes';
 
 // 헬퍼 함수: DB row를 Message 타입으로 변환
 const mapRowToMessage = (row: Record<string, unknown>): Message => ({
@@ -45,40 +45,6 @@ export const chatService = {
       }
       toast.error('Failed to fetch chat rooms');
       return [];
-    }
-  },
-
-  // 특정 채팅방 정보 조회
-  async getChatRoom(chatRoomID: string): Promise<ChatRoom | null> {
-    try {
-      const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch chat room');
-      }
-
-      const result = await response.json();
-      const room = result.chatRoom;
-
-      return {
-        id: room.id,
-        participants: room.participants,
-        createdAt: room.created_at,
-        lastMessage: room.last_message || '',
-        lastMessageTime: room.last_message_time || room.created_at,
-      };
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching chat room:', error);
-      }
-      toast.error('Failed to fetch chat room');
-      return null;
     }
   },
 

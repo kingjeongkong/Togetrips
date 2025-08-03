@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { chatService } from '../services/chatService';
+import { ChatRoomListItem } from '../types/chatTypes';
 import ChatListItem from './ChatListItem';
 
 const ChatList = () => {
@@ -27,8 +28,9 @@ const ChatList = () => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const handleChatClick = (chatRoomID: string) => {
-    router.push(`/chat/${chatRoomID}`);
+  const handleChatClick = (chatRoom: ChatRoomListItem) => {
+    if (!chatRoom.otherUser) return;
+    router.push(`/chat/${chatRoom.id}`);
   };
 
   return (
@@ -53,7 +55,7 @@ const ChatList = () => {
         ) : (
           chatRooms.map((chatRoom) => (
             <div key={chatRoom.id} aria-label={`Chat room ${chatRoom.id}`}>
-              <ChatListItem chatRoom={chatRoom} onClick={() => handleChatClick(chatRoom.id)} />
+              <ChatListItem chatRoom={chatRoom} onClick={() => handleChatClick(chatRoom)} />
             </div>
           ))
         )}
