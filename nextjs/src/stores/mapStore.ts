@@ -1,3 +1,4 @@
+import { isGoogleMapsLoaded, loadGoogleMapsIfNeeded } from '@/lib/google-maps';
 import { create } from 'zustand';
 
 interface MapStore {
@@ -42,9 +43,19 @@ export const useMapStore = create<MapStore>((set, get) => ({
     try {
       set({ isInitializing: true });
 
-      // Google Maps API가 이미 로드되어 있다고 가정
-      if (!window.google || !window.google.maps || !window.google.maps.MapTypeId) {
-        throw new Error('Google Maps API is not loaded. Make sure <LoadScript> is used.');
+      // Google Maps API 로드 확인 및 필요시 로드
+      if (!isGoogleMapsLoaded()) {
+        await loadGoogleMapsIfNeeded();
+      }
+
+      // Google Maps API가 로드되었는지 다시 확인
+      if (
+        typeof window === 'undefined' ||
+        !window.google ||
+        !window.google.maps ||
+        !window.google.maps.MapTypeId
+      ) {
+        throw new Error('Google Maps API is not loaded.');
       }
 
       // 지도 컨테이너 생성 (숨겨진 상태)
@@ -54,10 +65,10 @@ export const useMapStore = create<MapStore>((set, get) => ({
       mapContainer.style.display = 'none';
       document.body.appendChild(mapContainer);
 
-      const newMap = new google.maps.Map(mapContainer, {
+      const newMap = new window.google.maps.Map(mapContainer, {
         zoom: 13,
         center: { lat: 37.5665, lng: 126.978 }, // 서울 기본 위치
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeId: window.google.maps.MapTypeId.ROADMAP,
         disableDefaultUI: true,
         zoomControl: true,
         streetViewControl: false,
@@ -101,12 +112,12 @@ export const useMapStore = create<MapStore>((set, get) => ({
     radius: number = 700,
   ): google.maps.Circle | undefined => {
     const { map } = get();
-    if (!map || !(map instanceof google.maps.Map)) {
+    if (!map || !(map instanceof window.google.maps.Map)) {
       // map이 준비되지 않았으면 아무것도 하지 않음
       return;
     }
 
-    const circle = new google.maps.Circle({
+    const circle = new window.google.maps.Circle({
       strokeColor: color,
       strokeOpacity: 0.8,
       strokeWeight: 2,
@@ -150,7 +161,9 @@ export const useMapStore = create<MapStore>((set, get) => ({
 
     // 지도 리사이즈 트리거
     setTimeout(() => {
-      google.maps.event.trigger(map, 'resize');
+      if (typeof window !== 'undefined' && window.google) {
+        window.google.maps.event.trigger(map, 'resize');
+      }
     }, 100);
   },
 

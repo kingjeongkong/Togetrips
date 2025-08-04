@@ -1,14 +1,13 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import { profileService } from '@/features/shared/services/profileService';
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { debounce } from 'lodash';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { chatService } from '../services/chatService';
-import { Message } from '../types/chatTypes';
+import type { ChatRoom, Message } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -21,29 +20,26 @@ const ChatRoom = () => {
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]); // 임시 메시지
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
-  // Fetch Chat Room data
-  const { data: chatRoomData, isLoading: isLoadingRoom } = useQuery({
+  const chatRoomFromCache = useMemo(() => {
+    const chatRooms = queryClient.getQueryData(['chatRooms', userId]) as ChatRoom[] | undefined;
+    return chatRooms?.find((room) => room.id === chatRoomID);
+  }, [queryClient, userId, chatRoomID]);
+
+  const {
+    data: chatRoomFromAPI,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['chatRoom', chatRoomID],
     queryFn: () => chatService.getChatRoom(chatRoomID),
-    enabled: !!chatRoomID,
+    enabled: !chatRoomFromCache && !!chatRoomID && !!userId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-  // Fetch other user's profile
-  const { data: otherUserProfile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ['profile', chatRoomData?.participants.find((id) => id !== userId)],
-    queryFn: async () => {
-      const otherUserID = chatRoomData?.participants.find((id) => id !== userId);
-      if (!otherUserID) return null;
-
-      return profileService.getProfile(otherUserID);
-    },
-    enabled: !!chatRoomData && !!userId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+  const chatRoom = chatRoomFromCache || chatRoomFromAPI;
 
   // Supabase 실시간 메시지 구독
   useEffect(() => {
@@ -113,10 +109,27 @@ const ChatRoom = () => {
     handleSendMessage(message.content);
   };
 
-  if (isLoadingRoom || isLoadingProfile) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <LoadingIndicator color="#6366f1" size={50} />
+        <LoadingIndicator />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-4 bg-red-50">
+        <h3 className="text-red-800 font-medium mb-2">Chat room not found</h3>
+        <p className="text-red-600 text-sm mb-4">Please go back to the chat list and try again</p>
+        <button
+          onClick={() => {
+            router.push('/chat');
+          }}
+          className="px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200"
+        >
+          Back to Chat List
+        </button>
       </div>
     );
   }
@@ -143,8 +156,8 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-full">
       <ChatRoomHeader
-        profileImage={otherUserProfile?.image || ''}
-        name={otherUserProfile?.name || ''}
+        profileImage={chatRoom?.otherUser?.image || '/default-traveler.png'}
+        name={chatRoom?.otherUser?.name || ''}
       />
       <ChatRoomMessageList
         messages={[...messages, ...pendingMessages]}

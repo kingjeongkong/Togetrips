@@ -10,7 +10,7 @@ const ChatRoomHeader = ({ profileImage, name }: ChatRoomHeaderProps) => {
     <div className="sticky top-0 z-50 bg-gray-100 border-b border-gray-200 px-4 py-3">
       <div className="flex items-center">
         <Image
-          src={profileImage || '/default-traveler.png'}
+          src={profileImage}
           alt={name}
           width={40}
           height={40}

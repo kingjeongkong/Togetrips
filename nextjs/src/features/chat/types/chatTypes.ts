@@ -4,15 +4,15 @@ export interface ChatRoom {
   createdAt: string;
   lastMessage: string;
   lastMessageTime: string;
+  otherUser: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
 }
 
 export interface ChatRoomListItem extends ChatRoom {
   unreadCount: number;
-  otherUser?: {
-    id: string;
-    name: string;
-    image: string;
-  } | null;
 }
 
 export interface Message {

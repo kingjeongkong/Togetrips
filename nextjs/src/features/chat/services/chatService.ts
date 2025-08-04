@@ -48,8 +48,8 @@ export const chatService = {
     }
   },
 
-  // 특정 채팅방 정보 조회
-  async getChatRoom(chatRoomID: string): Promise<ChatRoom | null> {
+  // 개별 채팅방 조회
+  async getChatRoom(chatRoomID: string): Promise<Partial<ChatRoom>> {
     try {
       const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
         method: 'GET',
@@ -63,22 +63,18 @@ export const chatService = {
         throw new Error(errorData.error || 'Failed to fetch chat room');
       }
 
-      const result = await response.json();
-      const room = result.chatRoom;
-
+      const room = await response.json();
       return {
         id: room.id,
         participants: room.participants,
-        createdAt: room.created_at,
-        lastMessage: room.last_message || '',
-        lastMessageTime: room.last_message_time || room.created_at,
+        otherUser: room.otherUser || null,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error fetching chat room:', error);
       }
       toast.error('Failed to fetch chat room');
-      return null;
+      throw error;
     }
   },
 

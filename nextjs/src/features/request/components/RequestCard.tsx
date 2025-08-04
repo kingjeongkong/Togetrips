@@ -1,14 +1,27 @@
 'use client';
 
-import TravelerDetailModal from '@/features/shared/components/TravelerDetailModal';
+import LoadingIndicator from '@/components/LoadingIndicator';
 import { respondToRequest } from '@/features/shared/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import { useSession } from '@/providers/SessionProvider';
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+
+const TravelerDetailModal = dynamic(
+  () => import('@/features/shared/components/TravelerDetailModal'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center p-4">
+        <LoadingIndicator color="#6366f1" size={50} />
+      </div>
+    ),
+    ssr: false,
+  },
+);
 
 interface RequestCardProps {
   request: Request & { sender: RequestUserProfile };

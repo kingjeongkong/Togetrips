@@ -26,7 +26,7 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
     >
       <div className="items-center justify-center flex-shrink-0">
         <Image
-          src={chatRoom.otherUser.image}
+          src={chatRoom.otherUser.image || '/default-traveler.png'}
           alt={chatRoom.otherUser.name}
           width={48}
           height={48}

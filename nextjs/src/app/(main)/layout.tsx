@@ -2,18 +2,20 @@
 
 import { MapInitializer } from '@/components/MapInitializer';
 import Sidebar from '@/features/shared/components/Sidebar';
-import { LoadScript } from '@react-google-maps/api';
+import { Suspense } from 'react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
+    <>
       <MapInitializer />
       <div className="flex h-screen overflow-hidden bg-gray-100">
-        <Sidebar />
+        <Suspense fallback={<div className="w-60 bg-sky-200" />}>
+          <Sidebar />
+        </Suspense>
         <main className="flex-1 md:pl-60">
           <div className="h-full pt-16 md:pt-0 overflow-y-auto">{children}</div>
         </main>
       </div>
-    </LoadScript>
+    </>
   );
 }
