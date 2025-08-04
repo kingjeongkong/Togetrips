@@ -1,14 +1,30 @@
 'use client';
 
 import DataFetchErrorBoundary from '@/components/ErrorBoundary/DataFetchErrorBoundary';
+import LoadingIndicator from '@/components/LoadingIndicator';
 import ChatList from '@/features/chat/components/ChatList';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
+  const [isHydrated, setIsHydrated] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const pathname = usePathname();
   const isRootPath = pathname === '/chat';
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // hydration이 완료되지 않은 경우 로딩 상태 표시
+  if (!isHydrated) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoadingIndicator />
+      </div>
+    );
+  }
 
   if (isMobile) {
     // ------ (A) 모바일 레이아웃 ------
