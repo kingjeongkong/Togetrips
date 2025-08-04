@@ -1,7 +1,8 @@
 'use client';
 
+import LoadingIndicator from '@/components/LoadingIndicator';
 import { useSession } from '@/providers/SessionProvider';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { debounce } from 'lodash';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,10 +22,24 @@ const ChatRoom = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const chatRoom = useMemo(() => {
+  const chatRoomFromCache = useMemo(() => {
     const chatRooms = queryClient.getQueryData(['chatRooms', userId]) as ChatRoom[] | undefined;
     return chatRooms?.find((room) => room.id === chatRoomID);
   }, [queryClient, userId, chatRoomID]);
+
+  const {
+    data: chatRoomFromAPI,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['chatRoom', chatRoomID],
+    queryFn: () => chatService.getChatRoom(chatRoomID),
+    enabled: !chatRoomFromCache && !!chatRoomID && !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const chatRoom = chatRoomFromCache || chatRoomFromAPI;
 
   // Supabase 실시간 메시지 구독
   useEffect(() => {
@@ -94,7 +109,15 @@ const ChatRoom = () => {
     handleSendMessage(message.content);
   };
 
-  if (!chatRoom) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <LoadingIndicator />
+      </div>
+    );
+  }
+
+  if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4 bg-red-50">
         <h3 className="text-red-800 font-medium mb-2">Chat room not found</h3>
@@ -133,8 +156,8 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-full">
       <ChatRoomHeader
-        profileImage={chatRoom.otherUser?.image || '/default-traveler.png'}
-        name={chatRoom.otherUser?.name || ''}
+        profileImage={chatRoom?.otherUser?.image || '/default-traveler.png'}
+        name={chatRoom?.otherUser?.name || ''}
       />
       <ChatRoomMessageList
         messages={[...messages, ...pendingMessages]}

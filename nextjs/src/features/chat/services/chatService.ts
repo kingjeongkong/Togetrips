@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { ChatRoomListItem, Message } from '../types/chatTypes';
+import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
 
 // 헬퍼 함수: DB row를 Message 타입으로 변환
 const mapRowToMessage = (row: Record<string, unknown>): Message => ({
@@ -45,6 +45,36 @@ export const chatService = {
       }
       toast.error('Failed to fetch chat rooms');
       return [];
+    }
+  },
+
+  // 개별 채팅방 조회
+  async getChatRoom(chatRoomID: string): Promise<Partial<ChatRoom>> {
+    try {
+      const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch chat room');
+      }
+
+      const room = await response.json();
+      return {
+        id: room.id,
+        participants: room.participants,
+        otherUser: room.otherUser || null,
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching chat room:', error);
+      }
+      toast.error('Failed to fetch chat room');
+      throw error;
     }
   },
 
