@@ -1,0 +1,30 @@
+import { chatService } from '@/features/chat/services/chatService';
+import { useSession } from '@/providers/SessionProvider';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePathname, useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+
+export const useDeleteChatRoom = () => {
+  const queryClient = useQueryClient();
+  const { userId } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  return useMutation({
+    mutationFn: (chatRoomId: string) => chatService.deleteChatRoom(chatRoomId),
+    onSuccess: (_, chatRoomId) => {
+      // 채팅방 목록 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+      toast.success('Chat room deleted successfully');
+
+      // 현재 채팅방이 삭제된 경우 목록으로 이동
+      if (pathname.includes(chatRoomId)) {
+        router.push('/chat');
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to delete chat room:', error);
+      toast.error('Failed to delete chat room');
+    },
+  });
+};

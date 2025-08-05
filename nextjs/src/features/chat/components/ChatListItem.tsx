@@ -21,7 +21,9 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
 
   return (
     <div
-      className={`flex gap-3 px-2 py-4 hover:bg-gray-50 cursor-pointer transition-colors ${isSelected ? 'bg-gray-200 font-bold' : ''}`}
+      className={`flex gap-3 px-2 py-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+        isSelected ? 'bg-gray-200 font-bold' : ''
+      }`}
       onClick={onClick}
     >
       <div className="items-center justify-center flex-shrink-0">

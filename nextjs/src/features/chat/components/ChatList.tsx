@@ -47,7 +47,7 @@ const ChatList = () => {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto group">
         {chatRooms.length === 0 && !isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 text-lg py-10 text-center">
             No chat rooms yet.

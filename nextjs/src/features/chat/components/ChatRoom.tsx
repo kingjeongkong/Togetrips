@@ -158,6 +158,7 @@ const ChatRoom = () => {
       <ChatRoomHeader
         profileImage={chatRoom?.otherUser?.image || '/default-traveler.png'}
         name={chatRoom?.otherUser?.name || ''}
+        chatRoomId={chatRoomID}
       />
       <ChatRoomMessageList
         messages={[...messages, ...pendingMessages]}

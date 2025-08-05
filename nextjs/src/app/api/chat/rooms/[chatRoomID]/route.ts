@@ -71,3 +71,65 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = createServerSupabaseClient(request);
+
+    const pathname = request.nextUrl.pathname;
+    const chatRoomID = pathname.split('/').pop();
+
+    if (!chatRoomID) {
+      return NextResponse.json({ error: 'Chat room ID is required' }, { status: 400 });
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 채팅방 존재 여부 및 참여자 확인
+    const { data: chatRoom, error: chatRoomError } = await supabase
+      .from('chat_rooms')
+      .select('id, participants')
+      .eq('id', chatRoomID)
+      .single();
+
+    if (chatRoomError || !chatRoom) {
+      return NextResponse.json({ error: 'Chat room not found' }, { status: 404 });
+    }
+
+    if (!chatRoom.participants.includes(user.id)) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    // RPC 함수를 사용하여 트랜잭션으로 채팅방과 메시지 삭제
+    const { error: rpcError } = await supabase.rpc('delete_chat_room_with_messages', {
+      p_chat_room_id: chatRoomID,
+      p_user_id: user.id,
+    });
+
+    if (rpcError) {
+      console.error('Error deleting chat room via RPC:', rpcError);
+      return NextResponse.json({ error: 'Failed to delete chat room' }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Chat room deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting chat room:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

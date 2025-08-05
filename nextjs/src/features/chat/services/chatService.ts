@@ -361,4 +361,18 @@ export const chatService = {
       supabase.removeChannel(channel);
     };
   },
+
+  async deleteChatRoom(chatRoomId: string): Promise<void> {
+    const response = await fetch(`/api/chat/rooms/${chatRoomId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete chat room');
+    }
+  },
 };
