@@ -55,9 +55,10 @@ const RequestCard = ({ request }: RequestCardProps) => {
     setIsProcessing(true);
     try {
       await respondToRequest(request.id, 'accept');
+      toast.success('Request accepted successfully! Chat room is created.');
+      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
       onStatusChange();
       updateTravelerCard();
-      toast.success('Request accepted successfully! Chat room is created.');
     } catch (error) {
       toast.error('Failed to accept request. Please try again.');
       if (process.env.NODE_ENV === 'development') {
