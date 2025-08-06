@@ -15,6 +15,8 @@ export const useDeleteChatRoom = () => {
     onSuccess: (_, chatRoomId) => {
       // 채팅방 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+      // unread count 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
       toast.success('Chat room deleted successfully');
 
       // 현재 채팅방이 삭제된 경우 목록으로 이동
