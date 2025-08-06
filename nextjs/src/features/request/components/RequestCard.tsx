@@ -1,7 +1,7 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import { respondToRequest } from '@/features/shared/services/requestService';
+import { respondToRequest } from '@/features/request/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { formatHashTags } from '@/features/shared/utils/HashTags';
 import { useSession } from '@/providers/SessionProvider';
@@ -38,6 +38,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
 
   const onStatusChange = () => {
     queryClient.invalidateQueries({ queryKey: ['requests', userId] });
+    queryClient.invalidateQueries({ queryKey: ['requestCount', userId] });
   };
 
   const updateTravelerCard = () => {

@@ -1,5 +1,7 @@
 'use client';
 
+import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
+import { useRequestCount } from '@/features/request/hooks/useRequestCount';
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -15,6 +17,7 @@ interface MenuItem {
   title: string;
   icon: IconType;
   to: string;
+  count?: number;
 }
 
 const Sidebar = () => {
@@ -24,10 +27,18 @@ const Sidebar = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { handleSignOut } = useAuthActions();
 
+  const { data: unreadCount = 0 } = useUnreadCount();
+  const { data: requestCount = 0 } = useRequestCount();
+
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
-    { title: 'Chat', icon: MdChat, to: '/chat' },
-    { title: 'Requests', icon: FaBell, to: '/request' },
+    { title: 'Chat', icon: MdChat, to: '/chat', count: unreadCount > 0 ? unreadCount : undefined },
+    {
+      title: 'Requests',
+      icon: FaBell,
+      to: '/request',
+      count: requestCount > 0 ? requestCount : undefined,
+    },
     { title: 'Profile', icon: FaUserAlt, to: '/profile' },
   ];
 
@@ -50,7 +61,13 @@ const Sidebar = () => {
         "
       >
         {menuItems.map((item, index) => (
-          <SidebarItem key={index} title={item.title} icon={item.icon} to={item.to} />
+          <SidebarItem
+            key={index}
+            title={item.title}
+            icon={item.icon}
+            to={item.to}
+            count={item.count}
+          />
         ))}
         <div className="hidden md:flex flex-col items-center w-full mt-auto mb-6 relative">
           <button

@@ -48,6 +48,7 @@ const ChatRoom = () => {
     const debouncedMarkAsRead = debounce((roomId: string) => {
       chatService.markMessagesAsRead(roomId).then(() => {
         queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+        queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
       });
     }, 500);
 
