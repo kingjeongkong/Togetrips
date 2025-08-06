@@ -46,7 +46,7 @@ jobs:
 
       - name: Code quality check
         working-directory: nextjs
-        run: pnpm lint
+        run: pnpm lint --max-warnings=0
 
       - name: Type safety check
         working-directory: nextjs
