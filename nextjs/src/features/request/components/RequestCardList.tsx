@@ -1,7 +1,7 @@
 'use client';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
-import { getMyRequests } from '@/features/shared/services/requestService';
+import { getMyRequests } from '@/features/request/services/requestService';
 import type { Request, RequestUserProfile } from '@/features/shared/types/Request';
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
