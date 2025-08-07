@@ -42,13 +42,7 @@ const UserLocationView = ({
       clearCircles();
       hideMap();
     };
-  }, [
-    isMapLoaded,
-    otherUserLatitude,
-    otherUserLongitude,
-    currentLocation?.lat,
-    currentLocation?.lng,
-  ]);
+  }, [isMapLoaded, otherUserLatitude, otherUserLongitude, currentLocation]);
 
   return (
     <div className="p-6 pt-3">
