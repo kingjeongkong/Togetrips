@@ -15,8 +15,8 @@ interface GeocodeResult {
 
 const handleLocation = async (
   position: GeolocationPosition,
-  resolve: (value: any) => void,
-  reject: (reason?: any) => void,
+  resolve: (value: { currentLocation: Location; cityInfo: CityInfo }) => void,
+  reject: (reason?: unknown) => void,
 ) => {
   const { latitude, longitude } = position.coords;
   const currentLocation = { lat: latitude, lng: longitude };

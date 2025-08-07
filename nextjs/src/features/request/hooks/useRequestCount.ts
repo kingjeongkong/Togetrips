@@ -1,3 +1,4 @@
+import type { Request } from '@/features/shared/types/Request';
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
 
@@ -19,7 +20,7 @@ export const useRequestCount = () => {
       // 받은 요청 중 pending 상태인 것만 카운트
       const count =
         data.requests?.filter(
-          (request: any) => request.receiverId === userId && request.status === 'pending',
+          (request: Request) => request.receiverId === userId && request.status === 'pending',
         ).length || 0;
 
       return count;

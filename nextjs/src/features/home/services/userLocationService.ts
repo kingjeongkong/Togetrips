@@ -1,6 +1,6 @@
 export const userLocationService = {
   async updateUserLocation(city: string, state: string, lat?: number, lng?: number) {
-    const body: any = { city, state };
+    const body: { city: string; state: string; lat?: number; lng?: number } = { city, state };
     if (lat !== undefined && lng !== undefined) {
       body.lat = lat;
       body.lng = lng;

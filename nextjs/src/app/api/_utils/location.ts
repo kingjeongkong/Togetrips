@@ -45,7 +45,10 @@ export function addDistanceErrorKm(distanceInKm: number): number {
 }
 
 // request 상태 있는 유저 제외 (accepted, declined, pending)
-export function getExcludedUserIds(sentRequests: any[], receivedRequests: any[]): Set<string> {
+export function getExcludedUserIds(
+  sentRequests: { receiver_id: string }[],
+  receivedRequests: { sender_id: string }[],
+): Set<string> {
   const excludedUserIds = new Set<string>();
   sentRequests?.forEach((r) => excludedUserIds.add(r.receiver_id));
   receivedRequests?.forEach((r) => excludedUserIds.add(r.sender_id));

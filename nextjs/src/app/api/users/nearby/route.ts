@@ -1,3 +1,4 @@
+import { getExcludedUserIds } from '@/app/api/_utils/location';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -84,15 +85,7 @@ export async function GET(request: NextRequest) {
       .in('status', ['accepted', 'declined', 'pending']);
 
     // 4. completed 요청이 있는 사용자 ID 수집
-    const completedUserIds = new Set();
-
-    sentRequests?.forEach((request) => {
-      completedUserIds.add(request.receiver_id);
-    });
-
-    receivedRequests?.forEach((request) => {
-      completedUserIds.add(request.sender_id);
-    });
+    const completedUserIds = getExcludedUserIds(sentRequests || [], receivedRequests || []);
 
     // 5. completed 요청이 없는 사용자만 필터링하고 거리 정보 추가
     const filteredUsers = users
