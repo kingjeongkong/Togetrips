@@ -27,7 +27,12 @@ const ProfileHeaderActions = ({
       <FiSettings className="w-6 h-6 md:w-8 md:h-8 text-white" />
     </button>
     {settingsOpen && (
-      <LogoutMenu onLogout={handleLogout} onClose={() => setSettingsOpen(false)} direction="down" />
+      <LogoutMenu
+        onLogout={handleLogout}
+        onClose={() => setSettingsOpen(false)}
+        direction="down"
+        className="-right-10"
+      />
     )}
   </div>
 );

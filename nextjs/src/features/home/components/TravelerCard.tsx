@@ -61,14 +61,16 @@ const TravelerCard = ({
   return (
     <>
       <div
-        className="relative overflow-hidden flex flex-col h-full px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6 cursor-pointer transition-all duration-200"
+        className="relative overflow-hidden flex flex-col h-48 md:h-56 px-4 py-3 bg-white rounded-3xl border-2 border-gray-200 shadow-lg hover:shadow-xl md:px-8 md:py-6 cursor-pointer transition-all duration-200"
         onClick={() => setIsDetailModalOpen(true)}
       >
         {distanceText && (
-          <div className="absolute top-5 right-7 z-10 text-xs text-gray-600">{distanceText}</div>
+          <div className="absolute top-2 right-3 md:top-5 md:right-7 z-10 text-xs text-gray-600">
+            {distanceText}
+          </div>
         )}
 
-        <div className="flex">
+        <div className="flex mt-3 md:mt-0">
           <Image
             src={profile?.image || imageURL || '/default-traveler.png'}
             width={64}
@@ -86,26 +88,28 @@ const TravelerCard = ({
           </div>
         </div>
 
-        <p className="flex-grow text-sm text-gray-700 line-clamp-4 mt-3 mb-5 md:text-base">
+        <p className="text-sm text-gray-700 line-clamp-2 mt-2 mb-2 md:text-base">
           {profile?.bio || bio}
         </p>
 
-        <button
-          className="w-full py-2 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsRequestModalOpen(true);
-          }}
-          disabled={isLoading}
-          aria-label={
-            isLoading
-              ? `Loading request to ${profile?.name || name || 'traveler'}`
-              : `Send request to ${profile?.name || name || 'traveler'}`
-          }
-        >
-          {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
-          {isLoading ? 'Loading...' : 'Send Request'}
-        </button>
+        <div className="mt-auto">
+          <button
+            className="w-full py-2 text-white bg-orange-500 rounded-3xl shadow-sm hover:bg-orange-600 hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsRequestModalOpen(true);
+            }}
+            disabled={isLoading}
+            aria-label={
+              isLoading
+                ? `Loading request to ${profile?.name || name || 'traveler'}`
+                : `Send request to ${profile?.name || name || 'traveler'}`
+            }
+          >
+            {isLoading && <LoadingIndicator color="#ffffff" size={16} />}
+            {isLoading ? 'Loading...' : 'Send Request'}
+          </button>
+        </div>
       </div>
 
       <TravelerDetailModal
