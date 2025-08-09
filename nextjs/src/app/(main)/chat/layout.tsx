@@ -41,10 +41,10 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     const hasChatId = !isRootPath; // /chat/:chatId면 true, /chat이면 false
 
     return (
-      <div className="flex h-full min-h-0 overflow-hidden bg-gray-100">
-        <main className="flex flex-1 h-full min-h-0">
+      <div className="flex h-screen overflow-hidden bg-gray-100">
+        <main className="flex flex-1">
           {/* 직접 ChatList를 렌더링 */}
-          <div className="border-r border-gray-300 w-[350px] h-full min-h-0">
+          <div className="border-r border-gray-300 w-[350px]">
             <DataFetchErrorBoundary>
               <ChatList />
             </DataFetchErrorBoundary>
@@ -52,11 +52,11 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
           {/* 오른쪽 영역: /chat/:chatId 일 때만 children (ChatRoom) 표시 */}
           {hasChatId ? (
-            <div className="flex-1 h-full min-h-0">
+            <div className="flex-1">
               <DataFetchErrorBoundary>{children}</DataFetchErrorBoundary>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center h-full min-h-0">
+            <div className="flex-1 flex items-center justify-center">
               <div className="text-gray-500">Select a chat.</div>
             </div>
           )}
