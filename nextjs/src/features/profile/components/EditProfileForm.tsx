@@ -57,7 +57,10 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
           <LoadingIndicator color="#6366f1" size={70} />
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex flex-col w-full gap-4 items-center md:pt-5">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col w-full gap-4 items-center md:pt-5 pb-12 md:pb-8"
+      >
         <div className="relative">
           <Image
             src={previewImage || initialData?.image || '/default-traveler.png'}
