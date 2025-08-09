@@ -59,7 +59,7 @@ const EditProfileForm = ({ onCancle, onSubmit, initialData }: EditProfileFormPro
       )}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col w-full gap-4 items-center md:pt-5 pb-8"
+        className="flex flex-col w-full gap-4 items-center md:pt-5 pb-12 md:pb-8"
       >
         <div className="relative">
           <Image
