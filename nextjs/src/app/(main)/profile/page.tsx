@@ -13,7 +13,7 @@ export default function ProfilePage() {
         </div>
       }
     >
-      <div className="w-full flex flex-col items-center p-6">
+      <div className="w-full flex flex-col items-center p-6 h-[calc(100dvh-4rem)] md:h-full overflow-y-auto">
         <MainProfile />
       </div>
     </Suspense>
