@@ -7,7 +7,7 @@ import TravelerCardList from '@/features/home/components/TravelerCardList';
 
 export default function Home() {
   return (
-    <main className="space-y-10 pb-20 md:py-5 overflow-y-auto">
+    <main className="space-y-10 pb-20 md:py-5">
       <DataFetchErrorBoundary>
         <HomeProfile />
       </DataFetchErrorBoundary>
