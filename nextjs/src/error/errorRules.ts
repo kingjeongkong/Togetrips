@@ -4,7 +4,7 @@ export interface ErrorRule {
   pattern: RegExp;
   type: ErrorType;
   severity: 'low' | 'medium' | 'high';
-  getInfo: (error: Error) => Omit<ErrorInfo, 'type' | 'severity'>;
+  getInfo: (error?: Error) => Omit<ErrorInfo, 'type' | 'severity'>;
 }
 
 export const ERROR_RULES: ErrorRule[] = [
@@ -13,8 +13,8 @@ export const ERROR_RULES: ErrorRule[] = [
     pattern: /location|geolocation|position/i,
     type: 'location',
     severity: 'medium',
-    getInfo: (error: Error) => {
-      const message = error.message.toLowerCase();
+    getInfo: (error?: Error) => {
+      const message = error?.message?.toLowerCase() || '';
 
       if (message.includes('permission') || message.includes('denied')) {
         return {
@@ -65,7 +65,7 @@ export const ERROR_RULES: ErrorRule[] = [
     pattern: /permission|denied|unauthorized/i,
     type: 'permission',
     severity: 'medium',
-    getInfo: (error: Error) => ({
+    getInfo: () => ({
       title: 'Permission Required',
       description: 'Permission is required to use this feature.',
       solutions: [
@@ -81,7 +81,7 @@ export const ERROR_RULES: ErrorRule[] = [
     pattern: /network|connection|fetch|request/i,
     type: 'network',
     severity: 'medium',
-    getInfo: (error: Error) => ({
+    getInfo: () => ({
       title: 'Network Connection Issue',
       description: 'There is a problem with network connection.',
       solutions: [
@@ -97,7 +97,7 @@ export const ERROR_RULES: ErrorRule[] = [
     pattern: /timeout|expired|timed out/i,
     type: 'timeout',
     severity: 'low',
-    getInfo: (error: Error) => ({
+    getInfo: () => ({
       title: 'Request Timeout',
       description: 'Request processing time has exceeded.',
       solutions: ['Check your network connection', 'Try again in a moment', 'Refresh the page'],
@@ -109,7 +109,7 @@ export const ERROR_RULES: ErrorRule[] = [
     pattern: /auth|login|session|token/i,
     type: 'auth',
     severity: 'high',
-    getInfo: (error: Error) => ({
+    getInfo: () => ({
       title: 'Authentication Required',
       description: 'Login is required or session has expired.',
       solutions: ['Please log in again', 'Refresh the page', 'Clear browser cache'],
