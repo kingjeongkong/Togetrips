@@ -26,6 +26,20 @@ export default function RootLayout({
   const [queryClient] = useState(() => new QueryClient());
   return (
     <html lang="en">
+      <head>
+        <title>Togetrips - Find Your Travel Buddy</title>
+        <meta
+          name="description"
+          content="Discover travelers nearby and find your next companion with real-time chat."
+        />
+        <link rel="icon" href="/togetrips-logo.png" />
+        <link rel="apple-touch-icon" href="/togetrips-logo.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Togetrips" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#f97316" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
