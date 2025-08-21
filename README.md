@@ -36,9 +36,9 @@ TravelTogether is a platform that allows travelers to discover other travelers n
 <!-- prettier-ignore-start -->
 | Main Home | Travel Requests |
 | :---: | :---: |
-| <img width="400" alt="Main Home" src="https://github.com/user-attachments/assets/51d231f5-9d0f-4b14-bec3-397bd330e0df"> | <img width="400" alt="Travel Requests" src="https://github.com/user-attachments/assets/805ca1b8-abee-4913-8a1d-7c7d60e152e7"> |
+| <img width="400" alt="Main Home" src="https://github.com/user-attachments/assets/0ccf6ebd-14c2-48e0-86c7-11203120cd11"> | <img width="400" alt="Travel Requests" src="https://github.com/user-attachments/assets/95e131ac-99ba-4713-a191-0fa10380db4f"> |
 | **Chat** | **Profile** |
-| <img width="400" alt="Chat" src="https://github.com/user-attachments/assets/dec0cacb-ea42-4439-96ca-cfea440125f4"> | <img width="400" alt="Profile" src="https://github.com/user-attachments/assets/5fadadf8-733f-4065-a198-5b0fa8db1a13"> |
+| <img width="400" alt="Chat" src="https://github.com/user-attachments/assets/9a95dae9-a4cc-434e-98ba-d93dddb78ef8"> | <img width="400" alt="Profile" src="https://github.com/user-attachments/assets/4693700a-08b6-45a2-b255-197a7d8d7a04"> |
 <!-- prettier-ignore-end -->
 
 ## 🏗️ Project Structure
