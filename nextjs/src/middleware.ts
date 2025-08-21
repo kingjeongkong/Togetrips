@@ -22,8 +22,6 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname === '/') {
     if (user) {
       return NextResponse.redirect(new URL('/home', request.url));
-    } else {
-      return NextResponse.redirect(new URL('/auth/signin', request.url));
     }
   }
 

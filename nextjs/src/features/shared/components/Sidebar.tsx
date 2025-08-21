@@ -5,6 +5,7 @@ import { useRequestCount } from '@/features/request/hooks/useRequestCount';
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { IconType } from 'react-icons';
@@ -51,7 +52,16 @@ const Sidebar = () => {
         ${isMobile && isChatRoute ? 'hidden' : ''}
         `}
       >
-        <p className="font-bold text-xl py-3 md:text-2xl md:py-5 text-black">Travel Together</p>
+        <div className="flex items-center justify-center py-3 md:py-5">
+          <Image
+            src="/togetrips-logo.png"
+            alt="Togetrips"
+            width={40}
+            height={40}
+            className="w-8 h-8 md:w-10 md:h-10 mr-2"
+          />
+          <p className="font-bold text-xl md:text-2xl text-black">Togetrips</p>
+        </div>
       </div>
 
       <div
