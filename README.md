@@ -1,8 +1,8 @@
-# TravelTogether
+# Togetrips
 
 A social networking platform for travelers to find companions with shared interests during their journey.
 
-**Service Link:** https://togetrip.vercel.app
+**Service Link:** https://www.togetrips.com/
 
 ## 🚀 Project Overview
 
