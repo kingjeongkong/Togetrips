@@ -1,0 +1,23 @@
+{
+  "name": "Togetrips - Find Your Travel Buddy",
+  "short_name": "Togetrips",
+  "description": "Discover travelers nearby and find your next companion with real-time chat.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/togetrips-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/togetrips-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

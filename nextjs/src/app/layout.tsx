@@ -32,8 +32,13 @@ export default function RootLayout({
           name="description"
           content="Discover travelers nearby and find your next companion with real-time chat."
         />
-        <link rel="icon" href="/togetrips-logo.png" />
-        <link rel="apple-touch-icon" href="/togetrips-logo.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/togetrips-logo.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/togetrips-logo.png" />
+        <link rel="shortcut icon" href="/togetrips-logo.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/togetrips-logo.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/togetrips-logo.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/togetrips-logo.png" />
+        <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Togetrips" />
