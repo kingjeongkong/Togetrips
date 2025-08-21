@@ -58,7 +58,7 @@ const Sidebar = () => {
             alt="Togetrips"
             width={40}
             height={40}
-            className="w-8 h-8 md:w-10 md:h-10"
+            className="w-8 h-8 md:w-10 md:h-10 mr-2"
           />
           <p className="font-bold text-xl md:text-2xl text-black">Togetrips</p>
         </div>
