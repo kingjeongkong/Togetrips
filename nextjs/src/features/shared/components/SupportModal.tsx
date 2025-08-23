@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { BsFillLightbulbFill } from 'react-icons/bs';
 import { FiAlertCircle, FiHelpCircle, FiSend, FiX } from 'react-icons/fi';
 
@@ -16,6 +17,12 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // 폼 제출 핸들러 (아직 실제 제출 기능은 구현되지 않음)
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,10 +56,10 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  const modalContent = (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Contact Support</h2>
@@ -154,6 +161,9 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
       </div>
     </div>
   );
+
+  // Portal을 사용해서 document.body에 직접 렌더링
+  return createPortal(modalContent, document.body);
 };
 
 export default SupportModal;
