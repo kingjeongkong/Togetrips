@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BsFillLightbulbFill } from 'react-icons/bs';
 import { FiAlertCircle, FiHelpCircle, FiSend, FiX } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import { sendSupportRequest } from '../services/supportService';
 
 interface SupportModalProps {
   isOpen: boolean;
@@ -18,18 +20,29 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
 
-  // 폼 제출 핸들러 (아직 실제 제출 기능은 구현되지 않음)
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 추후 제출 기능 구현 예정
-    console.log('Support form submitted:', { supportType, subject, description, email });
+    setError(null);
+    setIsLoading(true);
+
+    await sendSupportRequest({
+      supportType,
+      subject,
+      description,
+      userEmail: email,
+    });
+
     onClose();
+    toast.success('Support request sent successfully!');
+    setIsLoading(false);
   };
 
   // 지원 유형에 따라 아이콘 반환 (feature는 아이콘 없음)
@@ -141,20 +154,37 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
             </p>
           </div>
 
+          {error && (
+            <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+              {error}
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FiSend className="w-4 h-4" />
-              Submit
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <FiSend className="w-4 h-4" />
+                  Submit
+                </>
+              )}
             </button>
           </div>
         </form>
