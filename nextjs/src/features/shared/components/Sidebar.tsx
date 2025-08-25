@@ -12,7 +12,7 @@ import { IconType } from 'react-icons';
 import { FaBell, FaHome, FaUserAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
 import { MdChat } from 'react-icons/md';
-import LogoutMenu from './LogoutMenu';
+import SettingsMenu from './SettingsMenu';
 
 interface MenuItem {
   title: string;
@@ -88,7 +88,7 @@ const Sidebar = () => {
             <FiSettings className="w-6 h-6 text-gray-700" />
           </button>
           {settingsOpen && (
-            <LogoutMenu
+            <SettingsMenu
               onLogout={handleSignOut}
               onClose={() => setSettingsOpen(false)}
               direction="up"

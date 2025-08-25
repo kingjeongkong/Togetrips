@@ -1,5 +1,5 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
-import LogoutMenu from '@/features/shared/components/LogoutMenu';
+import SettingsMenu from '@/features/shared/components/SettingsMenu';
 import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
 import { splitHashTags } from '@/features/shared/utils/HashTags';
@@ -27,7 +27,7 @@ const ProfileHeaderActions = ({
       <FiSettings className="w-6 h-6 md:w-8 md:h-8 text-white" />
     </button>
     {settingsOpen && (
-      <LogoutMenu
+      <SettingsMenu
         onLogout={handleLogout}
         onClose={() => setSettingsOpen(false)}
         direction="down"
