@@ -23,10 +23,10 @@ interface MenuItem {
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  const isChatRoute = pathname.startsWith('/chat');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { handleSignOut } = useAuthActions();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isChatRoute = pathname.startsWith('/chat');
 
   const { data: unreadCount = 0 } = useUnreadCount();
   const { data: requestCount = 0 } = useRequestCount();
@@ -43,45 +43,36 @@ const Sidebar = () => {
     { title: 'Profile', icon: FaUserAlt, to: '/profile' },
   ];
 
+  // 모바일 채팅 화면에서는 하단 바를 숨깁니다.
+  if (isMobile && isChatRoute) {
+    return null;
+  }
+
   return (
     <>
-      <div
-        className={`flex fixed items-center top-0 left-0 shadow-sm z-20 
-        w-full justify-start pl-4 bg-gray-100
-        md:w-60 md:justify-center md:pl-0 md:bg-transparent
-        ${isMobile && isChatRoute ? 'hidden' : ''}
-        `}
-      >
-        <div className="flex items-center justify-center py-3 md:py-5">
+      {/* --- Desktop Sidebar --- */}
+      {/* hidden: 모바일에서는 숨김, md:flex: 데스크탑에서는 flex로 표시 */}
+      <div className="hidden md:flex flex-col fixed top-0 left-0 w-60 h-full bg-sky-200 px-2 py-4 z-30">
+        <div className="flex items-center justify-center mb-7">
           <Image
             src="/togetrips-logo.png"
             alt="Togetrips"
             width={40}
             height={40}
-            className="w-8 h-8 md:w-10 md:h-10 mr-2"
+            className="w-10 h-10 mr-2"
           />
-          <p className="font-bold text-xl md:text-2xl text-black">Togetrips</p>
+          <p className="font-bold text-2xl text-black">Togetrips</p>
         </div>
-      </div>
 
-      <div
-        className="fixed flex items-center shadow-md z-10 
-        flex-row justify-around w-full h-16 bottom-0 left-0 bg-white
-        md:flex-col md:justify-start md:top-0 md:w-60 md:bg-sky-200 md:h-full md:pt-24 md:space-y-1
-        "
-      >
-        {menuItems.map((item, index) => (
-          <SidebarItem
-            key={index}
-            title={item.title}
-            icon={item.icon}
-            to={item.to}
-            count={item.count}
-          />
-        ))}
-        <div className="hidden md:flex flex-col items-center w-full mt-auto mb-6 relative">
+        <div className="flex flex-col space-y-1">
+          {menuItems.map((item) => (
+            <SidebarItem key={item.title} {...item} />
+          ))}
+        </div>
+
+        <div className="mt-auto flex flex-col items-center w-full mb-4 relative">
           <button
-            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-sky-300 transition"
+            className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-sky-300 transition"
             onClick={() => setSettingsOpen((prev) => !prev)}
             aria-label="Settings"
           >
@@ -95,6 +86,13 @@ const Sidebar = () => {
             />
           )}
         </div>
+      </div>
+      {/* --- Mobile Bottom Tab Bar --- */}
+      {/* md:hidden: 데스크탑에서는 숨김 */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white shadow-[0_-2px_5px_rgba(0,0,0,0.1)] flex justify-around items-center z-30">
+        {menuItems.map((item) => (
+          <SidebarItem key={item.title} {...item} />
+        ))}
       </div>
     </>
   );
