@@ -29,8 +29,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   if (isMobile) {
     // ------ (A) 모바일 레이아웃 ------
     return (
-      <div className="flex flex-col h-[100dvh] bg-gray-100 overflow-hidden -mt-16">
-        <main className="flex-1 overflow-hidden pb-16 md:pb-0">
+      <div className="flex flex-col h-[100dvh] bg-gray-100 overflow-hidden">
+        <main className="flex-1 overflow-hidden">
           {/* 모바일에서는 children 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
           <DataFetchErrorBoundary>{children}</DataFetchErrorBoundary>
         </main>
