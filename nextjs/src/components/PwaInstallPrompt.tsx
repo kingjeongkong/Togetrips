@@ -19,17 +19,20 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-// 브라우저 감지 함수들
+// 브라우저 감지 함수들 (SSR 안전)
 const isSafari = () => {
+  if (typeof window === 'undefined') return false;
   return /Safari/.test(navigator.userAgent) && !/Chrome|Firefox|Edge/.test(navigator.userAgent);
 };
 
 const isIOS = () => {
+  if (typeof window === 'undefined') return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 };
 
-// 모바일 브라우저 감지
+// 모바일 브라우저 감지 (SSR 안전)
 const isMobile = () => {
+  if (typeof window === 'undefined') return false;
   return (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
     (window.innerWidth <= 768 && window.innerHeight <= 1024)
@@ -38,6 +41,8 @@ const isMobile = () => {
 
 // Safari로 리다이렉트 함수
 const redirectToSafari = () => {
+  if (typeof window === 'undefined') return;
+
   const currentUrl = window.location.href;
   const safariUrl = `x-web-search://?${encodeURIComponent(currentUrl)}`;
 
@@ -230,8 +235,12 @@ const PwaInstallPrompt = () => {
   const [showSafariGuide, setShowSafariGuide] = useState(false);
   const [showIOSRedirect, setShowIOSRedirect] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // 클라이언트 사이드에서만 실행
+    setIsClient(true);
+
     // 모바일이 아니면 아무것도 표시하지 않음
     if (!isMobile()) {
       return;
@@ -283,6 +292,11 @@ const PwaInstallPrompt = () => {
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
+
+  // SSR 중이거나 클라이언트가 아니면 아무것도 표시하지 않음
+  if (!isClient) {
+    return null;
+  }
 
   // 모바일이 아니면 아무것도 표시하지 않음
   if (!isMobile()) {
