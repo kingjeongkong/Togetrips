@@ -28,6 +28,14 @@ const isIOS = () => {
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 };
 
+// 모바일 브라우저 감지
+const isMobile = () => {
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 768 && window.innerHeight <= 1024)
+  );
+};
+
 // Safari로 리다이렉트 함수
 const redirectToSafari = () => {
   const currentUrl = window.location.href;
@@ -224,6 +232,11 @@ const PwaInstallPrompt = () => {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
+    // 모바일이 아니면 아무것도 표시하지 않음
+    if (!isMobile()) {
+      return;
+    }
+
     // PWA 설치 완료 감지
     const handleAppInstalled = () => {
       setIsInstalled(true);
@@ -270,6 +283,11 @@ const PwaInstallPrompt = () => {
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
+
+  // 모바일이 아니면 아무것도 표시하지 않음
+  if (!isMobile()) {
+    return null;
+  }
 
   // 이미 설치되어 있으면 아무것도 표시하지 않음
   if (isInstalled) {
