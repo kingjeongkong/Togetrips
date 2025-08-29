@@ -234,7 +234,7 @@ const InstallBanner = ({
   onClose: () => void;
 }) => {
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-gray-100 p-3 shadow-md border-b border-gray-200">
+    <div className="bg-gray-100 p-3 shadow-md border-b border-gray-200">
       <div className="container mx-auto flex items-center justify-between max-w-4xl">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">

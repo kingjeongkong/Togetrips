@@ -1,6 +1,6 @@
 'use client';
 
-import InstallPrompt from '@/components/PwaInstallPrompt';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -59,6 +59,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
+            <PwaInstallPrompt />
             {children}
             <ToastContainer
               position="top-right"
@@ -72,7 +73,6 @@ export default function RootLayout({
               pauseOnHover
               theme="light"
             />
-            <InstallPrompt />
           </SessionProvider>
         </QueryClientProvider>
       </body>
