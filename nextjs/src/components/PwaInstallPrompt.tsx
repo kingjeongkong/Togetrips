@@ -40,29 +40,39 @@ const isMobile = () => {
   );
 };
 
-// Safari로 리다이렉트 함수
-const redirectToSafari = () => {
-  if (typeof window === 'undefined') return;
+// Safari로 리다이렉트 함수 (더 이상 사용하지 않음)
+// const redirectToSafari = () => {
+//   if (typeof window === 'undefined') return;
+//   const currentUrl = window.location.href;
+//   const safariUrl = `x-web-search://?${encodeURIComponent(currentUrl)}`;
+//   window.location.href = safariUrl;
+//   setTimeout(() => {
+//     if (document.hidden) return;
+//     alert('Open Safari and visit this URL:\n\n' + currentUrl);
+//   }, 1000);
+// };
 
-  const currentUrl = window.location.href;
-  const safariUrl = `x-web-search://?${encodeURIComponent(currentUrl)}`;
-
-  // Safari로 리다이렉트 시도
-  window.location.href = safariUrl;
-
-  // 실패 시 fallback (1초 후)
-  setTimeout(() => {
-    if (document.hidden) {
-      // Safari로 이동 성공
-      return;
-    }
-    // 실패 시 수동 안내
-    alert('Safari를 열고 이 URL로 접속해주세요: ' + currentUrl);
-  }, 1000);
-};
-
-// iOS 비Safari 브라우저용 리다이렉트 안내 컴포넌트
+// iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 방식)
 const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyUrl = () => {
+    if (typeof window === 'undefined') return;
+
+    const currentUrl = window.location.href;
+    navigator.clipboard
+      .writeText(currentUrl)
+      .then(() => {
+        setCopied(true);
+        // 2초 후에 버튼 텍스트를 원래대로 되돌립니다.
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        console.error('URL 복사에 실패했습니다:', err);
+        alert('URL 복사에 실패했습니다. 수동으로 복사해주세요.');
+      });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-sm w-full">
@@ -71,17 +81,19 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
             <FiExternalLink className="w-8 h-8 text-blue-600" />
           </div>
 
-          <h3 className="text-lg font-semibold mb-2">Safari에서 설치해주세요</h3>
+          <h3 className="text-lg font-semibold mb-2">Safari에서 열어주세요</h3>
           <p className="text-sm text-gray-600 mb-6">
-            PWA 설치와 푸시 알림을 사용하려면 Safari 브라우저가 필요합니다.
+            앱 설치와 푸시 알림을 위해, 아래 버튼으로 주소를 복사한 후 Safari에 붙여넣어 주세요.
           </p>
 
           <div className="space-y-3">
             <button
-              onClick={redirectToSafari}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              onClick={handleCopyUrl}
+              className={`w-full px-4 py-2 text-white rounded-md transition-colors ${
+                copied ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              Safari로 이동
+              {copied ? '주소 복사 완료!' : '주소 복사하기'}
             </button>
             <button
               onClick={onClose}
