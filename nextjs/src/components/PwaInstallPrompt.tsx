@@ -23,6 +23,7 @@ interface BeforeInstallPromptEvent extends Event {
 const isSafari = () => {
   if (typeof window === 'undefined') return false;
   const ua = navigator.userAgent;
+  // 'Safari'는 포함하지만, 다른 iOS 브라우저 식별자는 제외
   return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|Coast|Opera Mini|Tenta|UCBrowser/.test(ua);
 };
 
@@ -31,7 +32,6 @@ const isIOS = () => {
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 };
 
-// 모바일 브라우저 감지 (SSR 안전)
 const isMobile = () => {
   if (typeof window === 'undefined') return false;
   return (
@@ -40,17 +40,7 @@ const isMobile = () => {
   );
 };
 
-// Safari로 리다이렉트 함수 (더 이상 사용하지 않음)
-// const redirectToSafari = () => {
-//   if (typeof window === 'undefined') return;
-//   const currentUrl = window.location.href;
-//   const safariUrl = `x-web-search://?${encodeURIComponent(currentUrl)}`;
-//   window.location.href = safariUrl;
-//   setTimeout(() => {
-//     if (document.hidden) return;
-//     alert('Open Safari and visit this URL:\n\n' + currentUrl);
-//   }, 1000);
-// };
+// --- Sub Components ---
 
 // iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 방식)
 const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
@@ -64,7 +54,6 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
       .writeText(currentUrl)
       .then(() => {
         setCopied(true);
-        // 2초 후에 버튼 텍스트를 원래대로 되돌립니다.
         setTimeout(() => setCopied(false), 2000);
       })
       .catch((err) => {
@@ -97,7 +86,7 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
             </button>
             <button
               onClick={onClose}
-              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
             >
               나중에
             </button>
@@ -115,7 +104,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
   const steps = [
     {
       title: 'Step 1: Tap Share Button',
-      description: "Tap the share button in Safari's toolbar",
+      description: 'Tap the share button in Safari toolbar',
       icon: <FiShare className="w-6 h-6 text-blue-600" />,
     },
     {
@@ -134,12 +123,9 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-sm w-full">
         <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FiDownload className="w-6 h-6 text-blue-600" />
-            </div>
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <FiDownload className="w-6 h-6 text-blue-600" />
           </div>
-
           <h3 className="text-lg font-semibold mb-4">Install Togetrips App</h3>
 
           <div className="mb-6">
@@ -152,7 +138,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
             <button
               onClick={() => setStep(Math.max(1, step - 1))}
               disabled={step === 1}
-              className="px-4 py-2 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-gray-600 disabled:opacity-50"
             >
               Previous
             </button>
@@ -161,9 +147,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
               {steps.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index + 1 === step ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}
+                  className={`w-2 h-2 rounded-full ${index + 1 === step ? 'bg-blue-600' : 'bg-gray-300'}`}
                 />
               ))}
             </div>
@@ -171,7 +155,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
             <button
               onClick={() => setStep(Math.min(3, step + 1))}
               disabled={step === 3}
-              className="px-4 py-2 text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-blue-600 disabled:opacity-50"
             >
               Next
             </button>
@@ -179,7 +163,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
 
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
           >
             Got it
           </button>
@@ -189,7 +173,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-// 자동 설치 지원 브라우저용 설치 프롬프트 (Chrome, Edge, Firefox 등)
+// 자동 설치 지원 브라우저용 설치 프롬프트 (Android 등)
 const AutoInstallPrompt = ({
   deferredPrompt,
   onClose,
@@ -211,28 +195,61 @@ const AutoInstallPrompt = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
-      <div className="flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FiDownload className="w-8 h-8 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Togetrips 앱 설치</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            홈 화면에 앱을 추가하여 더 빠르고 편리하게 이용하세요.
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={handleInstallClick}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              설치
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+            >
+              나중에
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 상단 배너 컴포넌트
+const InstallBanner = ({
+  onInstallClick,
+  onClose,
+}: {
+  onInstallClick: () => void;
+  onClose: () => void;
+}) => {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-40 bg-gray-100 p-3 shadow-md border-b border-gray-200">
+      <div className="container mx-auto flex items-center justify-between max-w-4xl">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
             <FiDownload className="w-5 h-5 text-blue-600" />
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">Install Togetrips App</h3>
-            <p className="text-xs text-gray-600">Add to your home screen for quicker access</p>
-          </div>
+          <p className="text-sm font-medium text-gray-800">Togetrips를 앱으로 사용해보세요!</p>
         </div>
         <div className="flex items-center space-x-2">
           <button
-            onClick={handleInstallClick}
-            className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors"
+            onClick={onInstallClick}
+            className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700"
           >
-            Install
+            설치
           </button>
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
             <FiX className="w-4 h-4" />
           </button>
         </div>
@@ -241,104 +258,107 @@ const AutoInstallPrompt = ({
   );
 };
 
-// 메인 PWA 설치 컴포넌트
+// --- Main Component ---
+
 const PwaInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showAutoInstallPrompt, setShowAutoInstallPrompt] = useState(false);
-  const [showSafariGuide, setShowSafariGuide] = useState(false);
-  const [showIOSRedirect, setShowIOSRedirect] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [showAutoInstallModal, setShowAutoInstallModal] = useState(false);
+  const [showSafariGuideModal, setShowSafariGuideModal] = useState(false);
+  const [showIOSRedirectModal, setShowIOSRedirectModal] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [installMethod, setInstallMethod] = useState<'auto' | 'safari' | 'redirect' | null>(null);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // 클라이언트 사이드에서만 실행
     setIsClient(true);
 
-    // 모바일이 아니면 아무것도 표시하지 않음
-    if (!isMobile()) {
-      return;
-    }
+    const initPwaState = () => {
+      // 모바일이 아니거나 이미 standalone 모드면 아무것도 하지 않음
+      if (
+        !isMobile() ||
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true
+      ) {
+        return;
+      }
 
-    // PWA 설치 완료 감지
+      if (isIOS()) {
+        if (isSafari()) {
+          setInstallMethod('safari');
+        } else {
+          setInstallMethod('redirect');
+        }
+        setShowBanner(true);
+        return;
+      }
+
+      const handleBeforeInstallPrompt = (e: Event) => {
+        e.preventDefault();
+        setDeferredPrompt(e as BeforeInstallPromptEvent);
+        setInstallMethod('auto');
+        setShowBanner(true);
+      };
+
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      };
+    };
+
+    initPwaState();
+
     const handleAppInstalled = () => {
-      setIsInstalled(true);
-      setShowAutoInstallPrompt(false);
-      setShowSafariGuide(false);
-      setShowIOSRedirect(false);
+      setShowBanner(false);
     };
 
-    // 자동 설치 지원 브라우저용 설치 이벤트 (Chrome, Edge, Firefox 등)
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowAutoInstallPrompt(true);
-    };
-
-    // iOS 브라우저별 처리
-    if (isIOS()) {
-      if (isSafari()) {
-        // iOS Safari: 설치 가이드 표시
-        setShowSafariGuide(true);
-      } else {
-        // iOS 비Safari: Safari로 리다이렉트 안내
-        setShowIOSRedirect(true);
-      }
-    }
-
-    // 이미 PWA로 실행 중인지 확인
-    const checkIfInstalled = () => {
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        setIsInstalled(true);
-      } else if (window.navigator.standalone === true) {
-        setIsInstalled(true);
-      }
-    };
-
-    checkIfInstalled();
-
-    // 이벤트 리스너 등록
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
-  // SSR 중이거나 클라이언트가 아니면 아무것도 표시하지 않음
-  if (!isClient) {
-    return null;
+  const handleInstallClick = () => {
+    if (!installMethod) return;
+
+    setShowBanner(false);
+    switch (installMethod) {
+      case 'auto':
+        setShowAutoInstallModal(true);
+        break;
+      case 'safari':
+        setShowSafariGuideModal(true);
+        break;
+      case 'redirect':
+        setShowIOSRedirectModal(true);
+        break;
+    }
+  };
+
+  if (!isClient) return null;
+
+  if (showBanner) {
+    return (
+      <InstallBanner onInstallClick={handleInstallClick} onClose={() => setShowBanner(false)} />
+    );
   }
 
-  // 모바일이 아니면 아무것도 표시하지 않음
-  if (!isMobile()) {
-    return null;
-  }
-
-  // 이미 설치되어 있으면 아무것도 표시하지 않음
-  if (isInstalled) {
-    return null;
-  }
-
-  // 자동 설치 지원 브라우저용 프롬프트 (Android, Desktop)
-  if (showAutoInstallPrompt && deferredPrompt) {
+  if (showAutoInstallModal && deferredPrompt) {
     return (
       <AutoInstallPrompt
         deferredPrompt={deferredPrompt}
-        onClose={() => setShowAutoInstallPrompt(false)}
+        onClose={() => setShowAutoInstallModal(false)}
       />
     );
   }
 
-  // iOS Safari용 가이드
-  if (showSafariGuide) {
-    return <SafariInstallGuide onClose={() => setShowSafariGuide(false)} />;
+  if (showSafariGuideModal) {
+    return <SafariInstallGuide onClose={() => setShowSafariGuideModal(false)} />;
   }
 
-  // iOS 비Safari 브라우저용 리다이렉트 안내
-  if (showIOSRedirect) {
-    return <IOSNonSafariPrompt onClose={() => setShowIOSRedirect(false)} />;
+  if (showIOSRedirectModal) {
+    return <IOSNonSafariPrompt onClose={() => setShowIOSRedirectModal(false)} />;
   }
 
   return null;
