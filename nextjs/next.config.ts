@@ -1,3 +1,6 @@
+// @ts-ignore
+import withPWA from 'next-pwa';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -18,4 +21,9 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// PWA 설정을 기존 설정에 적용
+export default withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+})(nextConfig);
