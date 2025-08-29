@@ -22,7 +22,8 @@ interface BeforeInstallPromptEvent extends Event {
 // 브라우저 감지 함수들 (SSR 안전)
 const isSafari = () => {
   if (typeof window === 'undefined') return false;
-  return /Safari/.test(navigator.userAgent) && !/Chrome|Firefox|Edge/.test(navigator.userAgent);
+  const ua = navigator.userAgent;
+  return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|Coast|Opera Mini|Tenta|UCBrowser/.test(ua);
 };
 
 const isIOS = () => {
