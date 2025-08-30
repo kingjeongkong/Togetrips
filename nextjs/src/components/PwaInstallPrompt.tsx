@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FiCheck, FiDownload, FiExternalLink, FiHome, FiShare, FiX } from 'react-icons/fi';
+import { FiCheck, FiDownload, FiExternalLink, FiPlusSquare, FiShare, FiX } from 'react-icons/fi';
 
 // iOS Safari 전용 속성 타입 확장
 declare global {
@@ -57,8 +57,9 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
         setTimeout(() => setCopied(false), 2000);
       })
       .catch((err) => {
-        console.error('URL 복사에 실패했습니다:', err);
-        alert('URL 복사에 실패했습니다. 수동으로 복사해주세요.');
+        // URL 복사 실패 시 콘솔에 에러 출력 (한국어 주석)
+        console.error('Failed to copy URL:', err);
+        alert('Failed to copy URL. Please copy it manually.');
       });
   };
 
@@ -70,9 +71,10 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
             <FiExternalLink className="w-8 h-8 text-blue-600" />
           </div>
 
-          <h3 className="text-lg font-semibold mb-2">Safari에서 열어주세요</h3>
+          <h3 className="text-lg font-semibold mb-2">Open in Safari</h3>
           <p className="text-sm text-gray-600 mb-6">
-            앱 설치와 푸시 알림을 위해, 아래 버튼으로 주소를 복사한 후 Safari에 붙여넣어 주세요.
+            To install the app and enable push notifications, copy the URL below and open it in
+            Safari.
           </p>
 
           <div className="space-y-3">
@@ -82,13 +84,13 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
                 copied ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
               }`}
             >
-              {copied ? '주소 복사 완료!' : '주소 복사하기'}
+              {copied ? 'URL copied!' : 'Copy URL'}
             </button>
             <button
               onClick={onClose}
               className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
             >
-              나중에
+              Later
             </button>
           </div>
         </div>
@@ -110,7 +112,7 @@ const SafariInstallGuide = ({ onClose }: { onClose: () => void }) => {
     {
       title: 'Step 2: Add to Home Screen',
       description: "Scroll down and tap 'Add to Home Screen'",
-      icon: <FiHome className="w-6 h-6 text-blue-600" />,
+      icon: <FiPlusSquare className="w-6 h-6 text-blue-600" />,
     },
     {
       title: 'Step 3: Confirm Installation',
@@ -185,6 +187,7 @@ const AutoInstallPrompt = ({
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
+    // 한국어 주석: PWA 설치 결과를 콘솔에 출력
     if (outcome === 'accepted') {
       console.log('사용자가 PWA 설치를 수락했습니다');
     } else {
@@ -201,22 +204,22 @@ const AutoInstallPrompt = ({
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FiDownload className="w-8 h-8 text-blue-600" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">Togetrips 앱 설치</h3>
+          <h3 className="text-lg font-semibold mb-2">Install Togetrips App</h3>
           <p className="text-sm text-gray-600 mb-6">
-            홈 화면에 앱을 추가하여 더 빠르고 편리하게 이용하세요.
+            Add the app to your home screen for a faster and more convenient experience.
           </p>
           <div className="space-y-3">
             <button
               onClick={handleInstallClick}
               className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              설치
+              Install
             </button>
             <button
               onClick={onClose}
               className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
             >
-              나중에
+              Later
             </button>
           </div>
         </div>
@@ -240,14 +243,14 @@ const InstallBanner = ({
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
             <FiDownload className="w-5 h-5 text-blue-600" />
           </div>
-          <p className="text-sm font-medium text-gray-800">Togetrips를 앱으로 사용해보세요!</p>
+          <p className="text-sm font-medium text-gray-800">Try Togetrips as an app!</p>
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={onInstallClick}
             className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700"
           >
-            설치
+            Install
           </button>
           <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
             <FiX className="w-4 h-4" />
