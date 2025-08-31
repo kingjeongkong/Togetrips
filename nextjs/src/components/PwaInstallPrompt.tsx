@@ -42,7 +42,7 @@ const isMobile = () => {
 
 // --- Sub Components ---
 
-// iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 방식)
+// iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 및 Safari 이동 방식)
 const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
   const [copied, setCopied] = useState(false);
 
@@ -63,6 +63,17 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
       });
   };
 
+  const handleOpenSafari = () => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.location.href = 'x-web-search://';
+    } catch (error) {
+      console.error('Failed to open Safari:', error);
+      alert('Please manually open Safari and paste the copied URL.');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-sm w-full">
@@ -73,8 +84,7 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
 
           <h3 className="text-lg font-semibold mb-2">Open in Safari</h3>
           <p className="text-sm text-gray-600 mb-6">
-            To install the app and enable push notifications, copy the URL below and open it in
-            Safari.
+            Copy the URL and open Safari to install the app and enable push notifications.
           </p>
 
           <div className="space-y-3">
@@ -86,6 +96,16 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
             >
               {copied ? 'URL copied!' : 'Copy URL'}
             </button>
+
+            {copied && (
+              <button
+                onClick={handleOpenSafari}
+                className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+              >
+                Open Safari
+              </button>
+            )}
+
             <button
               onClick={onClose}
               className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
