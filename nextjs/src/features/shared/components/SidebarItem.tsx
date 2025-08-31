@@ -18,7 +18,7 @@ const SidebarItem = ({ title, icon: Icon, to, count }: SidebarItemProps) => {
   return (
     <Link
       href={to}
-      className={`flex flex-row items-center justify-center px-2 py-4 rounded w-11/12 relative md:justify-start md:px-6 md:py-4 md:gap-2 ${
+      className={`flex flex-row items-center justify-center px-2 py-4 rounded w-full relative md:justify-start md:px-6 md:py-4 md:gap-2 ${
         isActive ? 'bg-sky-700 text-white' : 'text-gray-600 hover:bg-sky-600 hover:text-white'
       }`}
       aria-label={`Navigate to ${title.toLowerCase()}`}

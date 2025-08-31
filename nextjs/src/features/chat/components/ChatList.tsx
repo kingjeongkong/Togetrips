@@ -5,6 +5,7 @@ import { useSession } from '@/providers/SessionProvider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { FiArrowLeft } from 'react-icons/fi';
 import { chatService } from '../services/chatService';
 import { ChatRoomListItem } from '../types/chatTypes';
 import ChatListItem from './ChatListItem';
@@ -33,12 +34,23 @@ const ChatList = () => {
     router.push(`/chat/${chatRoom.id}`);
   };
 
+  const handleBackClick = () => {
+    router.back();
+  };
+
   return (
     <div className="flex flex-col h-full" aria-label="Chat list">
       <div className="sticky top-0 z-50 bg-gray-100">
-        <h1 className="px-4 py-2 text-xl font-semibold md:px-4 md:py-4 md:text-2xl text-gray-900">
-          Messages
-        </h1>
+        <div className="flex items-center px-4 py-2 md:px-4 md:py-4">
+          <button
+            onClick={handleBackClick}
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors mr-2"
+            aria-label="Go back"
+          >
+            <FiArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <h1 className="text-xl font-semibold md:text-2xl text-gray-900">Messages</h1>
+        </div>
       </div>
 
       {isLoading && (

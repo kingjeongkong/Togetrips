@@ -1,7 +1,8 @@
 import { useDeleteChatRoom } from '@/features/chat/hooks/useDeleteChatRoom';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { FiMoreVertical } from 'react-icons/fi';
+import { FiArrowLeft, FiMoreVertical } from 'react-icons/fi';
 
 interface ChatRoomHeaderProps {
   profileImage: string;
@@ -13,6 +14,7 @@ const ChatRoomHeader = ({ profileImage, name, chatRoomId }: ChatRoomHeaderProps)
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const deleteChatRoom = useDeleteChatRoom();
+  const router = useRouter();
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -39,10 +41,21 @@ const ChatRoomHeader = ({ profileImage, name, chatRoomId }: ChatRoomHeaderProps)
     setShowMenu(false);
   };
 
+  const handleBackClick = () => {
+    router.back();
+  };
+
   return (
     <div className="sticky top-0 z-50 bg-gray-100 border-b border-gray-200 px-4 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
+          <button
+            onClick={handleBackClick}
+            className="p-2 rounded-full hover:bg-gray-200 transition-colors mr-1"
+            aria-label="Go back"
+          >
+            <FiArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
           <Image
             src={profileImage}
             alt={name}
