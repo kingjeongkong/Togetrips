@@ -97,14 +97,12 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
               {copied ? 'URL copied!' : 'Copy URL'}
             </button>
 
-            {copied && (
-              <button
-                onClick={handleOpenSafari}
-                className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
-              >
-                Open Safari
-              </button>
-            )}
+            <button
+              onClick={handleOpenSafari}
+              className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            >
+              Open Safari
+            </button>
 
             <button
               onClick={onClose}
