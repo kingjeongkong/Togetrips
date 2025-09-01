@@ -42,25 +42,23 @@ const isMobile = () => {
 
 // --- Sub Components ---
 
-// iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 방식)
+// iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 및 Safari 이동 방식)
 const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyUrl = () => {
+  const handleCopyAndOpenSafari = async () => {
     if (typeof window === 'undefined') return;
-
     const currentUrl = window.location.href;
-    navigator.clipboard
-      .writeText(currentUrl)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch((err) => {
-        // URL 복사 실패 시 콘솔에 에러 출력 (한국어 주석)
-        console.error('Failed to copy URL:', err);
-        alert('Failed to copy URL. Please copy it manually.');
-      });
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+      alert('Failed to copy URL. Please copy it manually.');
+    }
+    try {
+      window.location.href = 'x-web-search://';
+    } catch (error) {
+      console.error('Failed to open Safari:', error);
+      alert('Please manually open Safari and paste the copied URL.');
+    }
   };
 
   return (
@@ -73,18 +71,15 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
 
           <h3 className="text-lg font-semibold mb-2">Open in Safari</h3>
           <p className="text-sm text-gray-600 mb-6">
-            To install the app and enable push notifications, copy the URL below and open it in
-            Safari.
+            Copy the URL and open Safari to install the app and enable push notifications.
           </p>
 
           <div className="space-y-3">
             <button
-              onClick={handleCopyUrl}
-              className={`w-full px-4 py-2 text-white rounded-md transition-colors ${
-                copied ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
-              }`}
+              onClick={handleCopyAndOpenSafari}
+              className={`w-full px-4 py-2 text-white rounded-md transition-colors ${'bg-blue-600 hover:bg-blue-700'}`}
             >
-              {copied ? 'URL copied!' : 'Copy URL'}
+              Copy URL & Open Safari
             </button>
             <button
               onClick={onClose}
