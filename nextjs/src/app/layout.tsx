@@ -1,5 +1,6 @@
 'use client';
 
+import OneSignalInitializer from '@/components/OneSignalInitializer';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -71,6 +72,7 @@ export default function RootLayout({
               pauseOnHover
               theme="light"
             />
+            <OneSignalInitializer />
           </SessionProvider>
         </QueryClientProvider>
       </body>
