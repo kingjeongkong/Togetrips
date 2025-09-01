@@ -44,28 +44,15 @@ const isMobile = () => {
 
 // iOS 비Safari 브라우저용 안내 컴포넌트 (URL 복사 및 Safari 이동 방식)
 const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyUrl = () => {
+  const handleCopyAndOpenSafari = async () => {
     if (typeof window === 'undefined') return;
-
     const currentUrl = window.location.href;
-    navigator.clipboard
-      .writeText(currentUrl)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch((err) => {
-        // URL 복사 실패 시 콘솔에 에러 출력 (한국어 주석)
-        console.error('Failed to copy URL:', err);
-        alert('Failed to copy URL. Please copy it manually.');
-      });
-  };
-
-  const handleOpenSafari = () => {
-    if (typeof window === 'undefined') return;
-
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+      alert('Failed to copy URL. Please copy it manually.');
+    }
     try {
       window.location.href = 'x-web-search://';
     } catch (error) {
@@ -89,21 +76,11 @@ const IOSNonSafariPrompt = ({ onClose }: { onClose: () => void }) => {
 
           <div className="space-y-3">
             <button
-              onClick={handleCopyUrl}
-              className={`w-full px-4 py-2 text-white rounded-md transition-colors ${
-                copied ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
-              }`}
+              onClick={handleCopyAndOpenSafari}
+              className={`w-full px-4 py-2 text-white rounded-md transition-colors ${'bg-blue-600 hover:bg-blue-700'}`}
             >
-              {copied ? 'URL copied!' : 'Copy URL'}
+              Copy URL & Open Safari
             </button>
-
-            <button
-              onClick={handleOpenSafari}
-              className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-            >
-              Open Safari
-            </button>
-
             <button
               onClick={onClose}
               className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
