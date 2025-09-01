@@ -1,0 +1,74 @@
+---
+description: Project Directory Structure and Dependency Rules
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Project Directory Structure
+
+1. **app/**
+
+   - Only routes (pages), layouts, and one-time components should be located here.
+
+2. **features/{domain}/**
+
+   - Separate concerns by domain (`components/`, `hooks/`, `services/`, `types/`, `utils/`, etc.).
+   - Components, logic, types, and utilities specific to that domain must be located under this folder.
+
+3. **components/**
+
+   - Only common UI components that are reused across multiple domains/pages should be located here.
+
+4. **lib/**
+
+   - Only global common logic such as external service integration, global utilities, and API call functions should be located here.
+   - Includes common logic used on both server-side and client-side.
+   - Includes services for external API integration.
+
+5. **store/**
+
+   - Only global state management (zustand, recoil, etc.) related files should be located here.
+
+6. **types/**
+
+   - Only types commonly used across multiple domains should be located here.
+   - Domain-specific types should be placed in **features/{domain}/types/**.
+
+# Import Rules
+
+- Within **app/**, only resources from `features/{domain}/` or `components/` should be imported.
+- **features/A/** should not directly reference internal files of **features/B/**.
+  - Common logic should be separated into `features/shared` or `components/`, `lib/`.
+
+# Dependency Relationship Rules
+
+1. **Dependency Direction (Important)**
+
+   - **API Routes** → **lib/** → **External Services** (correct direction)
+   - **Features** → **lib/** (common logic only)
+   - **API Routes** → **Features** (prohibited - reverse dependency)
+
+2. **Server/Client Separation**
+
+   - **API Routes** (`src/app/api/`): Server-side only, use only server services from `lib/`
+   - **Features** (`src/features/`): Client-side only, UI components and client logic
+   - **lib/** (`src/lib/`): Server/client common logic, external API integration
+
+3. **Environment Variable Access Rules**
+
+   - **Server only**: `process.env.VARIABLE_NAME` (API Routes, lib/)
+   - **Client public**: `process.env.NEXT_PUBLIC_VARIABLE_NAME` (Features, Components)
+
+# Naming & File Location Rules
+
+- Folder/file naming: lowercase + camelCase
+- Domain-specific types → `features/{domain}/types/`
+- Common types → `types/`
+
+# Other Guidelines
+
+- If folder structure becomes deep, only domain folders should be deep while common folders should remain as shallow as possible.
+- File names should be intuitive and clearly indicate their role and functionality.
+- **Always consider dependency direction when designing import structure.**
+- **Clearly separate server/client code to prevent mixing.**
+- Project development is only done in the nextjs folder. (frontend folder is not used and should not be used)

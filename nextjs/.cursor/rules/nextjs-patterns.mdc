@@ -1,0 +1,57 @@
+---
+description: Next.js Project Patterns and Architecture Guide
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: true
+---
+
+# Next.js Project Patterns
+
+## 1. Server-Side
+
+- **`src/app/api/`**: API endpoints, request/response handling, server-only logic.
+- **`src/middleware/`**: Request preprocessing, authentication, redirection, etc.
+- **`src/lib/`**: Common logic for server/client, database connection, external API calls.
+
+## 2. Client-Side
+
+- **`src/features/`**: Business logic, domain-specific components, state management.
+- **`src/components/`**: Reusable UI components.
+- **`src/hooks/`**: Custom hooks, client-side state management.
+
+## 3. Shared Area
+
+- **`src/types/`**: Type definitions commonly used across multiple domains.
+- **`src/utils/`**: Pure functions, helper functions, utilities.
+- **`src/constants/`**: Constant values, configuration values.
+
+# Architecture Patterns
+
+## API Route Pattern
+
+- Export functions for each HTTP method (GET, POST, PUT, DELETE).
+- Adhere to appropriate error handling and response formats.
+- Process business logic through the Service layer.
+
+## Component Pattern
+
+- **Page Components**: Manage loading states using Suspense.
+- **Domain Components**: Separate business logic from UI logic.
+- **Common Components**: Designed for reusability across the application.
+
+## Hook Pattern
+
+- Use `use` prefix.
+- Clear return values and error handling.
+- Properly manage dependency arrays.
+
+## Service Pattern
+
+- **Server Services**: Direct database access, business logic processing.
+- **Client Services**: Data access via API route calls.
+- Consistent error handling and return value definitions.
+
+## Error Handling Pattern
+
+- **Service Layer**: Business logic error handling and throw.
+- **API Routes**: Transform service errors into appropriate HTTP responses.
+- **UI Components**: Error state management and user display.

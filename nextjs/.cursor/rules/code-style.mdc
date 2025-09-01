@@ -1,0 +1,48 @@
+---
+description: Code Style, Comments, Naming Conventions, and Error Handling Rules
+globs: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx']
+alwaysApply: true
+---
+
+# Code Style & Comment Rules
+
+## 1. Line Breaks & Indentation
+
+- Apply appropriate line breaks and indentation for readability in functions, conditional statements, fetch calls, object literals, etc.
+
+## 2. Comments
+
+- All comments should be written in Korean.
+- Add detailed explanations for complex or core business logic.
+- **TODO**, **FIXME** tags should also be written in Korean.
+
+## 3. UI/UX Text
+
+- All UI text displayed to users (buttons, notifications, error messages, etc.) should be written in English.
+- Use i18n for management if multilingual support is required.
+
+## 4. Naming Conventions
+
+- Variable names, function names, and class names should be written in English and clearly convey their meaning.
+- Use consistent conventions such as camelCase or PascalCase.
+
+# Error Handling Rules
+
+## Service Layer Error Handling
+
+- **Server-side Service**: Direct database access, handle and throw errors appropriately.
+- **Client-side Service**: Data access via API route calls, handle and throw errors appropriately.
+- Consistently handle errors in service functions to eliminate unnecessary try-catch blocks in the calling code.
+
+## Error Handling Pattern
+
+- **Service**: Responsible for business logic and error handling.
+- **Calling Code**: Simple function calls, no try-catch necessary if service handles errors.
+- **UI Components**: Manage error states and display to users.
+- **API Routes**: Transform service errors into appropriate HTTP responses.
+
+## Server/Client Separation Principle
+
+- **Client**: Absolutely no direct database access. Data must be fetched via API routes.
+- **Server**: Direct database access allowed, business logic processing.
+- **Common**: Pure functions, utilities, type definitions.

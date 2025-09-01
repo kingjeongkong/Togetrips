@@ -1,0 +1,121 @@
+---
+description: Development Workflow and Tool Usage Guide
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Development Workflow
+
+## Package Management
+
+- Use **pnpm** for package management.
+- Adding new dependencies: `pnpm add <package-name>`
+- Adding development dependencies: `pnpm add -D <package-name>`
+- Removing packages: `pnpm remove <package-name>`
+
+## Development Server Execution
+
+- **Development Server**: `pnpm dev`
+- **Production Build**: `pnpm build`
+- **Production Server**: `pnpm start`
+- **Type Check**: `pnpm type-check`
+- **Lint Check**: `pnpm lint`
+- **Test Execution**: `pnpm test`
+
+## Code Quality Management
+
+- **ESLint**: Code style and quality checks.
+- **Prettier**: Code formatting (automatic application).
+- **TypeScript**: Static type checking.
+- **Jest**: Unit testing.
+- **Playwright**: E2E testing.
+
+# File Creation Guide
+
+## When Creating New Components
+
+1. Locate in appropriate domain folder (`features/{domain}/components/`).
+2. Use PascalCase for component names.
+3. File name should be the same as component name.
+4. Define Props interface at the top.
+5. Use named exports.
+
+## When Creating New API Endpoints
+
+1. Create appropriate path under `src/app/api/`.
+2. Use `route.ts` as file name.
+3. Export functions for each HTTP method (GET, POST, PUT, DELETE).
+4. Adhere to appropriate error handling and response formats.
+
+## When Creating New Hooks
+
+1. Locate in `features/{domain}/hooks/` or `hooks/` folder.
+2. Use `use` prefix.
+3. Clear return values and error handling.
+4. Properly manage dependency arrays.
+
+# Debugging and Logging
+
+## Client-Side Logging
+
+- Detailed logging only in development environment.
+- Error logging always included.
+- Only include logging that doesn't affect user experience.
+
+## Server-Side Logging
+
+- Request/response logging in API routes.
+- Business logic processing logging.
+- Detailed information logging when errors occur.
+
+# Environment Variable Management
+
+## Environment Variable File Structure
+
+- **`.env.local`**: Local development, not included in git.
+- **`.env.example`**: Example file, included in git.
+- Never expose sensitive information to client.
+
+## Environment Variable Access Rules
+
+- **Server only**: `process.env.VARIABLE_NAME`
+- **Client public**: `process.env.NEXT_PUBLIC_VARIABLE_NAME`
+
+# Git Workflow
+
+## Commit Message Rules
+
+- `feat`: New feature addition.
+- `fix`: Bug fix.
+- `docs`: Documentation modification.
+- `style`: Code style changes.
+- `refactor`: Code refactoring.
+- `test`: Test addition or modification.
+- `chore`: Build process or auxiliary tool changes.
+
+## Branch Naming
+
+- `feature/feature-name`: New feature development.
+- `fix/bug-name`: Bug fix.
+- `hotfix/urgent-fix`: Urgent fixes.
+- `refactor/refactoring-name`: Code refactoring.
+
+# Performance Optimization
+
+## Image Optimization
+
+- Use Next.js Image component.
+- Choose appropriate image formats (WebP priority).
+- Apply lazy loading.
+
+## Bundle Optimization
+
+- Use dynamic imports for code splitting.
+- Remove unnecessary dependencies.
+- Utilize Tree shaking.
+
+## Data Fetching Optimization
+
+- Use appropriate caching strategies.
+- Prevent unnecessary API calls.
+- Background data updates.
