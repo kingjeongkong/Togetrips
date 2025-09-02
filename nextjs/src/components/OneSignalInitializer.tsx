@@ -1,13 +1,7 @@
 'use client';
 
+import { oneSignalClient } from '@/lib/onesignal/client';
 import { useEffect } from 'react';
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    OneSignalDeferred?: any[];
-  }
-}
 
 const OneSignalInitializer = () => {
   useEffect(() => {
@@ -19,19 +13,14 @@ const OneSignalInitializer = () => {
       document.head.appendChild(script);
 
       // OneSignal 초기화
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      window.OneSignalDeferred.push(function (OneSignal: any) {
-        OneSignal.init({
-          appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID,
-          allowLocalhostAsSecureOrigin: true,
-          notifyButton: {
-            enable: false,
-          },
-          autoRegister: true,
-          autoResubscribe: true,
-        });
-      });
+      script.onload = async () => {
+        try {
+          await oneSignalClient.initialize();
+          console.log('OneSignal 초기화 완료');
+        } catch (error) {
+          console.error('OneSignal 초기화 실패:', error);
+        }
+      };
 
       return () => {
         const existingScript = document.querySelector('script[src*="OneSignalSDK.page.js"]');
