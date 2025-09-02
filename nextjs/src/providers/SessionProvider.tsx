@@ -28,6 +28,10 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session === null && _event === 'SIGNED_OUT') {
+        oneSignalClient.logout();
+      }
+
       setSession(session);
       if (session) {
         const {
@@ -41,7 +45,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         }
       } else {
         setUser(null);
-        oneSignalClient.logout();
       }
 
       setIsLoading(false);
