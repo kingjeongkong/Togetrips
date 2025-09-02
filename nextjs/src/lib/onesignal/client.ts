@@ -5,6 +5,8 @@ declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     OneSignal?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    OneSignalDeferred?: Array<(oneSignal: any) => void>;
   }
 }
 
@@ -16,6 +18,22 @@ class OneSignalClientService {
 
     if (!this.appId) {
       console.warn('OneSignal App ID가 설정되지 않았습니다.');
+    }
+  }
+
+  // OneSignal이 준비되었을 때만 특정 액션을 실행하는 private 헬퍼 함수
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private executeWhenReady(action: (oneSignal: any) => void): void {
+    if (typeof window === 'undefined') return;
+
+    // OneSignalDeferred가 없으면 빈 배열로 초기화
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+    // OneSignal이 이미 준비되어 있다면 즉시 실행, 아니면 대기열에 추가
+    if (window.OneSignal && window.OneSignal.isPushNotificationsEnabled) {
+      action(window.OneSignal);
+    } else {
+      window.OneSignalDeferred.push(action);
     }
   }
 
@@ -69,6 +87,16 @@ class OneSignalClientService {
     }
   }
 
+  // 현재 권한 상태를 DB와 동기화하는 함수
+  async syncSubscriptionState(): Promise<void> {
+    const permission = await this.getPermissionStatus();
+    const currentUser = await this.getCurrentUserId();
+
+    if (currentUser) {
+      await this.updateSubscriptionStatus(currentUser, permission === 'granted');
+    }
+  }
+
   private async getCurrentUserId(): Promise<string | null> {
     try {
       const supabase = createBrowserSupabaseClient();
@@ -95,25 +123,11 @@ class OneSignalClientService {
     }
   }
 
-  async setUserId(userId: string): Promise<boolean> {
-    try {
-      if (typeof window === 'undefined' || !window.OneSignal) {
-        console.warn('OneSignal이 초기화되지 않았습니다.');
-        return false;
-      }
-
-      // OneSignal에 External User ID로 사용자 등록
-      await window.OneSignal.login(userId);
-
-      // 구독 정보를 DB에 저장 (is_enabled = true)
-      await this.updateSubscriptionStatus(userId, true);
-
-      console.log('OneSignal 사용자 등록 및 구독 정보 저장 완료:', userId);
-      return true;
-    } catch (error) {
-      console.error('사용자 ID 설정 실패:', error);
-      return false;
-    }
+  async setUserId(userId: string): Promise<void> {
+    this.executeWhenReady(function (OneSignal) {
+      console.log('OneSignal: External User ID 설정:', userId);
+      OneSignal.login(userId);
+    });
   }
 
   private async updateSubscriptionStatus(userId: string, isEnabled: boolean): Promise<boolean> {
@@ -190,6 +204,25 @@ class OneSignalClientService {
       return true;
     } catch (error) {
       console.error('구독 활성화 실패:', error);
+      return false;
+    }
+  }
+
+  async logout(): Promise<boolean> {
+    try {
+      this.executeWhenReady(function (OneSignal) {
+        console.log('OneSignal is ready, logging out.');
+        OneSignal.logout();
+      });
+
+      const currentUser = await this.getCurrentUserId();
+      if (currentUser) {
+        await this.updateSubscriptionStatus(currentUser, false);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('OneSignal 로그아웃 실패:', error);
       return false;
     }
   }

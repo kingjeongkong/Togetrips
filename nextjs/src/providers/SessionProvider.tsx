@@ -1,5 +1,6 @@
 'use client';
 
+import { oneSignalClient } from '@/lib/onesignal/client';
 import { createBrowserSupabaseClient } from '@/lib/supabase-config';
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -15,49 +16,34 @@ interface SessionContextType {
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [supabase] = useState(() => createBrowserSupabaseClient());
 
-  const supabase = createBrowserSupabaseClient();
-
-  // 메모이제이션으로 성능 최적화
   const isAuthenticated = useMemo(() => !!user, [user]);
-  const userId = user?.id;
+  const userId = useMemo(() => user?.id, [user]);
 
   useEffect(() => {
-    // 초기 세션 가져오기
-    const getInitialSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setSession(session);
-      let verifiedUser: User | null = null;
-      if (session?.access_token) {
-        const { data, error } = await supabase.auth.getUser(session.access_token);
-        if (!error) {
-          verifiedUser = data.user;
-        }
-      }
-      setUser(verifiedUser);
-      setIsLoading(false);
-    };
-
-    getInitialSession();
-
-    // 인증 상태 변경 리스너
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      let verifiedUser: User | null = null;
-      if (session?.access_token) {
-        const { data, error } = await supabase.auth.getUser(session.access_token);
-        if (!error) {
-          verifiedUser = data.user;
+      if (session) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user ?? null);
+
+        if (user) {
+          oneSignalClient.setUserId(user.id);
+          oneSignalClient.syncSubscriptionState();
         }
+      } else {
+        setUser(null);
+        oneSignalClient.logout();
       }
-      setUser(verifiedUser);
+
       setIsLoading(false);
     });
 
