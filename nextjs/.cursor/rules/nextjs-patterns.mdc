@@ -1,6 +1,6 @@
 ---
 description: Next.js Project Patterns and Architecture Guide
-globs: ["**/*.ts", "**/*.tsx"]
+globs: ['**/*.ts', '**/*.tsx']
 alwaysApply: true
 ---
 
@@ -46,8 +46,10 @@ alwaysApply: true
 
 ## Service Pattern
 
-- **Server Services**: Direct database access, business logic processing.
-- **Client Services**: Data access via API route calls.
+- **Server Services**: Direct database access, business logic processing, external API calls.
+- **Client Services**: Data access via API route calls, local state management.
+- **Security**: Server services must never expose sensitive information to client.
+- **Bundle Optimization**: Server and client services must be in separate files.
 - Consistent error handling and return value definitions.
 
 ## Error Handling Pattern

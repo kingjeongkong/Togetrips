@@ -22,8 +22,10 @@ alwaysApply: true
 4. **lib/**
 
    - Only global common logic such as external service integration, global utilities, and API call functions should be located here.
-   - Includes common logic used on both server-side and client-side.
-   - Includes services for external API integration.
+   - **Server/Client separation**: Services must be clearly separated by environment.
+   - **External API integration**: REST API calls, database connections, third-party service integrations.
+   - **Security**: Server-only code must never be exposed to client bundles.
+   - **Bundle optimization**: Client and server code must be properly separated to prevent unnecessary code inclusion.
 
 5. **store/**
 
@@ -53,6 +55,8 @@ alwaysApply: true
    - **API Routes** (`src/app/api/`): Server-side only, use only server services from `lib/`
    - **Features** (`src/features/`): Client-side only, UI components and client logic
    - **lib/** (`src/lib/`): Server/client common logic, external API integration
+   - **Security**: Server-only code (API keys, database credentials) must never be accessible from client
+   - **Bundle optimization**: Client and server code must be in separate files to prevent bundling issues
 
 3. **Environment Variable Access Rules**
 
@@ -64,6 +68,26 @@ alwaysApply: true
 - Folder/file naming: lowercase + camelCase
 - Domain-specific types → `features/{domain}/types/`
 - Common types → `types/`
+
+# Security and Performance Guidelines
+
+## Security Best Practices
+
+- **API Key Protection**: Server-only environment variables must never be exposed to client
+- **Code Separation**: Server and client code must be in separate files to prevent security vulnerabilities
+- **Dependency Isolation**: Client bundles must not contain server-only dependencies
+
+## Bundle Optimization
+
+- **Tree Shaking**: Ensure unused code is properly eliminated from client bundles
+- **Code Splitting**: Separate client and server code to optimize bundle sizes
+- **Dynamic Imports**: Use dynamic imports for code that's only needed in specific environments
+
+## Maintainability
+
+- **Clear Separation**: Each service should have a single, well-defined responsibility
+- **Consistent Patterns**: Use consistent naming and structure across similar services
+- **Documentation**: Document security considerations and environment-specific requirements
 
 # Other Guidelines
 
