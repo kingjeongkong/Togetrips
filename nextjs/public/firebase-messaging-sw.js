@@ -2,10 +2,13 @@
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-// FCM 전용 최소 Firebase 설정
+// FCM 전용 Firebase 설정
 // 빌드 시점에 실제 값으로 대체되도록 설정
 const firebaseConfig = {
+  apiKey: 'AIzaSyAo5IW4pb4n1zbJUxFGK3r7PdzljDp07MY', // Firebase 콘솔에서 복사한 API 키
   projectId: 'togetrips-4b70e',
+  messagingSenderId: '69867659380',
+  appId: '1:69867659380:web:d39f0bef27ba774b8bb121',
 };
 
 // Firebase 초기화
