@@ -4,23 +4,41 @@ import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Firebase Admin SDK 초기화
+// Firebase Admin SDK 초기화 - JSON 형태 우선 사용
 if (!getApps().length) {
-  const firebaseConfig = {
-    project_id: process.env.FIREBASE_PROJECT_ID!,
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || '',
-    private_key: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL!,
-    client_id: process.env.FIREBASE_CLIENT_ID || '',
-    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-    token_uri: 'https://oauth2.googleapis.com/token',
-    auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-    client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
-  };
+  try {
+    // 1. FIREBASE_SERVICE_ACCOUNT_JSON 우선 시도
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (serviceAccountJson) {
+      console.log('Using FIREBASE_SERVICE_ACCOUNT_JSON');
+      const serviceAccount = JSON.parse(serviceAccountJson);
+      initializeApp({
+        credential: cert(serviceAccount),
+      });
+    } else {
+      // 2. 개별 환경 변수 사용 (fallback)
+      console.log('Using individual environment variables');
+      const firebaseConfig = {
+        project_id: process.env.FIREBASE_PROJECT_ID!,
+        private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || '',
+        private_key: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+        client_email: process.env.FIREBASE_CLIENT_EMAIL!,
+        client_id: process.env.FIREBASE_CLIENT_ID || '',
+        auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+        token_uri: 'https://oauth2.googleapis.com/token',
+        auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+        client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
+      };
 
-  initializeApp({
-    credential: cert(firebaseConfig as ServiceAccount),
-  });
+      initializeApp({
+        credential: cert(firebaseConfig as ServiceAccount),
+      });
+    }
+    console.log('Firebase Admin SDK initialized successfully');
+  } catch (error) {
+    console.error('Firebase Admin SDK initialization failed:', error);
+    throw error;
+  }
 }
 
 // Supabase 관리자 클라이언트 (Service Role Key 사용)
