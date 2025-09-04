@@ -11,6 +11,11 @@ const NotificationPermissionBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Notification API가 지원되는지 확인
+    if (typeof Notification === 'undefined') {
+      return;
+    }
+
     const isPWA =
       window.matchMedia('(display-mode: standalone)').matches ||
       ('standalone' in window.navigator &&
