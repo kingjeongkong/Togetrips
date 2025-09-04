@@ -28,4 +28,3 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
 };
 
 export default NotificationModal;
-
