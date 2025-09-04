@@ -85,6 +85,8 @@ export const usePushNotifications = () => {
       // 4단계: 알림 설정 활성화
       return await NotificationSettingsService.updateSettings({
         push_enabled: true,
+        chat_notifications: true,
+        request_notifications: true,
       });
     },
     onSuccess: (updatedSettings) => {
