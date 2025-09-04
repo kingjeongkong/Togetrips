@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { FiHelpCircle, FiLogOut } from 'react-icons/fi';
+import { FiBell, FiHelpCircle, FiLogOut } from 'react-icons/fi';
+import NotificationModal from './NotificationModal';
 import SupportModal from './SupportModal';
 
 interface SettingsMenuProps {
@@ -24,10 +25,11 @@ const SettingsMenu = ({
 }: SettingsMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (isSupportModalOpen) return;
+      if (isSupportModalOpen || isNotificationModalOpen) return;
 
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
@@ -35,7 +37,7 @@ const SettingsMenu = ({
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose, isSupportModalOpen]);
+  }, [onClose, isSupportModalOpen, isNotificationModalOpen]);
 
   return (
     <>
@@ -43,6 +45,13 @@ const SettingsMenu = ({
         ref={menuRef}
         className={`z-50 w-40 bg-white rounded-lg shadow-lg py-2 border border-gray-200 ${directionClass[direction]} ${className}`}
       >
+        <button
+          className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
+          onClick={() => setIsNotificationModalOpen(true)}
+        >
+          <FiBell className="mr-2 w-5 h-5" />
+          Notifications
+        </button>
         <button
           className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
           onClick={() => setIsSupportModalOpen(true)}
@@ -61,6 +70,10 @@ const SettingsMenu = ({
       </div>
 
       <SupportModal isOpen={isSupportModalOpen} onClose={() => setIsSupportModalOpen(false)} />
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+      />
     </>
   );
 };
