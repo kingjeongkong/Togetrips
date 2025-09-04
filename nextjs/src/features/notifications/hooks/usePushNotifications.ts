@@ -11,11 +11,19 @@ export const usePushNotifications = () => {
 
   // 권한 상태 동기화
   useEffect(() => {
+    // Notification API가 지원되는지 확인
+    if (typeof Notification === 'undefined') {
+      setPermission('denied');
+      return;
+    }
+
     setPermission(Notification.permission);
 
     // 권한 변경 감지
     const handlePermissionChange = () => {
-      setPermission(Notification.permission);
+      if (typeof Notification !== 'undefined') {
+        setPermission(Notification.permission);
+      }
     };
 
     if ('permissions' in navigator) {
@@ -61,6 +69,11 @@ export const usePushNotifications = () => {
   // 알림 활성화 뮤테이션: 최적화된 권한 요청 및 토큰 등록
   const { mutate: enableNotifications, isPending: isEnabling } = useMutation({
     mutationFn: async () => {
+      // Notification API가 지원되지 않는 경우 에러 처리
+      if (typeof Notification === 'undefined') {
+        throw new Error('Notifications are not supported in this browser');
+      }
+
       // 1단계: 권한이 없으면 요청 (이미 있으면 스킵)
       if (Notification.permission !== 'granted') {
         const permissionResult = await Notification.requestPermission();
