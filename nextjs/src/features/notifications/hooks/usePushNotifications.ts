@@ -1,0 +1,164 @@
+import { getFCMToken } from '@/lib/firebase-client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { FCMTokenService, NotificationSettingsService } from '../services/notificationService';
+
+export const usePushNotifications = () => {
+  const queryClient = useQueryClient();
+
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+
+  // 권한 상태 동기화
+  useEffect(() => {
+    setPermission(Notification.permission);
+
+    // 권한 변경 감지
+    const handlePermissionChange = () => {
+      setPermission(Notification.permission);
+    };
+
+    if ('permissions' in navigator) {
+      navigator.permissions.query({ name: 'notifications' }).then((permissionStatus) => {
+        permissionStatus.addEventListener('change', handlePermissionChange);
+        return () => permissionStatus.removeEventListener('change', handlePermissionChange);
+      });
+    }
+  }, []);
+
+  // 알림 설정 조회
+  const {
+    data: settings,
+    isLoading: isLoadingSettings,
+    error: settingsError,
+  } = useQuery({
+    queryKey: ['notificationSettings'],
+    queryFn: NotificationSettingsService.getSettings,
+    staleTime: 60 * 60 * 1000,
+  });
+
+  // FCM 토큰 목록 조회
+  const {
+    data: tokens = [],
+    isLoading: isLoadingTokens,
+    error: tokensError,
+  } = useQuery({
+    queryKey: ['fcmTokens'],
+    queryFn: FCMTokenService.getTokens,
+    staleTime: 24 * 60 * 60 * 1000,
+  });
+
+  // 현재 기기의 FCM 토큰 등록 여부 확인
+  const checkCurrentDeviceToken = async (): Promise<boolean> => {
+    try {
+      const currentToken = await getFCMToken();
+      return tokens.some((token) => token.token === currentToken);
+    } catch {
+      return false;
+    }
+  };
+
+  // 알림 활성화 뮤테이션: 최적화된 권한 요청 및 토큰 등록
+  const { mutate: enableNotifications, isPending: isEnabling } = useMutation({
+    mutationFn: async () => {
+      // 1단계: 권한이 없으면 요청 (이미 있으면 스킵)
+      if (Notification.permission !== 'granted') {
+        const permissionResult = await Notification.requestPermission();
+        if (permissionResult !== 'granted') {
+          throw new Error('Notification permission denied');
+        }
+      }
+
+      // 2단계: FCM 토큰 획득
+      const fcmToken = await getFCMToken();
+
+      // 3단계: 토큰이 이미 등록되어 있는지 확인 후 조건부 등록
+      const isTokenRegistered = await checkCurrentDeviceToken();
+
+      if (!isTokenRegistered) {
+        await FCMTokenService.registerToken({
+          token: fcmToken,
+          device_type: 'web',
+        });
+      }
+
+      // 4단계: 알림 설정 활성화
+      return await NotificationSettingsService.updateSettings({
+        push_enabled: true,
+        chat_notifications: true,
+        request_notifications: true,
+      });
+    },
+    onSuccess: (updatedSettings) => {
+      queryClient.setQueryData(['notificationSettings'], updatedSettings);
+      queryClient.invalidateQueries({ queryKey: ['fcmTokens'] });
+      setPermission('granted');
+    },
+    onError: (error) => {
+      console.error('Failed to enable notifications:', error);
+      toast.error('Failed to enable push notifications');
+    },
+  });
+
+  // 알림 비활성화 뮤테이션
+  const { mutate: disableNotifications, isPending: isDisabling } = useMutation({
+    mutationFn: async () => {
+      return await NotificationSettingsService.updateSettings({
+        push_enabled: false,
+      });
+    },
+    onSuccess: (updatedSettings) => {
+      queryClient.setQueryData(['notificationSettings'], updatedSettings);
+    },
+    onError: (error) => {
+      console.error('Failed to disable notifications:', error);
+      toast.error('Failed to disable push notifications');
+    },
+  });
+
+  // 개별 알림 타입 설정 업데이트
+  const { mutate: updateNotificationType, isPending: isUpdatingType } = useMutation({
+    mutationFn: NotificationSettingsService.updateSettings,
+    onSuccess: (updatedSettings) => {
+      queryClient.setQueryData(['notificationSettings'], updatedSettings);
+    },
+    onError: (error) => {
+      console.error('Failed to update notification type:', error);
+      toast.error('Failed to update notification settings');
+    },
+  });
+
+  // 현재 기기에서 알림이 활성화되어 있는지 확인
+  const isEnabledOnThisDevice = settings?.push_enabled && permission === 'granted';
+
+  // 로딩 상태 통합
+  const isLoading = isLoadingSettings || isLoadingTokens;
+
+  // 에러 상태 통합
+  const error = settingsError || tokensError;
+
+  return {
+    // 상태
+    settings,
+    tokens,
+    permission,
+    isLoading,
+    error,
+
+    // 계산된 값
+    isEnabledOnThisDevice,
+
+    // 로딩 상태
+    isEnabling,
+    isDisabling,
+    isUpdatingType,
+
+    // 액션
+    enableNotifications,
+    disableNotifications,
+    updateNotificationType,
+
+    // 유틸리티
+    checkCurrentDeviceToken,
+  };
+};
