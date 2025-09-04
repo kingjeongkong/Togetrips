@@ -17,16 +17,40 @@ firebase.initializeApp(firebaseConfig);
 // FCM 메시징 인스턴스
 const messaging = firebase.messaging();
 
+// Service Worker 버전 업데이트 (캐시 무효화)
+const SW_VERSION = '3.0.0';
+console.log('Service Worker version:', SW_VERSION);
+
 // 백그라운드에서 메시지 수신 시 처리
 messaging.onBackgroundMessage((payload) => {
   console.log('백그라운드 메시지 수신:', payload);
 
-  const notificationTitle = payload.notification.title;
+  // data payload에서 알림 정보 추출
+  const notificationTitle = payload.data?.title || 'New notification';
+  const notificationBody = payload.data?.body || '';
+  const notificationType = payload.data?.type || 'default';
+  const notificationUrl = payload.data?.url || '/';
+  const notificationId = payload.data?.id || `${notificationType}-${Date.now()}`;
+  const timestamp = payload.data?.timestamp || Date.now().toString();
+  const source = payload.data?.source || 'unknown';
+
+  // Togetrips API에서 온 메시지가 아니면 무시
+  if (source !== 'togetrips-api') {
+    console.log('Ignoring notification from unknown source:', source);
+    return;
+  }
+
   const notificationOptions = {
-    body: payload.notification.body,
+    body: notificationBody,
     icon: '/togetrips-logo.png',
     badge: '/togetrips-logo.png',
-    data: payload.data,
+    data: {
+      type: notificationType,
+      url: notificationUrl,
+      id: notificationId,
+      timestamp: timestamp,
+      chatRoomId: notificationType === 'chat' ? notificationUrl.split('/chat/')[1] : null,
+    },
     actions: [
       {
         action: 'open',
@@ -38,11 +62,22 @@ messaging.onBackgroundMessage((payload) => {
       },
     ],
     requireInteraction: true,
-    tag: payload.data?.type || 'default', // 알림 그룹화
+    tag: notificationId, // 고유한 ID를 태그로 사용
+    renotify: false, // 같은 태그의 알림이 있어도 재알림하지 않음
   };
 
-  // 알림 표시
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  // 강력한 중복 방지: 모든 기존 알림 확인
+  return self.registration.getNotifications().then((existingNotifications) => {
+    // 모든 기존 알림 제거 (완전한 중복 방지)
+    existingNotifications.forEach((notification) => {
+      console.log('Removing all existing notifications:', notification.title);
+      notification.close();
+    });
+
+    // 새 알림 표시
+    console.log('Showing new notification:', notificationTitle);
+    return self.registration.showNotification(notificationTitle, notificationOptions);
+  });
 });
 
 // 알림 클릭 시 처리

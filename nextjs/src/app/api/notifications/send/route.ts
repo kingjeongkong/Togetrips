@@ -72,15 +72,26 @@ export async function POST(request: NextRequest) {
 
     const registrationTokens = tokensData.map((t) => t.token);
 
-    // 4. FCM으로 알림 발송
+    // 4. FCM으로 알림 발송 (data payload만 사용하여 중복 방지)
+    const uniqueId = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const timestamp = Date.now().toString();
+
     const message = {
-      notification: {
+      data: {
         title: notificationPayload.title,
         body: notificationPayload.body,
+        url: notificationPayload.url,
+        type: type,
+        timestamp: timestamp,
+        id: uniqueId,
+        source: 'togetrips-api',
       },
       webpush: {
         fcmOptions: {
           link: notificationPayload.url,
+        },
+        headers: {
+          TTL: '86400', // 24시간 TTL
         },
       },
       tokens: registrationTokens,
