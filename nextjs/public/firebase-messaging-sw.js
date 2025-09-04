@@ -17,6 +17,10 @@ firebase.initializeApp(firebaseConfig);
 // FCM 메시징 인스턴스
 const messaging = firebase.messaging();
 
+// Service Worker 버전 업데이트 (캐시 무효화)
+const SW_VERSION = '3.0.0';
+console.log('Service Worker version:', SW_VERSION);
+
 // 백그라운드에서 메시지 수신 시 처리
 messaging.onBackgroundMessage((payload) => {
   console.log('백그라운드 메시지 수신:', payload);
@@ -62,12 +66,16 @@ messaging.onBackgroundMessage((payload) => {
     renotify: false, // 같은 태그의 알림이 있어도 재알림하지 않음
   };
 
-  // 알림 표시 (중복 방지를 위해 기존 알림 확인)
-  return self.registration.getNotifications({ tag: notificationId }).then((notifications) => {
-    // 같은 ID의 알림이 이미 있으면 기존 것 제거
-    notifications.forEach((notification) => notification.close());
+  // 강력한 중복 방지: 모든 기존 알림 확인
+  return self.registration.getNotifications().then((existingNotifications) => {
+    // 모든 기존 알림 제거 (완전한 중복 방지)
+    existingNotifications.forEach((notification) => {
+      console.log('Removing all existing notifications:', notification.title);
+      notification.close();
+    });
 
     // 새 알림 표시
+    console.log('Showing new notification:', notificationTitle);
     return self.registration.showNotification(notificationTitle, notificationOptions);
   });
 });
