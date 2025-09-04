@@ -1,5 +1,6 @@
 'use client';
 
+import { AppInitializer } from '@/components/AppInitializer';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
+            <AppInitializer />
             <PwaInstallPrompt />
             {children}
             <ToastContainer
