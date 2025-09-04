@@ -1,9 +1,9 @@
 'use client';
 
-import NotificationPermissionBanner from '@/components/NotificationPermissionBanner';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
@@ -19,6 +19,11 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 });
+
+const NotificationPermissionBanner = dynamic(
+  () => import('@/components/NotificationPermissionBanner'),
+  { ssr: false },
+);
 
 export default function RootLayout({
   children,
