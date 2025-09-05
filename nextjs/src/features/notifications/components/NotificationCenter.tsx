@@ -25,14 +25,8 @@ export const NotificationCenter: React.FC = () => {
     );
   }
 
-  if (!settings) {
-    return (
-      <div className="p-4 text-center text-gray-500">Failed to load notification settings</div>
-    );
-  }
-
-  // 권한이 거부된 경우 안내 메시지
-  if (permission === 'denied') {
+  // 설정이 없거나 권한이 거부된 경우 안내 메시지
+  if (!settings || permission === 'denied') {
     return (
       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <div className="flex items-center mb-3">
@@ -46,11 +40,13 @@ export const NotificationCenter: React.FC = () => {
             </svg>
           </div>
           <h3 className="ml-2 text-sm font-medium text-yellow-800">
-            Notification Permission Required
+            {!settings ? 'Notifications Not Enabled' : 'Notification Permission Required'}
           </h3>
         </div>
         <p className="text-sm text-yellow-700 mb-3">
-          To receive push notifications, you need to allow notifications in your browser settings.
+          {!settings
+            ? 'To receive push notifications, you need to enable notifications first.'
+            : 'To receive push notifications, you need to allow notifications in your browser settings.'}
         </p>
       </div>
     );

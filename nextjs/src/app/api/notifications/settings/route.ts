@@ -33,29 +33,6 @@ export async function GET(request: NextRequest) {
       throw new Error(error.message);
     }
 
-    // 설정이 없으면 기본값으로 생성
-    if (!settings) {
-      const { data: newSettings, error: createError } = await supabase
-        .from('notification_settings')
-        .insert({
-          user_id: user.id,
-          chat_notifications: true,
-          request_notifications: true,
-          push_enabled: true,
-        })
-        .select('*')
-        .single();
-
-      if (createError) {
-        throw new Error(createError.message);
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: newSettings,
-      });
-    }
-
     return NextResponse.json({
       success: true,
       data: settings,
