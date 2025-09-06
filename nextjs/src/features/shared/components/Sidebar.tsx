@@ -1,6 +1,7 @@
 'use client';
 
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
+import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
 import { useRequestCount } from '@/features/request/hooks/useRequestCount';
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useAuthActions } from '@/hooks/useAuthActions';
@@ -25,11 +26,22 @@ const Sidebar = () => {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { handleSignOut } = useAuthActions();
+  const { deleteCurrentDeviceToken } = usePushNotifications();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
 
   const { data: unreadCount = 0 } = useUnreadCount();
   const { data: requestCount = 0 } = useRequestCount();
+
+  // 로그아웃 시 FCM 토큰 삭제와 인증 세션 종료를 순서대로 처리
+  const handleLogout = async () => {
+    try {
+      await deleteCurrentDeviceToken();
+      await handleSignOut();
+    } catch (error) {
+      console.error('로그아웃 처리 중 오류 발생:', error);
+    }
+  };
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
@@ -80,7 +92,7 @@ const Sidebar = () => {
           </button>
           {settingsOpen && (
             <SettingsMenu
-              onLogout={handleSignOut}
+              onLogout={handleLogout}
               onClose={() => setSettingsOpen(false)}
               direction="up"
             />

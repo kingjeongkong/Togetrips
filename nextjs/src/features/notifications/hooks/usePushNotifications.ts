@@ -144,6 +144,16 @@ export const usePushNotifications = () => {
   // 현재 기기에서 알림이 활성화되어 있는지 확인
   const isEnabledOnThisDevice = settings?.push_enabled && permission === 'granted';
 
+  // 현재 기기의 FCM 토큰 삭제
+  const deleteCurrentDeviceToken = async (): Promise<void> => {
+    try {
+      const currentToken = await getFCMToken();
+      await FCMTokenService.deleteToken(currentToken);
+    } catch (error) {
+      console.warn('FCM 토큰 삭제 실패:', error);
+    }
+  };
+
   // 로딩 상태 통합
   const isLoading = isLoadingSettings || isLoadingTokens;
 
@@ -173,5 +183,6 @@ export const usePushNotifications = () => {
 
     // 유틸리티
     checkCurrentDeviceToken,
+    deleteCurrentDeviceToken,
   };
 };
