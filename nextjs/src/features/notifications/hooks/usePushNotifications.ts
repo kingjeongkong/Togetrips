@@ -154,6 +154,40 @@ export const usePushNotifications = () => {
     }
   };
 
+  const { mutate: syncTokenOnLogin, isPending: isSyncing } = useMutation({
+    mutationFn: async () => {
+      if (Notification.permission !== 'granted') {
+        console.log('알림 권한이 허용되지 않음, 토큰 동기화 스킵');
+        return;
+      }
+
+      if (!settings?.push_enabled) {
+        console.log('알림이 비활성화됨, 토큰 동기화 스킵');
+        return;
+      }
+
+      const isTokenAlreadyRegistered = await checkCurrentDeviceToken();
+
+      if (!isTokenAlreadyRegistered) {
+        console.log('현재 기기 토큰이 서버에 없음, 재등록 중...');
+        const fcmToken = await getFCMToken();
+        await FCMTokenService.registerToken({
+          token: fcmToken,
+          device_type: 'web',
+        });
+        console.log('토큰 재등록 완료');
+      } else {
+        console.log('현재 기기 토큰이 이미 서버에 등록되어 있음');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fcmTokens'] });
+    },
+    onError: (error) => {
+      console.warn('토큰 동기화 실패 (앱 사용에는 영향 없음):', error);
+    },
+  });
+
   // 로딩 상태 통합
   const isLoading = isLoadingSettings || isLoadingTokens;
 
@@ -175,11 +209,13 @@ export const usePushNotifications = () => {
     isEnabling,
     isDisabling,
     isUpdatingType,
+    isSyncing,
 
     // 액션
     enableNotifications,
     disableNotifications,
     updateNotificationType,
+    syncTokenOnLogin,
 
     // 유틸리티
     checkCurrentDeviceToken,
