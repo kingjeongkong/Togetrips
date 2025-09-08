@@ -36,7 +36,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 삭제 전 토큰 존재 여부 확인
-    const { data: existingToken, error: checkError } = await supabase
+    const { data: existingToken } = await supabase
       .from('fcm_tokens')
       .select('id, token')
       .eq('user_id', user.id)
