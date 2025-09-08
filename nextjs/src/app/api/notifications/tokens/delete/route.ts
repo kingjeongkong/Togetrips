@@ -29,9 +29,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 사용자의 FCM 토큰 삭제
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from('fcm_tokens')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('user_id', user.id)
       .eq('token', token);
 
@@ -42,6 +42,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'FCM token deleted successfully',
+      deletedCount: count,
     });
   } catch (error) {
     console.error('Error deleting FCM token:', error);

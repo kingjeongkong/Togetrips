@@ -1,5 +1,6 @@
 'use client';
 
+import { AppInitializer } from '@/components/AppInitializer';
 import NotificationPermissionBanner from '@/components/NotificationPermissionBanner';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { SessionProvider } from '@/providers/SessionProvider';
@@ -58,6 +59,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
+            <AppInitializer />
             <NotificationPermissionBanner />
             <PwaInstallPrompt />
             {children}

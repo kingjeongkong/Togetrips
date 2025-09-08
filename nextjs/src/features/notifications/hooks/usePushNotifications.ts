@@ -1,11 +1,14 @@
 import { getFCMToken } from '@/lib/firebase-client';
+import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FCMTokenService, NotificationSettingsService } from '../services/notificationService';
+import { FCMToken, NotificationPermission } from '../types/notification';
 
 export const usePushNotifications = () => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useSession();
 
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
@@ -43,6 +46,7 @@ export const usePushNotifications = () => {
     queryKey: ['notificationSettings'],
     queryFn: NotificationSettingsService.getSettings,
     staleTime: 60 * 60 * 1000,
+    enabled: isAuthenticated,
   });
 
   // FCM 토큰 목록 조회
@@ -54,6 +58,7 @@ export const usePushNotifications = () => {
     queryKey: ['fcmTokens'],
     queryFn: FCMTokenService.getTokens,
     staleTime: 24 * 60 * 60 * 1000,
+    enabled: isAuthenticated,
   });
 
   // 현재 기기의 FCM 토큰 등록 여부 확인
@@ -148,11 +153,61 @@ export const usePushNotifications = () => {
   const deleteCurrentDeviceToken = async (): Promise<void> => {
     try {
       const currentToken = await getFCMToken();
+
+      if (!currentToken) {
+        console.warn('FCM 토큰을 가져올 수 없음');
+        return;
+      }
+
       await FCMTokenService.deleteToken(currentToken);
+      queryClient.setQueryData(['fcmTokens'], (oldTokens: FCMToken[] | undefined) => {
+        return oldTokens?.filter((token) => token.token !== currentToken) || [];
+      });
     } catch (error) {
-      console.warn('FCM 토큰 삭제 실패:', error);
+      console.error('FCM 토큰 삭제 중 오류 발생:', error);
+      throw error;
     }
   };
+
+  // 로그인 시 FCM 토큰 동기화
+  const { mutate: syncTokenOnLogin, isPending: isSyncing } = useMutation({
+    mutationFn: async () => {
+      if (Notification.permission !== 'granted') {
+        console.log('알림 권한이 허용되지 않음, 토큰 동기화 스킵');
+        return;
+      }
+
+      if (!settings) {
+        console.log('알림 설정 로딩 중, 토큰 동기화 스킵');
+        return;
+      }
+
+      if (!settings.push_enabled) {
+        console.log('알림이 비활성화됨, 토큰 동기화 스킵');
+        return;
+      }
+
+      const isTokenAlreadyRegistered = await checkCurrentDeviceToken();
+
+      if (!isTokenAlreadyRegistered) {
+        console.log('현재 기기 토큰이 서버에 없음, 재등록 중...');
+        const fcmToken = await getFCMToken();
+        await FCMTokenService.registerToken({
+          token: fcmToken,
+          device_type: 'web',
+        });
+        console.log('토큰 재등록 완료');
+      } else {
+        console.log('현재 기기 토큰이 이미 서버에 등록되어 있음');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fcmTokens'] });
+    },
+    onError: (error) => {
+      console.warn('토큰 동기화 실패 (앱 사용에는 영향 없음):', error);
+    },
+  });
 
   // 로딩 상태 통합
   const isLoading = isLoadingSettings || isLoadingTokens;
@@ -166,6 +221,7 @@ export const usePushNotifications = () => {
     tokens,
     permission,
     isLoading,
+    isLoadingSettings,
     error,
 
     // 계산된 값
@@ -175,11 +231,13 @@ export const usePushNotifications = () => {
     isEnabling,
     isDisabling,
     isUpdatingType,
+    isSyncing,
 
     // 액션
     enableNotifications,
     disableNotifications,
     updateNotificationType,
+    syncTokenOnLogin,
 
     // 유틸리티
     checkCurrentDeviceToken,
