@@ -3,6 +3,7 @@
 import { AppInitializer } from '@/components/AppInitializer';
 import NotificationPermissionBanner from '@/components/NotificationPermissionBanner';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { SessionProvider } from '@/providers/SessionProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -27,6 +28,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [queryClient] = useState(() => new QueryClient());
+
+  // Visual Viewport API를 사용하여 실제 보이는 영역 높이 추적
+  useVisualViewport();
+
   return (
     <html lang="en">
       <head>
