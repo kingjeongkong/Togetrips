@@ -1,7 +1,6 @@
 'use client';
 
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
-import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
 import { useRequestCount } from '@/features/request/hooks/useRequestCount';
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useAuthActions } from '@/hooks/useAuthActions';
@@ -26,36 +25,11 @@ const Sidebar = () => {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { handleSignOut } = useAuthActions();
-  const { deleteCurrentDeviceToken } = usePushNotifications();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
 
   const { data: unreadCount = 0 } = useUnreadCount();
   const { data: requestCount = 0 } = useRequestCount();
-
-  // 로그아웃 시 FCM 토큰 삭제와 인증 세션 종료를 순서대로 처리
-  const handleLogout = async () => {
-    try {
-      console.log('🚪 [DEBUG] 로그아웃 프로세스 시작...');
-
-      // 1단계: FCM 토큰 삭제 (현재 기기에서 더 이상 알림을 받지 않도록)
-      try {
-        console.log('🔍 [DEBUG] 1단계: FCM 토큰 삭제 시작...');
-        await deleteCurrentDeviceToken();
-        console.log('✅ [DEBUG] 1단계: FCM 토큰 삭제 완료');
-      } catch (error) {
-        // FCM 토큰 삭제 실패해도 로그아웃은 계속 진행
-        console.error('❌ [DEBUG] 1단계: FCM 토큰 삭제 실패:', error);
-      }
-
-      // 2단계: 인증 세션 종료 및 리다이렉트
-      console.log('🔍 [DEBUG] 2단계: 인증 세션 종료 시작...');
-      await handleSignOut();
-      console.log('✅ [DEBUG] 2단계: 인증 세션 종료 완료');
-    } catch (error) {
-      console.error('❌ [DEBUG] 로그아웃 처리 중 오류 발생:', error);
-    }
-  };
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
@@ -106,7 +80,7 @@ const Sidebar = () => {
           </button>
           {settingsOpen && (
             <SettingsMenu
-              onLogout={handleLogout}
+              onLogout={handleSignOut}
               onClose={() => setSettingsOpen(false)}
               direction="up"
             />

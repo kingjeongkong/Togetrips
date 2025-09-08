@@ -1,4 +1,5 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
+import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
 import SettingsMenu from '@/features/shared/components/SettingsMenu';
 import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
@@ -42,6 +43,16 @@ const MainProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { handleSignOut } = useAuthActions();
+  const { deleteCurrentDeviceToken } = usePushNotifications();
+
+  const handleLogout = async () => {
+    try {
+      await deleteCurrentDeviceToken();
+      await handleSignOut();
+    } catch (error) {
+      console.error('로그아웃 처리 중 오류 발생:', error);
+    }
+  };
 
   const handleSubmit = async (data: EditableProfileFields) => {
     await updateProfile(data);
@@ -61,7 +72,7 @@ const MainProfile = () => {
         <ProfileHeaderActions
           settingsOpen={settingsOpen}
           setSettingsOpen={setSettingsOpen}
-          handleLogout={handleSignOut}
+          handleLogout={handleLogout}
         />
         {loadingIndicator}
       </div>
@@ -73,7 +84,7 @@ const MainProfile = () => {
       <ProfileHeaderActions
         settingsOpen={settingsOpen}
         setSettingsOpen={setSettingsOpen}
-        handleLogout={handleSignOut}
+        handleLogout={handleLogout}
       />
 
       {isEditing ? (

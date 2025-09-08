@@ -151,60 +151,21 @@ export const usePushNotifications = () => {
   // 현재 기기의 FCM 토큰 삭제
   const deleteCurrentDeviceToken = async (): Promise<void> => {
     try {
-      console.log('🔍 [DEBUG] FCM 토큰 삭제 시작...');
-
-      // 1. 현재 FCM 토큰 가져오기
       const currentToken = await getFCMToken();
-      console.log(
-        '🔍 [DEBUG] 현재 FCM 토큰:',
-        currentToken ? `${currentToken.substring(0, 20)}...` : 'null',
-      );
 
       if (!currentToken) {
-        console.warn('⚠️ [DEBUG] FCM 토큰을 가져올 수 없음');
+        console.warn('FCM 토큰을 가져올 수 없음');
         return;
       }
 
-      // 2. 삭제 전 토큰 목록 확인
-      const tokensBeforeDelete = await FCMTokenService.getTokens();
-      console.log(
-        '🔍 [DEBUG] 삭제 전 토큰 목록:',
-        tokensBeforeDelete.map((t) => ({
-          id: t.id,
-          token: `${t.token.substring(0, 20)}...`,
-          device_type: t.device_type,
-        })),
-      );
-
-      // 3. 토큰 삭제 API 호출
-      console.log('🔍 [DEBUG] 토큰 삭제 API 호출 중...');
       await FCMTokenService.deleteToken(currentToken);
-      console.log('✅ [DEBUG] 토큰 삭제 API 호출 완료');
-
-      // 4. 삭제 후 토큰 목록 확인
-      const tokensAfterDelete = await FCMTokenService.getTokens();
-      console.log(
-        '🔍 [DEBUG] 삭제 후 토큰 목록:',
-        tokensAfterDelete.map((t) => ({
-          id: t.id,
-          token: `${t.token.substring(0, 20)}...`,
-          device_type: t.device_type,
-        })),
-      );
-
-      // 5. 삭제 결과 검증
-      const isTokenStillExists = tokensAfterDelete.some((t) => t.token === currentToken);
-      if (isTokenStillExists) {
-        console.error('❌ [DEBUG] 토큰 삭제 실패: 토큰이 여전히 존재함');
-      } else {
-        console.log('✅ [DEBUG] 토큰 삭제 성공: 토큰이 완전히 제거됨');
-      }
     } catch (error) {
-      console.error('❌ [DEBUG] FCM 토큰 삭제 중 오류 발생:', error);
+      console.error('FCM 토큰 삭제 중 오류 발생:', error);
       throw error;
     }
   };
 
+  // 로그인 시 FCM 토큰 동기화
   const { mutate: syncTokenOnLogin, isPending: isSyncing } = useMutation({
     mutationFn: async () => {
       if (Notification.permission !== 'granted') {
