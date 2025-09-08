@@ -41,7 +41,7 @@ const ChatRoomInput = ({ onSendMessage }: ChatRoomInputProps) => {
   };
 
   return (
-    <div className="sticky bottom-0 bg-gray-100 border-t border-gray-200 p-4">
+    <div className="flex-shrink-0 bg-gray-100 border-t border-gray-200 p-4">
       <div className="flex items-end">
         <textarea
           ref={textareaRef}

@@ -4,6 +4,7 @@ import DataFetchErrorBoundary from '@/components/ErrorBoundary/DataFetchErrorBou
 import LoadingIndicator from '@/components/LoadingIndicator';
 import ChatList from '@/features/chat/components/ChatList';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -12,6 +13,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const pathname = usePathname();
   const isRootPath = pathname === '/chat';
+
+  useVisualViewport();
 
   useEffect(() => {
     setIsHydrated(true);

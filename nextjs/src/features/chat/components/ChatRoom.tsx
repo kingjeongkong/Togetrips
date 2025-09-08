@@ -155,7 +155,7 @@ const ChatRoom = () => {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gray-100 overflow-hidden">
       <ChatRoomHeader
         profileImage={chatRoom?.otherUser?.image || '/default-traveler.png'}
         name={chatRoom?.otherUser?.name || ''}
