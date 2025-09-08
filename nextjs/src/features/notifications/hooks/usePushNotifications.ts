@@ -173,7 +173,12 @@ export const usePushNotifications = () => {
         return;
       }
 
-      if (!settings?.push_enabled) {
+      if (!settings) {
+        console.log('알림 설정 로딩 중, 토큰 동기화 스킵');
+        return;
+      }
+
+      if (!settings.push_enabled) {
         console.log('알림이 비활성화됨, 토큰 동기화 스킵');
         return;
       }
@@ -212,6 +217,7 @@ export const usePushNotifications = () => {
     tokens,
     permission,
     isLoading,
+    isLoadingSettings,
     error,
 
     // 계산된 값
