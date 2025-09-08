@@ -1,4 +1,5 @@
 import { getFCMToken } from '@/lib/firebase-client';
+import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -6,6 +7,7 @@ import { FCMTokenService, NotificationSettingsService } from '../services/notifi
 
 export const usePushNotifications = () => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useSession();
 
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
@@ -43,6 +45,7 @@ export const usePushNotifications = () => {
     queryKey: ['notificationSettings'],
     queryFn: NotificationSettingsService.getSettings,
     staleTime: 60 * 60 * 1000,
+    enabled: isAuthenticated,
   });
 
   // FCM 토큰 목록 조회
@@ -54,6 +57,7 @@ export const usePushNotifications = () => {
     queryKey: ['fcmTokens'],
     queryFn: FCMTokenService.getTokens,
     staleTime: 24 * 60 * 60 * 1000,
+    enabled: isAuthenticated,
   });
 
   // 현재 기기의 FCM 토큰 등록 여부 확인
