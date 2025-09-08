@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FCMTokenService, NotificationSettingsService } from '../services/notificationService';
+import { FCMToken, NotificationPermission } from '../types/notification';
 
 export const usePushNotifications = () => {
   const queryClient = useQueryClient();
@@ -159,6 +160,9 @@ export const usePushNotifications = () => {
       }
 
       await FCMTokenService.deleteToken(currentToken);
+      queryClient.setQueryData(['fcmTokens'], (oldTokens: FCMToken[] | undefined) => {
+        return oldTokens?.filter((token) => token.token !== currentToken) || [];
+      });
     } catch (error) {
       console.error('FCM 토큰 삭제 중 오류 발생:', error);
       throw error;
