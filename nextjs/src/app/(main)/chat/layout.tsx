@@ -33,7 +33,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     // ------ (A) 모바일 레이아웃 ------
     return (
       <div className="flex flex-col h-[var(--vh)] bg-gray-100">
-        <main className="flex-1">
+        <main className="flex-1 overflow-y-auto">
           {/* 모바일에서는 children 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
           <DataFetchErrorBoundary>{children}</DataFetchErrorBoundary>
         </main>
