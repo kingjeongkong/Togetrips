@@ -4,9 +4,11 @@ import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 interface ChatRoomInputProps {
   onSendMessage: (message: string) => void;
+  onFocus: () => void;
+  onBlur: () => void;
 }
 
-const ChatRoomInput = ({ onSendMessage }: ChatRoomInputProps) => {
+const ChatRoomInput = ({ onSendMessage, onFocus, onBlur }: ChatRoomInputProps) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -59,7 +61,11 @@ const ChatRoomInput = ({ onSendMessage }: ChatRoomInputProps) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          onFocus={handleFocus}
+          onFocus={() => {
+            handleFocus();
+            onFocus();
+          }}
+          onBlur={onBlur}
           placeholder="Type a message..."
           rows={1}
           className="flex-1 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none overflow-y-auto min-h-[40px] max-h-[100px]"

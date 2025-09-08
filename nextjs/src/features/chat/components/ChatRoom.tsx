@@ -5,7 +5,7 @@ import { useSession } from '@/providers/SessionProvider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { debounce } from 'lodash';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { chatService } from '../services/chatService';
 import type { ChatRoom, Message } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
@@ -18,6 +18,7 @@ const ChatRoom = () => {
   const { userId } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]); // 임시 메시지
+  const isKeyboardActiveRef = useRef<boolean>(false); // 키보드 활성화 상태를 저장하기 위한 ref
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -82,6 +83,19 @@ const ChatRoom = () => {
     };
   }, [chatRoomID, userId, queryClient]);
 
+  // 키보드 활성화 시 스크롤 제어
+  useEffect(() => {
+    const handleScroll = () => {
+      // 키보드가 활성화된 상태에서 스크롤이 0을 넘어서면(visual viewport 높이를 넘어서면) 무조건 0으로 복귀
+      if (isKeyboardActiveRef.current && window.scrollY > 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleSendMessage = async (message: string) => {
     if (!userId || !chatRoomID) return;
 
@@ -108,6 +122,19 @@ const ChatRoom = () => {
   const handleResend = (message: Message) => {
     setPendingMessages((prev) => prev.filter((msg) => msg.id !== message.id));
     handleSendMessage(message.content);
+  };
+
+  // 입력창 포커스/블러 핸들러
+  const handleInputFocus = () => {
+    // 딜레이를 주어 키보드가 완전히 올라온 후 스크롤 제한 활성화
+    setTimeout(() => {
+      isKeyboardActiveRef.current = true;
+    }, 300);
+  };
+
+  const handleInputBlur = () => {
+    // 키보드가 내려가면 스크롤 제한을 해제
+    isKeyboardActiveRef.current = false;
   };
 
   if (isLoading) {
@@ -166,7 +193,11 @@ const ChatRoom = () => {
         currentUserID={userId || ''}
         onResend={handleResend}
       />
-      <ChatRoomInput onSendMessage={handleSendMessage} />
+      <ChatRoomInput
+        onSendMessage={handleSendMessage}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+      />
     </div>
   );
 };
