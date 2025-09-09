@@ -1,11 +1,10 @@
 'use client';
 
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { useEffect, useRef } from 'react';
 import { Message } from '../types/chatTypes';
 import ChatRoomDateDivider from './ChatRoomDateDivider';
 import ChatRoomMessage from './ChatRoomMessage';
-// 확장된 훅을 import 합니다.
-import { useVisualViewport } from '@/hooks/useVisualViewport';
 
 interface ChatRoomMessageListProps {
   messages: Message[];
@@ -64,16 +63,6 @@ const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMess
         }
       }, 50);
     }
-
-    console.log('🔍 [DEBUG] 스크롤 위치 보정:', {
-      oldScrollTop,
-      newScrollTop,
-      finalScrollTop,
-      delta,
-      keyboardHeight: Math.abs(delta),
-      direction: delta < 0 ? '키보드 올라옴' : '키보드 내려감',
-      forcedRepaint: delta > 0 ? '강제 리페인트 실행' : '리페인트 불필요',
-    });
   });
 
   // 새 메시지가 왔을 때의 스크롤 로직은 그대로 유지
