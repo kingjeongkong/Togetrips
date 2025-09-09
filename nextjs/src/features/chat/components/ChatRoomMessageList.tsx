@@ -18,33 +18,56 @@ const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMess
   // [추가] 스크롤이 되는 컨테이너 div를 가리킬 ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // [추가] 브라우저 대신 우리가 직접 관리할 신뢰할 수 있는 스크롤 위치 저장소
+  const lastScrollTopRef = useRef(0);
+
+  // [추가] 사용자의 직접적인 스크롤을 감지하여 우리 저장소에 업데이트하는 로직
+  useEffect(() => {
+    const scrollEl = scrollContainerRef.current;
+    if (!scrollEl) return;
+
+    const handleScroll = () => {
+      // 사용자가 직접 스크롤하면, 그 위치를 우리 저장소에 기록합니다.
+      lastScrollTopRef.current = scrollEl.scrollTop;
+    };
+
+    scrollEl.addEventListener('scroll', handleScroll);
+    return () => scrollEl.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // [핵심 로직] useVisualViewport 훅에 onResize 콜백을 전달
   useVisualViewport(({ delta }) => {
     const scrollEl = scrollContainerRef.current;
     if (!scrollEl) return;
 
-    // [수정] if (delta < 0) 조건을 제거하여 높이가 변경될 때 항상 보정하도록 합니다.
-    // 키보드가 올라오면 delta는 음수가 되고, 내려가면 양수가 됩니다.
-    // delta를 빼면 키보드가 올라올 때는 스크롤이 아래로, 내려갈 때는 위로 이동하여 현재 위치를 유지합니다.
-    const newScrollTop = scrollEl.scrollTop - delta;
-    scrollEl.scrollTop = newScrollTop;
+    // [수정] 신뢰할 수 없는 scrollEl.scrollTop 대신, 우리 저장소의 값을 사용합니다.
+    const oldScrollTop = lastScrollTopRef.current;
+    const newScrollTop = oldScrollTop - delta;
+
+    const finalScrollTop = Math.max(0, newScrollTop);
+
+    // [수정] 스크롤 위치를 설정한 후, 그 값을 즉시 우리 저장소에도 업데이트합니다.
+    scrollEl.scrollTop = finalScrollTop;
+    lastScrollTopRef.current = finalScrollTop;
 
     console.log('🔍 [DEBUG] 스크롤 위치 보정:', {
-      oldScrollTop: scrollEl.scrollTop + delta,
+      oldScrollTop,
       newScrollTop,
+      finalScrollTop,
       delta,
       keyboardHeight: Math.abs(delta),
       direction: delta < 0 ? '키보드 올라옴' : '키보드 내려감',
     });
   });
 
-  // 새 메시지가 왔을 때 맨 아래로 스크롤하는 기존 로직은 그대로 둡니다.
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // 새 메시지가 왔을 때의 스크롤 로직은 그대로 유지
   useEffect(() => {
-    scrollToBottom();
+    const scrollEl = scrollContainerRef.current;
+    if (scrollEl) {
+      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
+      // 맨 아래로 이동했으므로 우리 저장소도 업데이트 해줍니다.
+      lastScrollTopRef.current = scrollEl.scrollHeight;
+    }
   }, [messages]);
 
   const groupMessagesByDate = (messages: Message[]) => {
