@@ -50,6 +50,21 @@ const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMess
     scrollEl.scrollTop = finalScrollTop;
     lastScrollTopRef.current = finalScrollTop;
 
+    // [추가] 렌더링 버그를 해결하기 위한 강제 리페인트(Repaint) 트릭
+    // 키보드가 내려가서 컨테이너가 커질 때만 실행합니다.
+    if (delta > 0) {
+      // transform 속성을 주어 GPU가 이 요소를 다시 그리도록 유도합니다.
+      scrollEl.style.transform = 'translateZ(0)';
+
+      // 아주 짧은 시간(50ms) 후에 transform 속성을 다시 제거하여
+      // 실제 레이아웃에는 영향을 주지 않도록 합니다.
+      setTimeout(() => {
+        if (scrollEl) {
+          scrollEl.style.transform = 'none';
+        }
+      }, 50);
+    }
+
     console.log('🔍 [DEBUG] 스크롤 위치 보정:', {
       oldScrollTop,
       newScrollTop,
@@ -57,6 +72,7 @@ const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMess
       delta,
       keyboardHeight: Math.abs(delta),
       direction: delta < 0 ? '키보드 올라옴' : '키보드 내려감',
+      forcedRepaint: delta > 0 ? '강제 리페인트 실행' : '리페인트 불필요',
     });
   });
 
