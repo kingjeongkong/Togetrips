@@ -4,9 +4,11 @@ import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 interface ChatRoomInputProps {
   onSendMessage: (message: string) => void;
+  onFocus: () => void;
+  onBlur: () => void;
 }
 
-const ChatRoomInput = ({ onSendMessage }: ChatRoomInputProps) => {
+const ChatRoomInput = ({ onSendMessage, onFocus, onBlur }: ChatRoomInputProps) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -40,8 +42,17 @@ const ChatRoomInput = ({ onSendMessage }: ChatRoomInputProps) => {
     }
   };
 
+  // iOS Safari에서 키보드가 올라올 때 스크롤을 (0, 0)으로 강제하여
+  // 뷰포트가 올바르게 정렬되도록 하는 트릭입니다.
+  const handleFocus = () => {
+    // 딜레이를 약간 주면 더 안정적으로 작동합니다.
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+  };
+
   return (
-    <div className="sticky bottom-0 bg-gray-100 border-t border-gray-200 p-4">
+    <div className="flex-shrink-0 bg-gray-100 border-t border-gray-200 p-4">
       <div className="flex items-end">
         <textarea
           ref={textareaRef}
@@ -50,6 +61,11 @@ const ChatRoomInput = ({ onSendMessage }: ChatRoomInputProps) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
+          onFocus={() => {
+            handleFocus();
+            onFocus();
+          }}
+          onBlur={onBlur}
           placeholder="Type a message..."
           rows={1}
           className="flex-1 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none overflow-y-auto min-h-[40px] max-h-[100px]"

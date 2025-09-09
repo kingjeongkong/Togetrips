@@ -39,8 +39,8 @@ const ChatList = () => {
   };
 
   return (
-    <div className="flex flex-col h-full" aria-label="Chat list">
-      <div className="sticky top-0 z-50 bg-gray-100">
+    <div className="flex flex-col h-full bg-gray-100 overflow-hidden" aria-label="Chat list">
+      <div className="flex-shrink-0 bg-gray-100">
         <div className="flex items-center px-4 py-2 md:px-4 md:py-4">
           <button
             onClick={handleBackClick}

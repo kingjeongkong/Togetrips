@@ -27,6 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [queryClient] = useState(() => new QueryClient());
+
   return (
     <html lang="en">
       <head>

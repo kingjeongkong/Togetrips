@@ -4,6 +4,7 @@ import DataFetchErrorBoundary from '@/components/ErrorBoundary/DataFetchErrorBou
 import LoadingIndicator from '@/components/LoadingIndicator';
 import ChatList from '@/features/chat/components/ChatList';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -12,6 +13,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const pathname = usePathname();
   const isRootPath = pathname === '/chat';
+
+  useVisualViewport();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -29,8 +32,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   if (isMobile) {
     // ------ (A) 모바일 레이아웃 ------
     return (
-      <div className="flex flex-col h-[100dvh] bg-gray-100 overflow-hidden">
-        <main className="flex-1 overflow-hidden">
+      <div className="flex flex-col h-[var(--vh)] bg-gray-100">
+        <main className="flex-1 overflow-y-auto">
           {/* 모바일에서는 children 안에서 index이면 ChatList, :chatId이면 ChatRoom */}
           <DataFetchErrorBoundary>{children}</DataFetchErrorBoundary>
         </main>
