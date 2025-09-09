@@ -20,6 +20,12 @@ const ChatRoom = () => {
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]); // 임시 메시지
   const isKeyboardActiveRef = useRef<boolean>(false); // 키보드 활성화 상태를 저장하기 위한 ref
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
+
+  // [수정] useMemo를 사용하여 messages와 pendingMessages가 변경될 때만
+  // 새로운 배열을 생성하도록 합니다.
+  const combinedMessages = useMemo(() => {
+    return [...messages, ...pendingMessages];
+  }, [messages, pendingMessages]);
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -189,7 +195,7 @@ const ChatRoom = () => {
         chatRoomId={chatRoomID}
       />
       <ChatRoomMessageList
-        messages={[...messages, ...pendingMessages]}
+        messages={combinedMessages}
         currentUserID={userId || ''}
         onResend={handleResend}
       />

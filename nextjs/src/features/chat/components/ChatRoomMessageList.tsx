@@ -23,20 +23,19 @@ const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMess
     const scrollEl = scrollContainerRef.current;
     if (!scrollEl) return;
 
-    // 뷰포트 높이가 줄어들었을 때만 (키보드가 올라왔을 때)
-    if (delta < 0) {
-      // 줄어든 높이만큼 스크롤 위치를 아래로 이동시킵니다.
-      // delta는 음수이므로, 빼주면 양수를 더하는 효과가 납니다. (e.g., scrollTop = scrollTop - (-350))
-      const newScrollTop = scrollEl.scrollTop - delta;
-      scrollEl.scrollTop = newScrollTop;
+    // [수정] if (delta < 0) 조건을 제거하여 높이가 변경될 때 항상 보정하도록 합니다.
+    // 키보드가 올라오면 delta는 음수가 되고, 내려가면 양수가 됩니다.
+    // delta를 빼면 키보드가 올라올 때는 스크롤이 아래로, 내려갈 때는 위로 이동하여 현재 위치를 유지합니다.
+    const newScrollTop = scrollEl.scrollTop - delta;
+    scrollEl.scrollTop = newScrollTop;
 
-      console.log('🔍 [DEBUG] 스크롤 위치 보정:', {
-        oldScrollTop: scrollEl.scrollTop + delta,
-        newScrollTop,
-        delta,
-        keyboardHeight: Math.abs(delta),
-      });
-    }
+    console.log('🔍 [DEBUG] 스크롤 위치 보정:', {
+      oldScrollTop: scrollEl.scrollTop + delta,
+      newScrollTop,
+      delta,
+      keyboardHeight: Math.abs(delta),
+      direction: delta < 0 ? '키보드 올라옴' : '키보드 내려감',
+    });
   });
 
   // 새 메시지가 왔을 때 맨 아래로 스크롤하는 기존 로직은 그대로 둡니다.
