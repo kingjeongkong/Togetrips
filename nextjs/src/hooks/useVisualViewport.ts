@@ -33,22 +33,6 @@ export const useVisualViewport = (onResize?: (info: ResizeInfo) => void) => {
       // CSS 변수 설정 (기존 로직 유지)
       document.documentElement.style.setProperty('--vh', `${newHeight}px`);
 
-      // 디버깅: 현재 뷰포트 정보 로깅
-      console.log('🔍 [DEBUG] Viewport 정보:', {
-        visualViewportHeight: window.visualViewport?.height,
-        windowInnerHeight: window.innerHeight,
-        windowOuterHeight: window.outerHeight,
-        screenHeight: window.screen.height,
-        appliedVH: newHeight,
-        documentHeight: document.documentElement.scrollHeight,
-        bodyHeight: document.body.scrollHeight,
-        safeAreaInsetBottom: getComputedStyle(document.documentElement).getPropertyValue(
-          '--safe-area-inset-bottom',
-        ),
-        previousHeight: previousHeightRef.current,
-        delta: previousHeightRef.current ? newHeight - previousHeightRef.current : 0,
-      });
-
       // onResize 콜백이 있고, 이전 높이값이 존재할 때만 실행
       if (onResize && previousHeightRef.current !== null) {
         const oldHeight = previousHeightRef.current;
@@ -56,7 +40,6 @@ export const useVisualViewport = (onResize?: (info: ResizeInfo) => void) => {
 
         // 변화가 있을 때만 콜백 호출
         if (delta !== 0) {
-          console.log('🔍 [DEBUG] Viewport 높이 변화 감지:', { oldHeight, newHeight, delta });
           onResize({ oldHeight, newHeight, delta });
         }
       }
