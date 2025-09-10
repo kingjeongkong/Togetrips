@@ -48,7 +48,7 @@ export const useAuthActions = () => {
         throw error;
       }
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      const errorMessage = getErrorMessage(error as Error);
       setAuthError(errorMessage);
       setIsLoading(false);
       setIsRedirecting(false);
@@ -95,7 +95,7 @@ export const useAuthActions = () => {
         throw new Error(data.message || 'Signup failed.');
       }
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      const errorMessage = getErrorMessage(error as Error);
       setAuthError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -129,7 +129,7 @@ export const useAuthActions = () => {
       // 로그인 성공 시 리다이렉트
       router.push(getCallbackUrl());
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      const errorMessage = getErrorMessage(error as Error);
       setAuthError(errorMessage);
       setIsLoading(false);
     }
@@ -149,7 +149,7 @@ export const useAuthActions = () => {
       // 로그아웃 성공 시 로그인 페이지로 리다이렉트
       router.push('/auth/signin');
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      const errorMessage = getErrorMessage(error as Error);
       setAuthError(errorMessage);
       setIsLoading(false);
     }
