@@ -24,7 +24,9 @@ const InputField = ({ fieldError, authError, isLast, ariaLabel, ...props }: Inpu
         }`}
       />
       {fieldError && <p className="text-red-500 text-sm mt-1 mb-2 pl-1">{fieldError}</p>}
-      {isLast && authError && <p className="text-red-500 text-sm mt-1 mb-1 pl-1">{authError}</p>}
+      {isLast && authError && (
+        <p className="text-red-500 text-sm mt-1 mb-1 pl-1 whitespace-pre-line">{authError}</p>
+      )}
     </div>
   );
 };
