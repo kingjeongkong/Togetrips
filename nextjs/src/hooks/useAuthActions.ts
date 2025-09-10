@@ -1,7 +1,11 @@
 'use client';
 
 import { FormErrors } from '@/features/auth/types/auth';
-import { validateSignInForm, validateSignUpForm } from '@/features/auth/utils/auth-validators';
+import {
+  getErrorMessage,
+  validateSignInForm,
+  validateSignUpForm,
+} from '@/features/auth/utils/auth-validators';
 import { createBrowserSupabaseClient } from '@/lib/supabase-config';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -44,8 +48,7 @@ export const useAuthActions = () => {
         throw error;
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error occurred while logging in with Google';
+      const errorMessage = getErrorMessage(error);
       setAuthError(errorMessage);
       setIsLoading(false);
       setIsRedirecting(false);
@@ -92,8 +95,7 @@ export const useAuthActions = () => {
         throw new Error(data.message || 'Signup failed.');
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error occurred while signing up';
+      const errorMessage = getErrorMessage(error);
       setAuthError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -127,8 +129,7 @@ export const useAuthActions = () => {
       // 로그인 성공 시 리다이렉트
       router.push(getCallbackUrl());
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error occurred while logging in';
+      const errorMessage = getErrorMessage(error);
       setAuthError(errorMessage);
       setIsLoading(false);
     }
@@ -148,8 +149,7 @@ export const useAuthActions = () => {
       // 로그아웃 성공 시 로그인 페이지로 리다이렉트
       router.push('/auth/signin');
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error occurred while logging out';
+      const errorMessage = getErrorMessage(error);
       setAuthError(errorMessage);
       setIsLoading(false);
     }
