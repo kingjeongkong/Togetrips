@@ -85,6 +85,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const { error: updateError } = await supabase.from('users').update(updateObj).eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error updating user location:', updateError);
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
     return NextResponse.json({
       message: 'Location updated successfully',
       location: {
