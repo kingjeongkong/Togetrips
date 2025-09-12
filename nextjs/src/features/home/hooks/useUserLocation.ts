@@ -30,7 +30,7 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
     throwOnError: true,
   });
 
-  // nearbyUsers fetch (sameCityOnly/city, state or 반경 기반 분기)
+  // nearbyUsers fetch (sameCityOnly/location_id 기반 or 반경 기반 분기)
   const {
     data: users,
     isLoading: usersLoading,
@@ -38,12 +38,12 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
     error: usersError,
   } = useQuery({
     queryKey: sameCityOnly
-      ? ['nearbyUsers', locationData?.city, locationData?.state, userId]
+      ? ['nearbyUsers', locationData?.id, userId]
       : ['nearbyUsersByRadius', locationData?.lat, locationData?.lng, userId, radius],
     queryFn: () => {
       if (!userId || !locationData) return undefined;
       if (sameCityOnly) {
-        return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
+        return userLocationService.fetchNearbyUsers(locationData.id);
       } else {
         return userLocationService.fetchNearbyUsersByRadius(
           locationData.lat,
@@ -62,7 +62,14 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
 
   return {
     currentLocation: locationData ? { lat: locationData.lat, lng: locationData.lng } : undefined,
-    cityInfo: locationData ? { city: locationData.city, state: locationData.state } : undefined,
+    cityInfo: locationData
+      ? {
+          id: locationData.id,
+          city: locationData.city,
+          state: locationData.state,
+          country: locationData.country,
+        }
+      : undefined,
     loading: locationLoading,
     updateLocation: refetchLocation,
     users,

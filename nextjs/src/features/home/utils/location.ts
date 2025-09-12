@@ -6,6 +6,7 @@ export interface Location {
 }
 
 export interface CityInfo {
+  id: string;
   city: string;
   state: string;
   country: string;
@@ -46,6 +47,7 @@ export const fetchAndSyncUserLocation = async (): Promise<{
           resolve({
             currentLocation: { lat: latitude, lng: longitude },
             cityInfo: {
+              id: locationData.id,
               city: locationData.city,
               state: locationData.state,
               country: locationData.country,
@@ -70,6 +72,7 @@ export const fetchAndSyncUserLocation = async (): Promise<{
                 resolve({
                   currentLocation: { lat: latitude, lng: longitude },
                   cityInfo: {
+                    id: locationData.id,
                     city: locationData.city,
                     state: locationData.state,
                     country: locationData.country,

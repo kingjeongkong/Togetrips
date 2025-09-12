@@ -36,28 +36,47 @@ export async function GET(request: NextRequest) {
     }
     const currentUserId = user.id;
     const { searchParams } = new URL(request.url);
+
+    // [개선] 새로운 location_id 기반 검색 지원
+    const locationId = searchParams.get('location_id');
+
+    // [하위 호환성] 기존 city/state 파라미터도 지원
     const city = searchParams.get('city');
     const state = searchParams.get('state');
-    if (!city || !state) {
-      return NextResponse.json({ error: 'Missing city or state parameter' }, { status: 400 });
+
+    if (!locationId && (!city || !state)) {
+      return NextResponse.json(
+        {
+          error: 'Missing location_id parameter (or city and state for backward compatibility)',
+        },
+        { status: 400 },
+      );
     }
 
-    // 1. 현재 유저의 위치(lat/lng) 가져오기
+    // 1. 현재 유저의 위치 정보 가져오기
     const { data: currentUserProfile } = await supabase
       .from('users')
-      .select('location_lat, location_lng')
+      .select('location_lat, location_lng, location_id, location_city, location_state')
       .eq('id', currentUserId)
       .single();
+
     const currentLat = currentUserProfile?.location_lat;
     const currentLng = currentUserProfile?.location_lng;
+    const currentLocationId = currentUserProfile?.location_id;
 
     // 2. 같은 도시의 모든 사용자 가져오기 (본인 제외)
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('location_city', city)
-      .eq('location_state', state)
-      .neq('id', currentUserId);
+    let usersQuery = supabase.from('users').select('*').neq('id', currentUserId);
+
+    // [개선] location_id 기반 검색 (우선순위)
+    if (locationId) {
+      usersQuery = usersQuery.eq('location_id', locationId);
+    }
+    // [하위 호환성] 기존 city/state 기반 검색
+    else if (city && state) {
+      usersQuery = usersQuery.eq('location_city', city).eq('location_state', state);
+    }
+
+    const { data: users, error: usersError } = await usersQuery;
     if (usersError) {
       throw new Error(usersError.message);
     }
@@ -110,12 +129,16 @@ export async function GET(request: NextRequest) {
           lng: user.location_lng,
           city: user.location_city,
           state: user.location_state,
+          country: user.location_country,
+          id: user.location_id, // [개선] location_id 추가
         };
         const rest = { ...user };
         delete rest.location_lat;
         delete rest.location_lng;
         delete rest.location_city;
         delete rest.location_state;
+        delete rest.location_country;
+        delete rest.location_id;
         return { ...rest, location, distance };
       });
 

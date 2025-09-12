@@ -9,9 +9,9 @@ export const userLocationService = {
     return res.json();
   },
 
-  async fetchNearbyUsers(city: string, state: string) {
+  async fetchNearbyUsers(locationId: string) {
     const response = await fetch(
-      `/api/users/nearby?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`,
+      `/api/users/nearby?location_id=${encodeURIComponent(locationId)}`,
       {
         method: 'GET',
         headers: {
