@@ -3,14 +3,14 @@
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
 import { userLocationService } from '../services/userLocationService';
-import { getCurrentLocationData } from '../utils/location';
+import { fetchAndSyncUserLocation } from '../utils/location';
 
 export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: number }) => {
   const { userId } = useSession();
   const sameCityOnly = options?.sameCityOnly ?? true;
   const radius = options?.radius ?? 50;
 
-  // 위치 정보 fetch + DB 업데이트
+  // 위치 정보 fetch + DB 업데이트 (Mapbox 기반)
   const {
     data: locationData,
     isLoading: locationLoading,
@@ -19,13 +19,7 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
   } = useQuery({
     queryKey: ['userLocation', userId],
     queryFn: async () => {
-      const { currentLocation, cityInfo } = await getCurrentLocationData();
-      await userLocationService.updateUserLocation(
-        cityInfo.city,
-        cityInfo.state,
-        currentLocation.lat,
-        currentLocation.lng,
-      );
+      const { currentLocation, cityInfo } = await fetchAndSyncUserLocation();
       return { ...currentLocation, ...cityInfo };
     },
     enabled: !!userId,
