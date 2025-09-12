@@ -39,7 +39,7 @@ const TravelerCardList = () => {
 
   const usersQueryKey =
     filterType === 'city'
-      ? ['nearbyUsers', cityInfo?.city, cityInfo?.state, userId]
+      ? ['nearbyUsers', cityInfo?.id, userId]
       : [
           'nearbyUsersByRadius',
           currentLocation?.lat,

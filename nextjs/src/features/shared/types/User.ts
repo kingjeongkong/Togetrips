@@ -6,8 +6,10 @@ export interface User {
   tags: string;
   bio: string;
   location: {
+    id: string;
     city: string;
     state: string;
+    country: string;
     lat?: number;
     lng?: number;
   };
