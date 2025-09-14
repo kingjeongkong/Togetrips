@@ -16,10 +16,10 @@ const CurrentLocationMap = () => {
         >
           Current Location:
           <span
-            className="text-base font-semibold ml-2 md:text-xl text-black"
+            className="text-base font-semibold ml-2 md:text-xl text-black inline-flex items-center"
             aria-label="Current city"
           >
-            {loading ? <LoadingIndicator color="#f97361" size={17} /> : cityInfo?.city}
+            {loading ? <LoadingIndicator color="#f97361" size={14} /> : cityInfo?.city}
           </span>
         </span>
         <button
