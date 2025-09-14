@@ -1,53 +1,31 @@
+import { userLocationService } from '../services/userLocationService';
+
 export interface Location {
   lat: number;
   lng: number;
 }
 
 export interface CityInfo {
+  id: string;
   city: string;
   state: string;
+  country: string;
 }
 
-interface GeocodeResult {
-  types: string[];
-  address_components: { long_name: string; short_name: string; types: string[] }[];
+export interface StandardizedLocation {
+  id: string;
+  city: string;
+  state: string;
+  country: string;
+  lat: number;
+  lng: number;
 }
 
-const handleLocation = async (
-  position: GeolocationPosition,
-  resolve: (value: { currentLocation: Location; cityInfo: CityInfo }) => void,
-  reject: (reason?: unknown) => void,
-) => {
-  const { latitude, longitude } = position.coords;
-  const currentLocation = { lat: latitude, lng: longitude };
-
-  try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=en&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`,
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch geocoding data.');
-    }
-
-    const data = await response.json();
-    const cityResult = data.results.find((result: GeocodeResult) =>
-      result.types.includes('locality'),
-    );
-    const stateResult = data.results.find((result: GeocodeResult) =>
-      result.types.includes('administrative_area_level_1'),
-    );
-
-    const city = cityResult ? cityResult.address_components[0].long_name : 'Unknown';
-    const state = stateResult ? stateResult.address_components[0].long_name : 'Unknown';
-
-    resolve({ currentLocation, cityInfo: { city, state } });
-  } catch (error) {
-    reject(error);
-  }
-};
-
-export const getCurrentLocationData = async (): Promise<{
+/**
+ * 브라우저에서 GPS 좌표를 얻어, 서버 API를 통해
+ * 표준화된 현재 위치 정보를 가져오는 함수
+ */
+export const fetchAndSyncUserLocation = async (): Promise<{
   currentLocation: Location;
   cityInfo: CityInfo;
 }> => {
@@ -57,13 +35,53 @@ export const getCurrentLocationData = async (): Promise<{
       return;
     }
 
-    // 1차: 높은 정확도 시도, 실패 시 낮은 정확도로 fallback
     navigator.geolocation.getCurrentPosition(
-      (position) => handleLocation(position, resolve, reject),
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          // userLocationService를 사용하여 위치 정보 업데이트 및 가져오기
+          const response = await userLocationService.syncCurrentLocation(latitude, longitude);
+          const locationData: StandardizedLocation = response.location;
+
+          resolve({
+            currentLocation: { lat: latitude, lng: longitude },
+            cityInfo: {
+              id: locationData.id,
+              city: locationData.city,
+              state: locationData.state,
+              country: locationData.country,
+            },
+          });
+        } catch (error) {
+          reject(error);
+        }
+      },
       (error) => {
         if (error.code === 2 || error.code === 3) {
+          // 정확도가 낮아도 시도
           navigator.geolocation.getCurrentPosition(
-            (position) => handleLocation(position, resolve, reject),
+            async (position) => {
+              try {
+                const { latitude, longitude } = position.coords;
+
+                // userLocationService를 사용하여 위치 정보 업데이트 및 가져오기
+                const response = await userLocationService.syncCurrentLocation(latitude, longitude);
+                const locationData: StandardizedLocation = response.location;
+
+                resolve({
+                  currentLocation: { lat: latitude, lng: longitude },
+                  cityInfo: {
+                    id: locationData.id,
+                    city: locationData.city,
+                    state: locationData.state,
+                    country: locationData.country,
+                  },
+                });
+              } catch (error) {
+                reject(error);
+              }
+            },
             reject,
             {
               enableHighAccuracy: false,

@@ -1,21 +1,6 @@
-import { getExcludedUserIds } from '@/app/api/_utils/location';
+import { calculateDistanceKm, getExcludedUserIds } from '@/app/api/_utils/location';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
-
-const calculateDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-  const R = 6371;
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lng2 - lng1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,18 +21,19 @@ export async function GET(request: NextRequest) {
     }
     const currentUserId = user.id;
     const { searchParams } = new URL(request.url);
-    const city = searchParams.get('city');
-    const state = searchParams.get('state');
-    if (!city || !state) {
-      return NextResponse.json({ error: 'Missing city or state parameter' }, { status: 400 });
+
+    const locationId = searchParams.get('location_id');
+    if (!locationId) {
+      return NextResponse.json({ error: 'Missing location_id parameter' }, { status: 400 });
     }
 
-    // 1. 현재 유저의 위치(lat/lng) 가져오기
+    // 1. 현재 유저의 위치 정보 가져오기
     const { data: currentUserProfile } = await supabase
       .from('users')
       .select('location_lat, location_lng')
       .eq('id', currentUserId)
       .single();
+
     const currentLat = currentUserProfile?.location_lat;
     const currentLng = currentUserProfile?.location_lng;
 
@@ -55,9 +41,9 @@ export async function GET(request: NextRequest) {
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
-      .eq('location_city', city)
-      .eq('location_state', state)
-      .neq('id', currentUserId);
+      .neq('id', currentUserId)
+      .eq('location_id', locationId);
+
     if (usersError) {
       throw new Error(usersError.message);
     }
@@ -110,12 +96,16 @@ export async function GET(request: NextRequest) {
           lng: user.location_lng,
           city: user.location_city,
           state: user.location_state,
+          country: user.location_country,
+          id: user.location_id,
         };
         const rest = { ...user };
         delete rest.location_lat;
         delete rest.location_lng;
         delete rest.location_city;
         delete rest.location_state;
+        delete rest.location_country;
+        delete rest.location_id;
         return { ...rest, location, distance };
       });
 

@@ -3,14 +3,14 @@
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
 import { userLocationService } from '../services/userLocationService';
-import { getCurrentLocationData } from '../utils/location';
+import { fetchAndSyncUserLocation } from '../utils/location';
 
 export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: number }) => {
   const { userId } = useSession();
   const sameCityOnly = options?.sameCityOnly ?? true;
   const radius = options?.radius ?? 50;
 
-  // 위치 정보 fetch + DB 업데이트
+  // 위치 정보 fetch + DB 업데이트 (Mapbox 기반)
   const {
     data: locationData,
     isLoading: locationLoading,
@@ -19,13 +19,7 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
   } = useQuery({
     queryKey: ['userLocation', userId],
     queryFn: async () => {
-      const { currentLocation, cityInfo } = await getCurrentLocationData();
-      await userLocationService.updateUserLocation(
-        cityInfo.city,
-        cityInfo.state,
-        currentLocation.lat,
-        currentLocation.lng,
-      );
+      const { currentLocation, cityInfo } = await fetchAndSyncUserLocation();
       return { ...currentLocation, ...cityInfo };
     },
     enabled: !!userId,
@@ -36,7 +30,7 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
     throwOnError: true,
   });
 
-  // nearbyUsers fetch (sameCityOnly/city, state or 반경 기반 분기)
+  // nearbyUsers fetch (sameCityOnly/location_id 기반 or 반경 기반 분기)
   const {
     data: users,
     isLoading: usersLoading,
@@ -44,12 +38,12 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
     error: usersError,
   } = useQuery({
     queryKey: sameCityOnly
-      ? ['nearbyUsers', locationData?.city, locationData?.state, userId]
+      ? ['nearbyUsers', locationData?.id, userId]
       : ['nearbyUsersByRadius', locationData?.lat, locationData?.lng, userId, radius],
     queryFn: () => {
       if (!userId || !locationData) return undefined;
       if (sameCityOnly) {
-        return userLocationService.fetchNearbyUsers(locationData.city, locationData.state);
+        return userLocationService.fetchNearbyUsers(locationData.id);
       } else {
         return userLocationService.fetchNearbyUsersByRadius(
           locationData.lat,
@@ -68,7 +62,14 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
 
   return {
     currentLocation: locationData ? { lat: locationData.lat, lng: locationData.lng } : undefined,
-    cityInfo: locationData ? { city: locationData.city, state: locationData.state } : undefined,
+    cityInfo: locationData
+      ? {
+          id: locationData.id,
+          city: locationData.city,
+          state: locationData.state,
+          country: locationData.country,
+        }
+      : undefined,
     loading: locationLoading,
     updateLocation: refetchLocation,
     users,
