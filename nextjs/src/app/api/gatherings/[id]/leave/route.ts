@@ -1,7 +1,10 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const supabase = createServerSupabaseClient(request);
 
@@ -21,7 +24,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     const currentUserId = user.id;
 
-    const gatheringId = params.id;
+    const { id: gatheringId } = await params;
 
     if (!gatheringId) {
       return NextResponse.json({ error: 'Gathering ID is required' }, { status: 400 });
