@@ -46,12 +46,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // 모임이 만원인지 확인
-    const currentParticipantCount = gathering.participants?.length || 0;
-    if (currentParticipantCount >= gathering.max_participants) {
-      return NextResponse.json({ error: 'This gathering is full' }, { status: 409 });
-    }
-
     // GPS 기반 위치 검증 (사용자의 현재 위치와 모임 위치 비교)
     const { data: userProfile, error: userError } = await supabase
       .from('users')
@@ -71,17 +65,32 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // 참여자 추가
-    const updatedParticipants = [...(gathering.participants || []), currentUserId];
-
+    // 원자적 업데이트: 참여자 추가와 동시에 정원 확인
     const { data: updatedGathering, error: updateError } = await supabase
       .from('gatherings')
       .update({
-        participants: updatedParticipants,
+        participants: [...(gathering.participants || []), currentUserId],
       })
       .eq('id', gatheringId)
+      .eq('max_participants', gathering.max_participants)
       .select('*')
       .single();
+
+    // 업데이트 후 정원 초과 확인
+    if (
+      updatedGathering &&
+      updatedGathering.participants.length > updatedGathering.max_participants
+    ) {
+      // 정원 초과 시 롤백
+      await supabase
+        .from('gatherings')
+        .update({
+          participants: gathering.participants || [],
+        })
+        .eq('id', gatheringId);
+
+      return NextResponse.json({ error: 'This gathering is full' }, { status: 409 });
+    }
 
     if (updateError) {
       throw new Error(updateError.message);

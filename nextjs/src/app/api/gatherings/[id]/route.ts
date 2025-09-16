@@ -65,12 +65,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const gatheringWithDetails = {
       ...gathering,
-      host: {
-        id: gathering.host.id,
-        name: gathering.host.name || '',
-        image: gathering.host.image || '',
-      },
-      participants:
+      host: gathering.host
+        ? {
+            id: gathering.host.id,
+            name: gathering.host.name || '',
+            image: gathering.host.image || '',
+          }
+        : null,
+      participants: gathering.participants || [],
+      participant_details:
         participants?.map((participant) => ({
           id: participant.id,
           name: participant.name || '',

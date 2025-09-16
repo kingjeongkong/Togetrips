@@ -69,11 +69,13 @@ export async function GET(request: NextRequest) {
 
       return {
         ...gathering,
-        host: {
-          id: gathering.host.id,
-          name: gathering.host.name || '',
-          image: gathering.host.image || '',
-        },
+        host: gathering.host
+          ? {
+              id: gathering.host.id,
+              name: gathering.host.name || '',
+              image: gathering.host.image || '',
+            }
+          : null,
         participant_count: participantCount,
         is_joined: isJoined,
         is_host: isHost,

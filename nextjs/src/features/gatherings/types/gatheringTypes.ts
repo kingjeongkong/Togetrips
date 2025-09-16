@@ -19,11 +19,16 @@ export interface GatheringWithDetails extends Gathering {
     id: string;
     name: string;
     image: string;
-  };
+  } | null;
   participant_count: number;
   is_joined: boolean;
   is_host: boolean;
   is_full: boolean;
+  participant_details?: {
+    id: string;
+    name: string;
+    image: string;
+  }[];
 }
 
 export interface CreateGatheringRequest {
@@ -64,7 +69,7 @@ export interface GatheringDetailResponse {
         city: string;
         country: string;
       };
-    };
+    } | null;
   };
 }
 
