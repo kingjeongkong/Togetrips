@@ -22,18 +22,7 @@ export async function GET(request: NextRequest) {
     }
     const currentUserId = user.id;
 
-    // 사용자의 현재 위치 정보 조회
-    const { data: userProfile, error: userError } = await supabase
-      .from('users')
-      .select('location_id')
-      .eq('id', currentUserId)
-      .single();
-
-    if (userError || !userProfile) {
-      return NextResponse.json({ error: 'User location not found' }, { status: 404 });
-    }
-
-    // 사용자 위치의 모임만 조회 (upcoming 모임만)
+    // 모든 모임 조회 (upcoming 모임만)
     const { data: gatherings, error: gatheringsError } = await supabase
       .from('gatherings')
       .select(
@@ -46,7 +35,6 @@ export async function GET(request: NextRequest) {
         )
       `,
       )
-      .eq('location_id', userProfile.location_id)
       .gte('gathering_time', new Date().toISOString())
       .order('gathering_time', { ascending: true });
 

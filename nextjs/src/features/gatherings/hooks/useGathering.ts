@@ -6,7 +6,6 @@ export const useGathering = () => {
   const {
     data: gatherings = [],
     isLoading: isListLoading,
-    error: listError,
     refetch: refetchGatherings,
   } = useQuery({
     queryKey: ['gatherings'],
@@ -15,12 +14,12 @@ export const useGathering = () => {
     gcTime: 10 * 60 * 1000,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    throwOnError: true,
   });
 
   return {
     gatherings,
     isListLoading,
-    listError,
     refetchGatherings,
   };
 };
