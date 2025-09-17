@@ -3,7 +3,6 @@
 import DataFetchErrorBoundary from '@/components/ErrorBoundary/DataFetchErrorBoundary';
 import CreateGatheringForm from '@/features/gatherings/components/CreateGatheringForm';
 import GatheringList from '@/features/gatherings/components/GatheringList';
-import { CreateGatheringRequest } from '@/features/gatherings/types/gatheringTypes';
 import { useState } from 'react';
 import { HiPlus } from 'react-icons/hi';
 
@@ -11,7 +10,7 @@ export default function GatheringsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCreateGathering = async (data: CreateGatheringRequest) => {
+  const handleCreateGathering = async () => {
     setIsLoading(true);
     // TODO: 실제 API 호출로 교체 (다음 단계에서 구현)
     setTimeout(() => {
