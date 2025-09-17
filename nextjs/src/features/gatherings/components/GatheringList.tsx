@@ -1,13 +1,9 @@
 import { HiLocationMarker, HiSearch, HiUserGroup } from 'react-icons/hi';
-import { GatheringWithDetails } from '../types/gatheringTypes';
+import { useGathering } from '../hooks/useGathering';
 import GatheringCard from './GatheringCard';
 
-interface GatheringListProps {
-  gatherings: GatheringWithDetails[];
-  isLoading?: boolean;
-}
-
-export default function GatheringList({ gatherings, isLoading = false }: GatheringListProps) {
+export default function GatheringList() {
+  const { gatherings, isListLoading } = useGathering();
   // 검색/필터 섹션 컴포넌트
   const SearchAndFilterSection = ({ disabled = false, showCount = false }) => (
     <div className="flex flex-col lg:flex-row gap-4 justify-between items-center bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -85,18 +81,10 @@ export default function GatheringList({ gatherings, isLoading = false }: Gatheri
         <HiUserGroup className="w-20 h-20 text-purple-600" />
       </div>
       <h3 className="text-3xl font-bold text-gray-900 mb-4">No gatherings found</h3>
-      <p className="text-gray-600 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-        No gatherings found in your area. Be the first to create one and connect with fellow
-        travelers!
-      </p>
-      <button className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-        <HiUserGroup className="w-6 h-6 mr-3" />
-        Create First Gathering
-      </button>
     </div>
   );
 
-  if (isLoading) {
+  if (isListLoading) {
     return (
       <div className="space-y-8 w-full">
         <SearchAndFilterSection disabled={true} />
