@@ -101,8 +101,16 @@ export async function POST(request: NextRequest) {
     }
     const hostId = user.id;
 
-    // 요청 본문 파싱
-    const body: CreateGatheringRequest = await request.json();
+    // FormData 파싱
+    const formData = await request.formData();
+    const file = formData.get('file') as File | null;
+    const dataString = formData.get('data') as string;
+
+    if (!dataString) {
+      return NextResponse.json({ error: 'Missing data field' }, { status: 400 });
+    }
+
+    const body: CreateGatheringRequest = JSON.parse(dataString);
     const {
       activity_title,
       description,
@@ -111,7 +119,6 @@ export async function POST(request: NextRequest) {
       city,
       country,
       max_participants,
-      cover_image_url,
     } = body;
 
     // 입력 검증
@@ -137,6 +144,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Gathering time must be in the future' }, { status: 400 });
     }
 
+    // 이미지 업로드 처리
+    let coverImageUrl = null;
+    if (file) {
+      try {
+        // 파일 유효성 검사
+        if (!file.type.startsWith('image/')) {
+          return NextResponse.json(
+            { error: 'Invalid file type. Only images are allowed.' },
+            { status: 400 },
+          );
+        }
+
+        // 파일 크기 검사 (1MB 제한)
+        if (file.size > 1 * 1024 * 1024) {
+          return NextResponse.json(
+            { error: 'File size too large. Maximum 1MB allowed.' },
+            { status: 400 },
+          );
+        }
+
+        // 고유한 파일명 생성
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `gatherings/${fileName}`;
+
+        // Supabase Storage에 업로드
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(filePath, file, {
+            contentType: file.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+        }
+
+        // 공개 URL 생성
+        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+
+        coverImageUrl = urlData.publicUrl;
+      } catch (error) {
+        console.error('Image upload error:', error);
+        return NextResponse.json({ error: 'Failed to process image' }, { status: 500 });
+      }
+    }
+
     // 모임 생성
     const { data: gathering, error: createError } = await supabase
       .from('gatherings')
@@ -150,7 +205,7 @@ export async function POST(request: NextRequest) {
         country,
         max_participants,
         participants: [hostId], // 호스트를 첫 번째 참여자로 추가
-        cover_image_url: cover_image_url || null,
+        cover_image_url: coverImageUrl,
       })
       .select('*')
       .single();
@@ -160,7 +215,6 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      gathering,
       message: 'Gathering created successfully',
     });
   } catch (error: unknown) {
