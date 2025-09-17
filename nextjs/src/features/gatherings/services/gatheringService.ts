@@ -21,3 +21,25 @@ export const getGatherings = async (): Promise<GatheringWithDetails[]> => {
     throw error instanceof Error ? error : new Error('Failed to fetch gatherings');
   }
 };
+
+export const getGatheringById = async (id: string): Promise<GatheringWithDetails> => {
+  try {
+    const response = await fetch(`/api/gatherings/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.gathering;
+  } catch (error) {
+    console.error('Error fetching gathering details:', error);
+    throw error instanceof Error ? error : new Error('Failed to fetch gathering details');
+  }
+};
