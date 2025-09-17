@@ -1,6 +1,7 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HiCalendar, HiCamera, HiClock, HiLocationMarker, HiMinus, HiPlus } from 'react-icons/hi';
+import { compressImage } from '../../shared/utils/imageCompression';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
 import { isFormValid, removeFieldError, validateGatheringForm } from '../utils/gatheringValidation';
 
@@ -27,6 +28,10 @@ export default function CreateGatheringForm({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +39,15 @@ export default function CreateGatheringForm({
     setErrors(validationErrors);
 
     if (isFormValid(validationErrors)) {
+      // 파일이 선택된 경우 FormData로 전송할 데이터 준비
+      if (selectedFile) {
+        const formDataWithFile = new FormData();
+        formDataWithFile.append('file', selectedFile);
+        formDataWithFile.append('data', JSON.stringify(formData));
+        // TODO: 실제 API 호출 시 FormData 사용
+        console.log('FormData with file:', formDataWithFile);
+      }
+
       onSubmit(formData);
     }
   };
@@ -44,6 +58,46 @@ export default function CreateGatheringForm({
       setErrors((prev) => removeFieldError(prev, field));
     }
   };
+
+  // 파일 선택 핸들러
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 유효성 검사
+    if (!file.type.startsWith('image/')) {
+      setErrors((prev) => ({ ...prev, cover_image: 'Please select a valid image file' }));
+      return;
+    }
+
+    setIsProcessing(true);
+    setErrors((prev) => removeFieldError(prev, 'cover_image'));
+
+    try {
+      const processedFile = await compressImage(file);
+
+      setSelectedFile(processedFile);
+      const url = URL.createObjectURL(processedFile);
+      setPreviewUrl(url);
+    } catch (error) {
+      console.error('파일 처리 실패:', error);
+      setErrors((prev) => ({
+        ...prev,
+        cover_image: 'Failed to compress image. Please try again.',
+      }));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 컴포넌트 언마운트 시 메모리 정리
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   return (
     <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-2 md:p-4">
@@ -59,10 +113,24 @@ export default function CreateGatheringForm({
         >
           {/* Cover Photo Section */}
           <div className="relative">
-            <div className="w-full h-40 md:h-48 lg:h-56 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-300 transition-colors duration-200 cursor-pointer">
-              {formData.cover_image_url ? (
+            <div
+              className={`w-full h-40 md:h-48 lg:h-56 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-purple-200 transition-colors duration-200 group ${
+                isProcessing
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer hover:border-purple-300'
+              }`}
+              onClick={() => !isProcessing && fileInputRef.current?.click()}
+            >
+              {isProcessing ? (
+                <div className="text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-purple-600 font-medium text-sm md:text-base">
+                    Processing image...
+                  </p>
+                </div>
+              ) : previewUrl ? (
                 <Image
-                  src={formData.cover_image_url}
+                  src={previewUrl}
                   alt="Cover preview"
                   fill
                   className="object-cover rounded-2xl"
@@ -77,13 +145,15 @@ export default function CreateGatheringForm({
               )}
             </div>
             <input
-              type="url"
-              id="cover_image_url"
-              value={formData.cover_image_url}
-              onChange={(e) => handleInputChange('cover_image_url', e.target.value)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              placeholder="https://example.com/image.jpg"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
             />
+            {errors.cover_image && (
+              <p className="mt-2 text-sm text-red-500">{errors.cover_image}</p>
+            )}
           </div>
 
           {/* Main Content Grid */}
