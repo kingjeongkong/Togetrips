@@ -1,34 +1,49 @@
+import LoadingIndicator from '@/components/LoadingIndicator';
 import { formatDetailDate, formatTime } from '@/utils/dateUtils';
 import Image from 'next/image';
 import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
-import { GatheringWithDetails } from '../types/gatheringTypes';
+import { useGatheringDetail } from '../hooks/useGathering';
 import JoinButton from './JoinButton';
 import ParticipantsModal from './ParticipantsModal';
 
 interface GatheringDetailProps {
-  gathering: GatheringWithDetails;
+  id: string;
   onJoin?: () => void;
   onLeave?: () => void;
-  isLoading?: boolean;
 }
 
-export default function GatheringDetail({
-  gathering,
-  onJoin,
-  onLeave,
-  isLoading = false,
-}: GatheringDetailProps) {
+export default function GatheringDetail({ id, onJoin, onLeave }: GatheringDetailProps) {
+  const { gatheringDetail, isDetailLoading } = useGatheringDetail(id);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+
+  // 로딩 상태 처리
+  if (isDetailLoading) {
+    return <LoadingIndicator color="#6366f1" size={50} />;
+  }
+
+  // 데이터가 없는 경우
+  if (!gatheringDetail) {
+    return (
+      <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="p-6 sm:p-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Gathering Not Found</h1>
+          <p className="text-gray-600">
+            The gathering you're looking for doesn't exist or has been removed.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg overflow-hidden">
       {/* Cover Image */}
-      {gathering.cover_image_url && (
+      {gatheringDetail.cover_image_url && (
         <div className="relative h-64 sm:h-80 w-full">
           <Image
-            src={gathering.cover_image_url}
-            alt={gathering.activity_title}
+            src={gatheringDetail.cover_image_url}
+            alt={gatheringDetail.activity_title}
             fill
             className="object-cover"
           />
@@ -42,32 +57,32 @@ export default function GatheringDetail({
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-8">
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-              {gathering.activity_title}
+              {gatheringDetail.activity_title}
             </h1>
 
-            {gathering.host && (
+            {gatheringDetail.host && (
               <div className="flex items-center space-x-4 mb-6">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border-3 border-white shadow-lg">
                   <Image
-                    src={gathering.host.image || '/default-traveler.png'}
-                    alt={gathering.host.name}
+                    src={gatheringDetail.host.image || '/default-traveler.png'}
+                    alt={gatheringDetail.host.name}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Hosted by</p>
-                  <p className="font-bold text-gray-900 text-lg">{gathering.host.name}</p>
+                  <p className="font-bold text-gray-900 text-lg">{gatheringDetail.host.name}</p>
                 </div>
               </div>
             )}
           </div>
 
           <JoinButton
-            isHost={gathering.is_host}
-            isJoined={gathering.is_joined}
-            isFull={gathering.is_full}
-            isLoading={isLoading}
+            isHost={gatheringDetail.is_host}
+            isJoined={gatheringDetail.is_joined}
+            isFull={gatheringDetail.is_full}
+            isLoading={false}
             onJoin={onJoin}
             onLeave={onLeave}
             className="w-full sm:w-auto sm:min-w-[160px] sm:h-14 sm:text-lg sm:font-bold"
@@ -87,21 +102,21 @@ export default function GatheringDetail({
                 About this gathering
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
-                {gathering.description}
+                {gatheringDetail.description}
               </p>
             </div>
 
             {/* Participants */}
-            {gathering.participant_details && gathering.participant_count > 0 && (
+            {gatheringDetail.participant_details && gatheringDetail.participant_count > 0 && (
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                       <HiUsers className="w-5 h-5 text-blue-600" />
                     </div>
-                    Participants ({gathering.participant_count})
+                    Participants ({gatheringDetail.participant_count})
                   </h2>
-                  {gathering.participant_count > 4 && (
+                  {gatheringDetail.participant_count > 4 && (
                     <button
                       onClick={() => setShowParticipantsModal(true)}
                       className="inline-flex items-center px-4 py-2 text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-xl transition-all duration-200"
@@ -113,7 +128,7 @@ export default function GatheringDetail({
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                  {gathering.participant_details.slice(0, 4).map((participant) => (
+                  {gatheringDetail.participant_details.slice(0, 4).map((participant) => (
                     <div
                       key={participant.id}
                       className="flex flex-col items-center text-center group"
@@ -129,7 +144,7 @@ export default function GatheringDetail({
                       <p className="text-sm font-bold text-gray-900 truncate w-full">
                         {participant.name}
                       </p>
-                      {participant.id === gathering.host_id && (
+                      {participant.id === gatheringDetail.host_id && (
                         <span className="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full mt-1">
                           Host
                         </span>
@@ -138,13 +153,13 @@ export default function GatheringDetail({
                   ))}
                 </div>
 
-                {gathering.participant_count > 4 && (
+                {gatheringDetail.participant_count > 4 && (
                   <div className="mt-4 text-center">
                     <button
                       onClick={() => setShowParticipantsModal(true)}
                       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >
-                      +{gathering.participant_count - 4} more participants
+                      +{gatheringDetail.participant_count - 4} more participants
                     </button>
                   </div>
                 )}
@@ -160,11 +175,13 @@ export default function GatheringDetail({
               <div className="space-y-2">
                 <div className="flex items-center text-gray-700">
                   <HiCalendar className="w-5 h-5 mr-3 text-gray-400" />
-                  <span className="text-sm">{formatDetailDate(gathering.gathering_time)}</span>
+                  <span className="text-sm">
+                    {formatDetailDate(gatheringDetail.gathering_time)}
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-700">
                   <HiClock className="w-5 h-5 mr-3 text-gray-400" />
-                  <span className="text-sm">{formatTime(gathering.gathering_time)}</span>
+                  <span className="text-sm">{formatTime(gatheringDetail.gathering_time)}</span>
                 </div>
               </div>
             </div>
@@ -175,8 +192,8 @@ export default function GatheringDetail({
               <div className="flex items-start text-gray-700">
                 <HiLocationMarker className="w-5 h-5 mr-3 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="font-medium">{gathering.city}</p>
-                  <p className="text-sm text-gray-600">{gathering.country}</p>
+                  <p className="font-medium">{gatheringDetail.city}</p>
+                  <p className="text-sm text-gray-600">{gatheringDetail.country}</p>
                 </div>
               </div>
             </div>
@@ -186,15 +203,15 @@ export default function GatheringDetail({
               <h3 className="font-semibold text-gray-900 mb-3">Participants</h3>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-blue-600">
-                  {gathering.participant_count}
+                  {gatheringDetail.participant_count}
                 </span>
-                <span className="text-gray-600">/ {gathering.max_participants}</span>
+                <span className="text-gray-600">/ {gatheringDetail.max_participants}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{
-                    width: `${(gathering.participant_count / gathering.max_participants) * 100}%`,
+                    width: `${(gatheringDetail.participant_count / gatheringDetail.max_participants) * 100}%`,
                   }}
                 ></div>
               </div>
@@ -205,7 +222,7 @@ export default function GatheringDetail({
 
       {/* Participants Modal */}
       <ParticipantsModal
-        gathering={gathering}
+        gathering={gatheringDetail}
         isOpen={showParticipantsModal}
         onClose={() => setShowParticipantsModal(false)}
       />
