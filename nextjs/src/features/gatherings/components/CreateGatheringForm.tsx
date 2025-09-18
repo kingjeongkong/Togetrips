@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { HiCalendar, HiCamera, HiClock, HiLocationMarker, HiMinus, HiPlus } from 'react-icons/hi';
+import { HiCalendar, HiCamera, HiClock, HiMinus, HiPlus } from 'react-icons/hi';
 import { compressImage } from '../../shared/utils/imageCompression';
 import { useCreateGathering } from '../hooks/useGathering';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
 import { isFormValid, removeFieldError, validateGatheringForm } from '../utils/gatheringValidation';
+import LocationAutocomplete from './LocationAutocomplete';
 
 interface CreateGatheringFormProps {
   onCancel?: () => void;
@@ -30,6 +31,7 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(formData);
     const validationErrors = validateGatheringForm(formData);
     setErrors(validationErrors);
 
@@ -88,6 +90,20 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
       }
     };
   }, [previewUrl]);
+
+  const handleLocationSelect = (location: {
+    city: string;
+    country: string;
+    location_id: string;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: location.city,
+      country: location.country,
+      location_id: location.location_id,
+    }));
+    setErrors((prev) => removeFieldError(prev, 'city'));
+  };
 
   return (
     <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-2 md:p-4">
@@ -263,20 +279,7 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
                 >
                   Location (City)
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
-                      errors.city ? 'ring-2 ring-red-500' : ''
-                    }`}
-                    placeholder="San Francisco, CA"
-                  />
-                  <HiLocationMarker className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                </div>
-                {errors.city && <p className="mt-1 mr-10 text-sm text-red-500">{errors.city}</p>}
+                <LocationAutocomplete onSelect={handleLocationSelect} error={errors.city} />
               </div>
 
               {/* Max Participants */}
