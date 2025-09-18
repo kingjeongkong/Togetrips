@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 모임 생성
-    const { data: gathering, error: createError } = await supabase
+    const { error: createError } = await supabase
       .from('gatherings')
       .insert({
         host_id: hostId,
