@@ -21,12 +21,13 @@ export const validateGatheringForm = (formData: CreateGatheringRequest): Record<
   } else {
     const selectedDate = new Date(formData.gathering_time);
     const now = new Date();
-    const maxDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 10);
 
     if (selectedDate <= now) {
       errors.gathering_time = 'Gathering time must be in the future';
     } else if (selectedDate > maxDate) {
-      errors.gathering_time = 'Gathering time must be within 7 days';
+      errors.gathering_time = 'Gathering time must be within 10 days from today';
     }
   }
 

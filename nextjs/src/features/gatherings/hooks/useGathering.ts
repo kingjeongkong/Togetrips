@@ -1,5 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { getGatheringById, getGatherings } from '../services/gatheringService';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import { createGathering, getGatheringById, getGatherings } from '../services/gatheringService';
+import { CreateGatheringRequest } from '../types/gatheringTypes';
 
 // 모임 목록 조회
 export const useGathering = () => {
@@ -45,5 +47,37 @@ export const useGatheringDetail = (id: string) => {
     gatheringDetail,
     isDetailLoading,
     refetchGathering,
+  };
+};
+
+// 모임 생성
+export const useCreateGathering = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: createGatheringMutation,
+    isPending: isCreating,
+    error: createError,
+  } = useMutation({
+    mutationFn: ({ data, file }: { data: CreateGatheringRequest; file: File }) =>
+      createGathering(data, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      toast.success('Gathering created successfully!');
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+    onError: (error) => {
+      console.error('모임 생성 실패:', error);
+      toast.error('Failed to create gathering');
+    },
+  });
+
+  return {
+    createGathering: createGatheringMutation,
+    isCreating,
+    createError,
   };
 };

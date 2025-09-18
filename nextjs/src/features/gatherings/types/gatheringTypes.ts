@@ -39,7 +39,6 @@ export interface CreateGatheringRequest {
   city: string;
   country: string;
   max_participants: number;
-  cover_image_url?: string;
 }
 
 export interface UpdateGatheringRequest extends Partial<CreateGatheringRequest> {

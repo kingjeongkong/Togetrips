@@ -1,20 +1,19 @@
 import Image from 'next/image';
-import { useState } from 'react';
-import { HiCalendar, HiCamera, HiClock, HiLocationMarker, HiMinus, HiPlus } from 'react-icons/hi';
+import { useEffect, useRef, useState } from 'react';
+import { HiCamera, HiClock, HiMinus, HiPlus } from 'react-icons/hi';
+import { HiCalendar } from 'react-icons/hi2';
+import { compressImage } from '../../shared/utils/imageCompression';
+import { useCreateGathering } from '../hooks/useGathering';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
 import { isFormValid, removeFieldError, validateGatheringForm } from '../utils/gatheringValidation';
+import LocationAutocomplete from './LocationAutocomplete';
 
 interface CreateGatheringFormProps {
-  onSubmit: (data: CreateGatheringRequest) => void;
-  isLoading?: boolean;
-  onCancel?: () => void;
+  onClose?: () => void;
 }
 
-export default function CreateGatheringForm({
-  onSubmit,
-  isLoading = false,
-  onCancel,
-}: CreateGatheringFormProps) {
+export default function CreateGatheringForm({ onClose }: CreateGatheringFormProps) {
+  const { createGathering, isCreating } = useCreateGathering(onClose);
   const [formData, setFormData] = useState<CreateGatheringRequest>({
     activity_title: '',
     description: '',
@@ -23,10 +22,19 @@ export default function CreateGatheringForm({
     city: '',
     country: '',
     max_participants: 2,
-    cover_image_url: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 날짜 제한 계산 (오늘부터 7일 후까지)
+  const today = new Date().toISOString().split('T')[0];
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + 10);
+  const maxDateString = maxDate.toISOString().split('T')[0];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +42,11 @@ export default function CreateGatheringForm({
     setErrors(validationErrors);
 
     if (isFormValid(validationErrors)) {
-      onSubmit(formData);
+      if (selectedFile) {
+        createGathering({ data: formData, file: selectedFile });
+      } else {
+        setErrors((prev) => ({ ...prev, cover_image: 'Please select an image' }));
+      }
     }
   };
 
@@ -43,6 +55,60 @@ export default function CreateGatheringForm({
     if (errors[field]) {
       setErrors((prev) => removeFieldError(prev, field));
     }
+  };
+
+  // 파일 선택 핸들러
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 유효성 검사
+    if (!file.type.startsWith('image/')) {
+      setErrors((prev) => ({ ...prev, cover_image: 'Please select a valid image file' }));
+      return;
+    }
+
+    setIsProcessing(true);
+    setErrors((prev) => removeFieldError(prev, 'cover_image'));
+
+    try {
+      const processedFile = await compressImage(file);
+
+      setSelectedFile(processedFile);
+      const url = URL.createObjectURL(processedFile);
+      setPreviewUrl(url);
+    } catch (error) {
+      console.error('파일 처리 실패:', error);
+      setErrors((prev) => ({
+        ...prev,
+        cover_image: 'Failed to compress image. Please try again.',
+      }));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 컴포넌트 언마운트 시 메모리 정리
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleLocationSelect = (location: {
+    city: string;
+    country: string;
+    location_id: string;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: location.city,
+      country: location.country,
+      location_id: location.location_id,
+    }));
+    setErrors((prev) => removeFieldError(prev, 'city'));
   };
 
   return (
@@ -59,10 +125,24 @@ export default function CreateGatheringForm({
         >
           {/* Cover Photo Section */}
           <div className="relative">
-            <div className="w-full h-40 md:h-48 lg:h-56 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-300 transition-colors duration-200 cursor-pointer">
-              {formData.cover_image_url ? (
+            <div
+              className={`w-full h-40 md:h-48 lg:h-56 bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-purple-200 transition-colors duration-200 group ${
+                isProcessing
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer hover:border-purple-300'
+              }`}
+              onClick={() => !isProcessing && fileInputRef.current?.click()}
+            >
+              {isProcessing ? (
+                <div className="text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-purple-600 font-medium text-sm md:text-base">
+                    Processing image...
+                  </p>
+                </div>
+              ) : previewUrl ? (
                 <Image
-                  src={formData.cover_image_url}
+                  src={previewUrl}
                   alt="Cover preview"
                   fill
                   className="object-cover rounded-2xl"
@@ -77,13 +157,15 @@ export default function CreateGatheringForm({
               )}
             </div>
             <input
-              type="url"
-              id="cover_image_url"
-              value={formData.cover_image_url}
-              onChange={(e) => handleInputChange('cover_image_url', e.target.value)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              placeholder="https://example.com/image.jpg"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
             />
+            {errors.cover_image && (
+              <p className="mt-2 text-sm text-red-500">{errors.cover_image}</p>
+            )}
           </div>
 
           {/* Main Content Grid */}
@@ -152,12 +234,14 @@ export default function CreateGatheringForm({
                     <input
                       type="date"
                       id="date"
+                      min={today}
+                      max={maxDateString}
                       value={formData.gathering_time.split('T')[0] || ''}
                       onChange={(e) => {
                         const time = formData.gathering_time.split('T')[1] || '';
                         handleInputChange('gathering_time', `${e.target.value}T${time}`);
                       }}
-                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
+                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base cursor-pointer ${
                         errors.gathering_time ? 'ring-2 ring-red-500' : ''
                       }`}
                     />
@@ -181,7 +265,7 @@ export default function CreateGatheringForm({
                         const date = formData.gathering_time.split('T')[0] || '';
                         handleInputChange('gathering_time', `${date}T${e.target.value}`);
                       }}
-                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
+                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base cursor-pointer ${
                         errors.gathering_time ? 'ring-2 ring-red-500' : ''
                       }`}
                     />
@@ -203,20 +287,7 @@ export default function CreateGatheringForm({
                 >
                   Location (City)
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
-                      errors.city ? 'ring-2 ring-red-500' : ''
-                    }`}
-                    placeholder="San Francisco, CA"
-                  />
-                  <HiLocationMarker className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                </div>
-                {errors.city && <p className="mt-1 mr-10 text-sm text-red-500">{errors.city}</p>}
+                <LocationAutocomplete onSelect={handleLocationSelect} error={errors.city} />
               </div>
 
               {/* Max Participants */}
@@ -278,16 +349,16 @@ export default function CreateGatheringForm({
             <div className="flex flex-col md:flex-row gap-3 md:gap-4">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isCreating || isProcessing}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
               >
-                {isLoading ? 'Creating...' : 'Create Meetup'}
+                {isCreating ? 'Creating...' : 'Create Meetup'}
               </button>
 
-              {onCancel && (
+              {onClose && (
                 <button
                   type="button"
-                  onClick={onCancel}
+                  onClick={onClose}
                   className="flex-1 md:flex-none md:w-auto text-gray-500 hover:text-gray-700 py-4 px-6 rounded-xl font-medium transition-colors duration-200 border border-gray-300 hover:border-gray-400"
                 >
                   Cancel

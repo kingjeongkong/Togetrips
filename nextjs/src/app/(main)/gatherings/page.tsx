@@ -8,26 +8,12 @@ import { HiPlus } from 'react-icons/hi';
 
 export default function GatheringsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleCreateGathering = async () => {
-    setIsLoading(true);
-    // TODO: 실제 API 호출로 교체 (다음 단계에서 구현)
-    setTimeout(() => {
-      setShowCreateForm(false);
-      setIsLoading(false);
-    }, 1000);
-  };
 
   if (showCreateForm) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <CreateGatheringForm
-            onSubmit={handleCreateGathering}
-            isLoading={isLoading}
-            onCancel={() => setShowCreateForm(false)}
-          />
+          <CreateGatheringForm onClose={() => setShowCreateForm(false)} />
         </div>
       </div>
     );

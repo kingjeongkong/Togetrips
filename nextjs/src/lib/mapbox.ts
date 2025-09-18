@@ -21,6 +21,54 @@ export interface MapboxGeocodingResponse {
   }>;
 }
 
+export interface MapboxSearchResult {
+  id: string;
+  text: string;
+  place_name: string;
+  center: [number, number];
+  context?: Array<{
+    id: string;
+    text: string;
+    short_code?: string;
+  }>;
+}
+
+/**
+ * Mapbox Geocoding API를 사용하여 도시명으로 위치를 검색합니다.
+ * @param query 검색할 도시명
+ * @returns 검색 결과 배열
+ */
+export async function searchLocations(query: string): Promise<MapboxSearchResult[]> {
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+  if (!accessToken) {
+    throw new Error('Mapbox access token is not configured');
+  }
+
+  if (!query.trim()) {
+    return [];
+  }
+
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+    query,
+  )}.json?access_token=${accessToken}&types=place&language=en&limit=5`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Mapbox API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: MapboxGeocodingResponse = await response.json();
+
+    return data.features || [];
+  } catch (error) {
+    console.error('Error searching locations with Mapbox:', error);
+    throw new Error('Failed to search locations');
+  }
+}
+
 /**
  * Mapbox Reverse Geocoding API를 사용하여 좌표로부터 위치 정보를 가져옵니다.
  * @param lat 위도
