@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { HiCalendar, HiCamera, HiClock, HiMinus, HiPlus } from 'react-icons/hi';
+import { HiCamera, HiClock, HiMinus, HiPlus } from 'react-icons/hi';
+import { HiCalendar } from 'react-icons/hi2';
 import { compressImage } from '../../shared/utils/imageCompression';
 import { useCreateGathering } from '../hooks/useGathering';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
@@ -28,6 +29,12 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 날짜 제한 계산 (오늘부터 7일 후까지)
+  const today = new Date().toISOString().split('T')[0];
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + 10);
+  const maxDateString = maxDate.toISOString().split('T')[0];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,12 +235,14 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
                     <input
                       type="date"
                       id="date"
+                      min={today}
+                      max={maxDateString}
                       value={formData.gathering_time.split('T')[0] || ''}
                       onChange={(e) => {
                         const time = formData.gathering_time.split('T')[1] || '';
                         handleInputChange('gathering_time', `${e.target.value}T${time}`);
                       }}
-                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
+                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base cursor-pointer ${
                         errors.gathering_time ? 'ring-2 ring-red-500' : ''
                       }`}
                     />
@@ -257,7 +266,7 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
                         const date = formData.gathering_time.split('T')[0] || '';
                         handleInputChange('gathering_time', `${date}T${e.target.value}`);
                       }}
-                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
+                      className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base cursor-pointer ${
                         errors.gathering_time ? 'ring-2 ring-red-500' : ''
                       }`}
                     />
