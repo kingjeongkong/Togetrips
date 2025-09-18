@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { createGathering, getGatheringById, getGatherings } from '../services/gatheringService';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
@@ -52,9 +51,8 @@ export const useGatheringDetail = (id: string) => {
 };
 
 // 모임 생성
-export const useCreateGathering = () => {
+export const useCreateGathering = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const {
     mutate: createGatheringMutation,
@@ -65,8 +63,11 @@ export const useCreateGathering = () => {
       createGathering(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gatherings'] });
-      router.push('/gatherings');
       toast.success('Gathering created successfully!');
+
+      if (onSuccess) {
+        onSuccess();
+      }
     },
     onError: (error) => {
       console.error('모임 생성 실패:', error);

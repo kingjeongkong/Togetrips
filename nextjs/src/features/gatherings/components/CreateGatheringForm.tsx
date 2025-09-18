@@ -9,11 +9,11 @@ import { isFormValid, removeFieldError, validateGatheringForm } from '../utils/g
 import LocationAutocomplete from './LocationAutocomplete';
 
 interface CreateGatheringFormProps {
-  onCancel?: () => void;
+  onClose?: () => void;
 }
 
-export default function CreateGatheringForm({ onCancel }: CreateGatheringFormProps) {
-  const { createGathering, isCreating } = useCreateGathering();
+export default function CreateGatheringForm({ onClose }: CreateGatheringFormProps) {
+  const { createGathering, isCreating } = useCreateGathering(onClose);
   const [formData, setFormData] = useState<CreateGatheringRequest>({
     activity_title: '',
     description: '',
@@ -38,7 +38,6 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
     const validationErrors = validateGatheringForm(formData);
     setErrors(validationErrors);
 
@@ -356,10 +355,10 @@ export default function CreateGatheringForm({ onCancel }: CreateGatheringFormPro
                 {isCreating ? 'Creating...' : 'Create Meetup'}
               </button>
 
-              {onCancel && (
+              {onClose && (
                 <button
                   type="button"
-                  onClick={onCancel}
+                  onClick={onClose}
                   className="flex-1 md:flex-none md:w-auto text-gray-500 hover:text-gray-700 py-4 px-6 rounded-xl font-medium transition-colors duration-200 border border-gray-300 hover:border-gray-400"
                 >
                   Cancel
