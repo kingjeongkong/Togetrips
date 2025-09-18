@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 
         // Supabase Storage에 업로드
         const { error: uploadError } = await supabase.storage
-          .from('images')
+          .from('gatherings-images')
           .upload(filePath, file, {
             contentType: file.type,
             upsert: false,
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 공개 URL 생성
-        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+        const { data: urlData } = supabase.storage.from('gatherings-images').getPublicUrl(filePath);
 
         coverImageUrl = urlData.publicUrl;
       } catch (error) {

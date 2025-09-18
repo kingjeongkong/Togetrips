@@ -2,20 +2,16 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { HiCalendar, HiCamera, HiClock, HiLocationMarker, HiMinus, HiPlus } from 'react-icons/hi';
 import { compressImage } from '../../shared/utils/imageCompression';
+import { useCreateGathering } from '../hooks/useGathering';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
 import { isFormValid, removeFieldError, validateGatheringForm } from '../utils/gatheringValidation';
 
 interface CreateGatheringFormProps {
-  onSubmit: (data: CreateGatheringRequest) => void;
-  isLoading?: boolean;
   onCancel?: () => void;
 }
 
-export default function CreateGatheringForm({
-  onSubmit,
-  isLoading = false,
-  onCancel,
-}: CreateGatheringFormProps) {
+export default function CreateGatheringForm({ onCancel }: CreateGatheringFormProps) {
+  const { createGathering, isCreating } = useCreateGathering();
   const [formData, setFormData] = useState<CreateGatheringRequest>({
     activity_title: '',
     description: '',
@@ -24,7 +20,6 @@ export default function CreateGatheringForm({
     city: '',
     country: '',
     max_participants: 2,
-    cover_image_url: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -39,16 +34,11 @@ export default function CreateGatheringForm({
     setErrors(validationErrors);
 
     if (isFormValid(validationErrors)) {
-      // 파일이 선택된 경우 FormData로 전송할 데이터 준비
       if (selectedFile) {
-        const formDataWithFile = new FormData();
-        formDataWithFile.append('file', selectedFile);
-        formDataWithFile.append('data', JSON.stringify(formData));
-        // TODO: 실제 API 호출 시 FormData 사용
-        console.log('FormData with file:', formDataWithFile);
+        createGathering({ data: formData, file: selectedFile });
+      } else {
+        setErrors((prev) => ({ ...prev, cover_image: 'Please select an image' }));
       }
-
-      onSubmit(formData);
     }
   };
 
@@ -348,10 +338,10 @@ export default function CreateGatheringForm({
             <div className="flex flex-col md:flex-row gap-3 md:gap-4">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isCreating || isProcessing}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
               >
-                {isLoading ? 'Creating...' : 'Create Meetup'}
+                {isCreating ? 'Creating...' : 'Create Meetup'}
               </button>
 
               {onCancel && (
