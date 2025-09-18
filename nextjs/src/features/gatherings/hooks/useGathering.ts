@@ -63,11 +63,10 @@ export const useCreateGathering = (onSuccess?: () => void) => {
       createGathering(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gatherings'] });
-      toast.success('Gathering created successfully!');
-
       if (onSuccess) {
         onSuccess();
       }
+      toast.success('Gathering created successfully!');
     },
     onError: (error) => {
       console.error('모임 생성 실패:', error);
