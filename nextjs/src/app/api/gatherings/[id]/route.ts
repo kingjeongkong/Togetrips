@@ -1,0 +1,96 @@
+import { createServerSupabaseClient } from '@/lib/supabase-config';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const supabase = createServerSupabaseClient(request);
+
+    // Supabase 세션 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const currentUserId = user.id;
+
+    const { id: gatheringId } = await params;
+
+    if (!gatheringId) {
+      return NextResponse.json({ error: 'Gathering ID is required' }, { status: 400 });
+    }
+
+    // 모임 상세 정보 조회
+    const { data: gathering, error: gatheringError } = await supabase
+      .from('gatherings')
+      .select(
+        `
+        *,
+        host:users!gatherings_host_id_fkey(
+          id,
+          name,
+          image
+        )
+      `,
+      )
+      .eq('id', gatheringId)
+      .single();
+
+    if (gatheringError || !gathering) {
+      return NextResponse.json({ error: 'Gathering not found' }, { status: 404 });
+    }
+
+    // 참여자 상세 정보 조회
+    const { data: participants, error: participantsError } = await supabase
+      .from('users')
+      .select('id, name, image')
+      .in('id', gathering.participants || []);
+
+    if (participantsError) {
+      console.error('Error fetching participants:', participantsError);
+    }
+
+    // 참여자 수와 상태 정보 추가
+    const participantCount = gathering.participants?.length || 0;
+    const isJoined = gathering.participants?.includes(currentUserId) || false;
+    const isHost = gathering.host_id === currentUserId;
+    const isFull = participantCount >= gathering.max_participants;
+
+    const gatheringWithDetails = {
+      ...gathering,
+      host: gathering.host
+        ? {
+            id: gathering.host.id,
+            name: gathering.host.name || '',
+            image: gathering.host.image || '',
+          }
+        : null,
+      participants: gathering.participants || [],
+      participant_details:
+        participants?.map((participant) => ({
+          id: participant.id,
+          name: participant.name || '',
+          image: participant.image || '',
+        })) || [],
+      participant_count: participantCount,
+      is_joined: isJoined,
+      is_host: isHost,
+      is_full: isFull,
+    };
+
+    return NextResponse.json({
+      gathering: gatheringWithDetails,
+    });
+  } catch (error: unknown) {
+    console.error('Error fetching gathering details:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}

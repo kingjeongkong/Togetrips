@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { IconType } from 'react-icons';
 import { FaBell, FaHome, FaUserAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
+import { HiUserGroup } from 'react-icons/hi';
 import { MdChat } from 'react-icons/md';
 import SettingsMenu from './SettingsMenu';
 
@@ -33,6 +34,7 @@ const Sidebar = () => {
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
+    { title: 'Gatherings', icon: HiUserGroup, to: '/gatherings' },
     { title: 'Chat', icon: MdChat, to: '/chat', count: unreadCount > 0 ? unreadCount : undefined },
     {
       title: 'Requests',
