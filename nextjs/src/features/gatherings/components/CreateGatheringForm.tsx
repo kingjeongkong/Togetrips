@@ -112,7 +112,7 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-2 md:p-4">
+    <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-2 pb-16 md:p-4">
       <div className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 md:py-8 text-center">
