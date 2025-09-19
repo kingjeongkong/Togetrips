@@ -6,35 +6,43 @@ export default function GatheringList() {
   const { gatherings, isListLoading } = useGathering();
   // 검색/필터 섹션 컴포넌트
   const SearchAndFilterSection = ({ disabled = false, showCount = false }) => (
-    <div className="flex flex-col lg:flex-row gap-4 justify-between items-center bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-      <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-        <div className="flex items-center space-x-3 flex-1 min-w-0 lg:min-w-[400px]">
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+    <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
+      {/* 검색 입력 필드들 */}
+      <div className="space-y-3 sm:space-y-0 sm:flex sm:gap-4 sm:items-center">
+        {/* 모임 검색 */}
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
             <HiSearch className="w-5 h-5" />
           </div>
           <input
             type="text"
             placeholder="Search gatherings..."
-            className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm focus:outline-none transition-all duration-200 placeholder-gray-500"
+            className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm focus:outline-none transition-all duration-200 placeholder-gray-500 min-w-0 w-full"
             disabled={disabled}
           />
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+
+        {/* 도시 검색 */}
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
             <HiLocationMarker className="w-5 h-5 text-blue-600" />
           </div>
           <input
             type="text"
             placeholder="Search city..."
-            className="px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm font-medium focus:outline-none transition-all duration-200"
+            className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm font-medium focus:outline-none transition-all duration-200 min-w-0 w-full"
             disabled={disabled}
           />
         </div>
       </div>
+
+      {/* 카운트 표시 */}
       {showCount && (
-        <div className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-blue-50 px-4 py-2 rounded-full">
-          <span className="text-sm font-bold text-purple-700">{gatherings.length}</span>
-          <span className="text-sm text-gray-600">gatherings</span>
+        <div className="mt-4 sm:mt-0 sm:ml-4 flex justify-center sm:justify-start">
+          <div className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-blue-50 px-4 py-2 rounded-full">
+            <span className="text-sm font-bold text-purple-700">{gatherings.length}</span>
+            <span className="text-sm text-gray-600">gatherings</span>
+          </div>
         </div>
       )}
     </div>
