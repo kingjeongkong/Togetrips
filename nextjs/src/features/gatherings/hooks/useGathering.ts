@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { createGathering, getGatheringById, getGatherings } from '../services/gatheringService';
+import {
+  createGathering,
+  getGatheringById,
+  getGatherings,
+  joinGathering,
+  leaveGathering,
+} from '../services/gatheringService';
 import { CreateGatheringRequest } from '../types/gatheringTypes';
 
 // 모임 목록 조회
@@ -63,11 +69,10 @@ export const useCreateGathering = (onSuccess?: () => void) => {
       createGathering(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gatherings'] });
-      toast.success('Gathering created successfully!');
-
       if (onSuccess) {
         onSuccess();
       }
+      toast.success('Gathering created successfully!');
     },
     onError: (error) => {
       console.error('모임 생성 실패:', error);
@@ -79,5 +84,47 @@ export const useCreateGathering = (onSuccess?: () => void) => {
     createGathering: createGatheringMutation,
     isCreating,
     createError,
+  };
+};
+
+// 모임 참여
+export const useJoinGathering = (gatheringId: string) => {
+  const queryClient = useQueryClient();
+
+  const { mutate: joinGatheringMutation, isPending: isJoining } = useMutation({
+    mutationFn: () => joinGathering(gatheringId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
+    },
+    onError: (error) => {
+      console.error('모임 참여 실패:', error);
+      toast.error('Failed to join gathering');
+    },
+  });
+
+  return {
+    joinGathering: joinGatheringMutation,
+    isJoining,
+  };
+};
+
+// 모임 탈퇴
+export const useLeaveGathering = (gatheringId: string) => {
+  const queryClient = useQueryClient();
+
+  const { mutate: leaveGatheringMutation, isPending: isLeaving } = useMutation({
+    mutationFn: () => leaveGathering(gatheringId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
+    },
+    onError: (error) => {
+      console.error('모임 탈퇴 실패:', error);
+      toast.error('Failed to leave gathering');
+    },
+  });
+
+  return {
+    leaveGathering: leaveGatheringMutation,
+    isLeaving,
   };
 };
