@@ -29,36 +29,12 @@ export const profileService = {
   },
 
   /**
-   * 프로필 이미지 업로드 (서버 API 호출)
+   * 유저 프로필 수정 (FormData로 통합 처리)
    */
-  async uploadProfileImage(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const response = await fetch('/api/user/profile/upload-image', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to upload image');
-    }
-
-    const data = await response.json();
-    return data.imageUrl;
-  },
-
-  /**
-   * 유저 프로필 수정 (서버 API 호출)
-   */
-  async updateProfile(updates: Partial<User>): Promise<void> {
+  async updateProfile(formData: FormData): Promise<User> {
     const response = await fetch('/api/user/profile/update', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -66,6 +42,7 @@ export const profileService = {
       throw new Error(errorData.error || 'Failed to update profile');
     }
 
-    return response.json();
+    const data = await response.json();
+    return data.profile as User;
   },
 };

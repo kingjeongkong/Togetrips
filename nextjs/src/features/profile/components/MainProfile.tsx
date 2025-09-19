@@ -54,8 +54,8 @@ const MainProfile = () => {
     }
   };
 
-  const handleSubmit = async (data: EditableProfileFields) => {
-    await updateProfile(data);
+  const handleSubmit = async (formData: FormData) => {
+    await updateProfile(formData);
     setIsEditing(false);
   };
 
