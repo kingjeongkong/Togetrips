@@ -1,8 +1,6 @@
 'use client';
 
 import { profileService } from '@/features/shared/services/profileService';
-import { EditableProfileFields } from '@/features/shared/types/profileTypes';
-import type { User } from '@/features/shared/types/User';
 import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -20,30 +18,13 @@ export const useMyProfile = () => {
   });
 
   const { mutateAsync: updateProfile } = useMutation({
-    mutationFn: async (updates: EditableProfileFields) => {
+    mutationFn: async (formData: FormData) => {
       if (!userId) throw new Error('No user');
 
-      // 이미지 파일이 있으면 업로드
-      const imageUrl = updates.photoFile
-        ? await profileService.uploadProfileImage(updates.photoFile)
-        : updates.image;
-
-      // photoFile 제외하고 업데이트할 데이터 준비
-      const updateData = { ...updates };
-      delete updateData.photoFile;
-      const dataToUpdate = { ...updateData, image: imageUrl };
-
-      await profileService.updateProfile(dataToUpdate);
-
-      // 업데이트된 프로필 데이터 반환 (캐시 업데이트용)
-      return {
-        ...profile,
-        ...dataToUpdate,
-        updatedAt: new Date().toISOString(),
-      } as User;
+      const updatedProfile = await profileService.updateProfile(formData);
+      return updatedProfile;
     },
     onSuccess: (updatedProfile) => {
-      // 로컬 캐시 직접 업데이트 (네트워크 요청 없이)
       queryClient.setQueryData(['profile', userId], updatedProfile);
       toast.success('Profile updated successfully');
     },
