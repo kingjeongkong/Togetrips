@@ -33,7 +33,7 @@ export async function DELETE(
     // 모임 정보 조회
     const { data: gathering, error: gatheringError } = await supabase
       .from('gatherings')
-      .select('*')
+      .select('host_id, participants')
       .eq('id', gatheringId)
       .single();
 
@@ -62,7 +62,7 @@ export async function DELETE(
       gathering.participants?.filter((participantId: string) => participantId !== currentUserId) ||
       [];
 
-    const { data: updatedGathering, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from('gatherings')
       .update({
         participants: updatedParticipants,
@@ -78,7 +78,6 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       message: 'Successfully left the gathering',
-      gathering: updatedGathering,
     });
   } catch (error: unknown) {
     console.error('Error leaving gathering:', error);
