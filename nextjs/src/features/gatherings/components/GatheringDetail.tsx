@@ -3,18 +3,14 @@ import { formatDetailDate, formatTime } from '@/utils/dateUtils';
 import Image from 'next/image';
 import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
-import { useGatheringDetail } from '../hooks/useGathering';
+import { useGatheringDetail, useJoinGathering, useLeaveGathering } from '../hooks/useGathering';
 import JoinButton from './JoinButton';
 import ParticipantsModal from './ParticipantsModal';
 
-interface GatheringDetailProps {
-  id: string;
-  onJoin?: () => void;
-  onLeave?: () => void;
-}
-
-export default function GatheringDetail({ id, onJoin, onLeave }: GatheringDetailProps) {
-  const { gatheringDetail, isDetailLoading } = useGatheringDetail(id);
+export default function GatheringDetail({ gatheringId }: { gatheringId: string }) {
+  const { gatheringDetail, isDetailLoading } = useGatheringDetail(gatheringId);
+  const { joinGathering, isJoining } = useJoinGathering(gatheringId);
+  const { leaveGathering, isLeaving } = useLeaveGathering(gatheringId);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
 
   // 로딩 상태 처리
@@ -82,9 +78,9 @@ export default function GatheringDetail({ id, onJoin, onLeave }: GatheringDetail
             isHost={gatheringDetail.is_host}
             isJoined={gatheringDetail.is_joined}
             isFull={gatheringDetail.is_full}
-            isLoading={false}
-            onJoin={onJoin}
-            onLeave={onLeave}
+            isLoading={isJoining || isLeaving}
+            onJoin={() => joinGathering()}
+            onLeave={() => leaveGathering()}
             className="w-full sm:w-auto sm:min-w-[160px] sm:h-14 sm:text-lg sm:font-bold"
           />
         </div>

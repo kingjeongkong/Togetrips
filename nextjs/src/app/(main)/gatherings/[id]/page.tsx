@@ -10,16 +10,6 @@ export default function GatheringDetailPage() {
   const router = useRouter();
   const gatheringId = params.id as string;
 
-  const handleJoin = async () => {
-    // TODO: 실제 API 호출로 교체 (다음 단계에서 구현)
-    console.log('Join gathering:', gatheringId);
-  };
-
-  const handleLeave = async () => {
-    // TODO: 실제 API 호출로 교체 (다음 단계에서 구현)
-    console.log('Leave gathering:', gatheringId);
-  };
-
   // Sticky 헤더 컴포넌트
   const StickyHeader = () => (
     <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
@@ -42,7 +32,7 @@ export default function GatheringDetailPage() {
       <div className="flex flex-col items-center w-full p-6 pb-20 md:pb-6">
         <div className="flex justify-center w-full">
           <DataFetchErrorBoundary>
-            <GatheringDetail id={gatheringId} onJoin={handleJoin} onLeave={handleLeave} />
+            <GatheringDetail gatheringId={gatheringId} />
           </DataFetchErrorBoundary>
         </div>
       </div>
