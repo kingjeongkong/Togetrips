@@ -91,15 +91,15 @@ export default function GatheringCard({ gathering }: GatheringCardProps) {
                   <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                   <span className="text-xs font-semibold text-red-700">Full</span>
                 </div>
-              ) : gathering.is_joined ? (
-                <div className="flex items-center space-x-2 bg-green-50 px-3 py-1.5 rounded-full">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-xs font-semibold text-green-700">Joined</span>
-                </div>
               ) : gathering.is_host ? (
                 <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1.5 rounded-full">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   <span className="text-xs font-semibold text-blue-700">Host</span>
+                </div>
+              ) : gathering.is_joined ? (
+                <div className="flex items-center space-x-2 bg-green-50 px-3 py-1.5 rounded-full">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-xs font-semibold text-green-700">Joined</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-full">
