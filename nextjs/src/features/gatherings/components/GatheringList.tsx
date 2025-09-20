@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
 import { useGathering } from '../hooks/useGathering';
 import { GatheringWithDetails } from '../types/gatheringTypes';
@@ -8,6 +8,16 @@ import SearchAndFilterSection from './SearchAndFilterSection';
 export default function GatheringList() {
   const { gatherings, isListLoading } = useGathering();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  // 디바운싱 처리
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // 검색 필터링 함수
   const filterGatherings = (gatherings: GatheringWithDetails[], query: string) => {
@@ -21,10 +31,9 @@ export default function GatheringList() {
     );
   };
 
-  // useMemo로 필터링된 결과 메모이제이션 (표준 패턴)
   const filteredGatherings = useMemo(() => {
-    return filterGatherings(gatherings, searchQuery);
-  }, [gatherings, searchQuery]);
+    return filterGatherings(gatherings, debouncedQuery);
+  }, [gatherings, debouncedQuery]);
 
   // 로딩 스켈레톤 카드 컴포넌트
   const LoadingSkeletonCard = () => (
