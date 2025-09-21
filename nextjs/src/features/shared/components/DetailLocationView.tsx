@@ -3,43 +3,67 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useUserLocation } from '@/features/home/hooks/useUserLocation';
 import { useMapStore } from '@/stores/mapStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface UserLocationViewProps {
   otherUserLatitude: number;
   otherUserLongitude: number;
   userName?: string;
+  otherUserImageUrl?: string;
+  currentUserImageUrl?: string;
 }
 
 const UserLocationView = ({
   otherUserLatitude,
   otherUserLongitude,
   userName,
+  otherUserImageUrl,
+  currentUserImageUrl,
 }: UserLocationViewProps) => {
-  const { isMapLoaded, updateMapCenter, clearCircles, addLocationCircle, showMap, hideMap } =
+  const { isMapLoaded, updateMapCenter, clearOverlays, addProfileOverlay, showMap, hideMap } =
     useMapStore();
 
   const { currentLocation } = useUserLocation();
+  const [hasError, setHasError] = useState(false);
 
   // 위치 정보가 로드되면 지도 업데이트
   useEffect(() => {
     if (isMapLoaded && currentLocation) {
-      clearCircles();
-      updateMapCenter(otherUserLatitude, otherUserLongitude);
+      try {
+        setHasError(false);
 
-      // 내 위치를 보라색 원으로 표시
-      addLocationCircle(currentLocation.lat, currentLocation.lng, '#8B5CF6', 0.4, 200);
+        // 기존 오버레이 정리
+        clearOverlays();
 
-      // 다른 사용자 위치를 빨간색 원으로 표시
-      addLocationCircle(otherUserLatitude, otherUserLongitude, '#EF4444', 0.15, 700);
+        updateMapCenter(otherUserLatitude, otherUserLongitude);
 
-      updateMapCenter(otherUserLatitude, otherUserLongitude);
-      showMap('user-location-map');
+        addProfileOverlay(
+          currentLocation.lat,
+          currentLocation.lng,
+          currentUserImageUrl || '/default-traveler.png',
+          'You',
+          true,
+        );
+
+        addProfileOverlay(
+          otherUserLatitude,
+          otherUserLongitude,
+          otherUserImageUrl || '/default-traveler.png',
+          userName || 'Traveler',
+          false,
+        );
+
+        updateMapCenter(otherUserLatitude, otherUserLongitude);
+        showMap('user-location-map');
+      } catch (error) {
+        console.error('Error updating map with user locations:', error);
+        setHasError(true);
+      }
     }
 
     // 컴포넌트 언마운트 시 정리
     return () => {
-      clearCircles();
+      clearOverlays();
       hideMap();
     };
   }, [
@@ -48,33 +72,57 @@ const UserLocationView = ({
     otherUserLongitude,
     currentLocation?.lat,
     currentLocation?.lng,
+    otherUserImageUrl,
+    currentUserImageUrl,
+    userName,
+    clearOverlays,
+    addProfileOverlay,
+    updateMapCenter,
+    showMap,
+    hideMap,
   ]);
 
   return (
     <div className="p-6 pt-3">
       <h3 className="text-lg font-semibold text-gray-800 mb-3">Current Location</h3>
 
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-violet-500 opacity-40"></div>
-          <span>내 위치</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-red-500 opacity-15"></div>
-          <span>{userName || 'Traveler'}의 위치</span>
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full border-2 border-red-500 bg-white"></div>
+            <span className="text-gray-700">{userName || 'Other traveler'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full border-2 border-purple-500 bg-white"></div>
+            <span className="text-gray-700">You</span>
+          </div>
         </div>
       </div>
 
       <div className="h-64 bg-gray-100 rounded-lg overflow-hidden">
-        <div
-          id="user-location-map"
-          className="w-full h-full"
-          style={{ display: isMapLoaded ? 'block' : 'none' }}
-        />
-        {!isMapLoaded && (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <LoadingIndicator color="#f97361" size={32} />
+        {hasError ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
+            <div className="text-4xl mb-2">🗺️</div>
+            <div className="text-sm font-medium mb-1">Map Loading Error</div>
+            <div className="text-xs text-center">
+              Unable to display location map.
+              <br />
+              Please try refreshing the page.
+            </div>
           </div>
+        ) : (
+          <>
+            <div
+              id="user-location-map"
+              className="w-full h-full"
+              style={{ display: isMapLoaded ? 'block' : 'none' }}
+            />
+            {!isMapLoaded && (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <LoadingIndicator color="#f97361" size={32} />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

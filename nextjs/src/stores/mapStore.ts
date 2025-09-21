@@ -1,25 +1,26 @@
 import { isGoogleMapsLoaded, loadGoogleMapsIfNeeded } from '@/lib/google-maps';
+import { ProfileOverlay } from '@/lib/ProfileOverlay';
 import { create } from 'zustand';
 
 interface MapStore {
   // 상태
   map: google.maps.Map | null;
   isMapLoaded: boolean;
-  circles: google.maps.Circle[];
+  overlays: ProfileOverlay[];
   currentContainerId: string | null;
   isInitializing: boolean;
 
   // 액션
   initializeMap: () => Promise<void>;
   updateMapCenter: (lat: number, lng: number) => void;
-  clearCircles: () => void;
-  addLocationCircle: (
+  clearOverlays: () => void;
+  addProfileOverlay: (
     lat: number,
     lng: number,
-    color: string,
-    fillOpacity: number,
-    radius: number,
-  ) => google.maps.Circle | undefined;
+    imageUrl: string,
+    name: string,
+    isCurrentUser?: boolean,
+  ) => void;
   showMap: (containerId: string) => void;
   hideMap: () => void;
   reset: () => void;
@@ -29,7 +30,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
   // 초기 상태
   map: null,
   isMapLoaded: false,
-  circles: [],
+  overlays: [],
   currentContainerId: null,
   isInitializing: false,
 
@@ -96,43 +97,55 @@ export const useMapStore = create<MapStore>((set, get) => ({
     }
   },
 
-  // 원들 정리
-  clearCircles: () => {
-    const { circles } = get();
-    circles.forEach((circle) => circle.setMap(null));
-    set({ circles: [] });
+  // 오버레이들 정리
+  clearOverlays: () => {
+    const { overlays } = get();
+    overlays.forEach((overlay) => overlay.setMap(null));
+    set({ overlays: [] });
   },
 
-  // 위치 원 추가
-  addLocationCircle: (
+  // 프로필 이미지 오버레이 추가 (줌 레벨에 관계없이 일정한 범위 표시)
+  addProfileOverlay: (
     lat: number,
     lng: number,
-    color: string = '#FF0000',
-    fillOpacity: number = 0.15,
-    radius: number = 700,
-  ): google.maps.Circle | undefined => {
+    imageUrl: string,
+    name: string,
+    isCurrentUser: boolean = false,
+  ) => {
     const { map } = get();
     if (!map || !(map instanceof window.google.maps.Map)) {
-      // map이 준비되지 않았으면 아무것도 하지 않음
+      console.warn('Map not available for adding profile overlay');
       return;
     }
 
-    const circle = new window.google.maps.Circle({
-      strokeColor: color,
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: color,
-      fillOpacity,
-      map,
-      center: { lat, lng },
-      radius,
-    });
+    // Google Maps API가 로드된 후에만 실행
+    if (typeof window !== 'undefined' && window.google && window.google.maps) {
+      try {
+        // 좌표 유효성 검사
+        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+          console.error('Invalid coordinates for profile overlay:', { lat, lng });
+          return;
+        }
 
-    set((state) => ({
-      circles: [...state.circles, circle],
-    }));
+        // 이미지 URL이 없거나 유효하지 않으면 기본 이미지 사용
+        if (!imageUrl || typeof imageUrl !== 'string') {
+          imageUrl = '/default-traveler.png';
+        }
 
-    return circle;
+        const radius = 1000;
+        const position = new google.maps.LatLng(lat, lng);
+
+        const overlay = new ProfileOverlay(map, position, imageUrl, radius, name, isCurrentUser);
+
+        set((state) => ({
+          overlays: [...state.overlays, overlay],
+        }));
+      } catch (error) {
+        console.error('Failed to add profile overlay:', error);
+      }
+    } else {
+      console.warn('Google Maps API not loaded');
+    }
   },
 
   // 지도 표시
@@ -179,13 +192,12 @@ export const useMapStore = create<MapStore>((set, get) => ({
 
   // 스토어 리셋
   reset: () => {
-    const { circles } = get();
-    circles.forEach((circle) => circle.setMap(null));
+    get().clearOverlays();
 
     set({
       map: null,
       isMapLoaded: false,
-      circles: [],
+      overlays: [],
       currentContainerId: null,
       isInitializing: false,
     });
