@@ -96,24 +96,21 @@ export class ProfileOverlay {
             return;
           }
 
-          // 1. 위경도 좌표를 화면의 픽셀 좌표로 변환합니다.
-          const sw = projection.fromLatLngToDivPixel(this.parent.position)!;
-
-          // 2. 지도의 현재 줌 레벨에서 1미터가 몇 픽셀에 해당하는지 계산합니다.
+          // 1. 지도의 현재 줌 레벨에서 1미터가 몇 픽셀에 해당하는지 계산합니다.
           const metersPerPixel =
             (156543.03392 * Math.cos((currentCenter.lat() * Math.PI) / 180)) /
             Math.pow(2, currentZoom);
 
-          // 3. 설정된 반경(미터)을 픽셀 크기로 변환합니다.
+          // 2. 설정된 반경(미터)을 픽셀 크기로 변환합니다.
           const radiusInPixels = this.parent.radiusInMeters / metersPerPixel;
           const diameterInPixels = radiusInPixels * 2;
 
-          // 4. 캐시 업데이트
+          // 3. 캐시 업데이트
           this.parent.lastZoom = currentZoom;
           this.parent.lastCenter = currentCenter;
           this.parent.cachedDiameter = diameterInPixels;
 
-          // 5. 계산된 크기와 위치를 div에 적용합니다.
+          // 4. 계산된 크기와 위치를 div에 적용합니다.
           this.parent.updatePosition(projection, diameterInPixels);
         }
 
@@ -135,6 +132,7 @@ export class ProfileOverlay {
   private updatePosition(projection: google.maps.MapCanvasProjection, diameterInPixels: number) {
     if (!this.div) return;
 
+    // 위경도 좌표를 화면의 픽셀 좌표로 변환합니다.
     const sw = projection.fromLatLngToDivPixel(this.position)!;
     const radiusInPixels = diameterInPixels / 2;
 
