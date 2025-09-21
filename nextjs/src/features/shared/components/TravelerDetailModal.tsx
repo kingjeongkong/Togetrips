@@ -8,6 +8,7 @@ import { useUserLocation } from '@/features/home/hooks/useUserLocation';
 import { getDistanceText } from '@/features/home/utils/location';
 import UserInfoView from '@/features/shared/components/DetailInfoView';
 import UserLocationView from '@/features/shared/components/DetailLocationView';
+import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { User } from '@/features/shared/types/User';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
@@ -33,6 +34,7 @@ const TravelerDetailModal = ({
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const { profile, isLoading: profileLoading } = useUserProfileById(travelerId);
+  const { profile: currentUserProfile } = useMyProfile();
   const { users } = useUserLocation();
   const { sendRequest, isLoading } = useSendRequest(travelerId);
 
@@ -152,6 +154,8 @@ const TravelerDetailModal = ({
                     otherUserLatitude={userLocation.latitude}
                     otherUserLongitude={userLocation.longitude}
                     userName={profile?.name}
+                    otherUserImageUrl={profile?.image}
+                    currentUserImageUrl={currentUserProfile?.image}
                   />
                 ) : (
                   <div className="p-6">
