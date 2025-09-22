@@ -298,7 +298,12 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
                 >
                   Location (City)
                 </label>
-                <LocationAutocomplete onSelect={handleLocationSelect} error={errors.city} />
+                <LocationAutocomplete
+                  onSelect={handleLocationSelect}
+                  error={errors.city}
+                  placeholder="Select a city"
+                  variant="default"
+                />
               </div>
 
               {/* Max Participants */}

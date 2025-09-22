@@ -1,6 +1,6 @@
 'use client';
 
-import { HiSearch } from 'react-icons/hi';
+import { HiLocationMarker, HiSearch } from 'react-icons/hi';
 import LocationAutocomplete from './LocationAutocomplete';
 
 interface SearchAndFilterProps {
@@ -35,13 +35,19 @@ export default function SearchAndFilterSection({
         </div>
 
         {/* 도시 검색 (LocationAutocomplete 통합) */}
-        <div className="flex-1 min-w-0">
-          <LocationAutocomplete
-            onSelect={(location) => onLocationChange(location?.location_id || null)}
-            error={undefined}
-            disabled={disabled}
-            placeholder="Search for a city..."
-          />
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <HiLocationMarker className="w-5 h-5 text-blue-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <LocationAutocomplete
+              onSelect={(location) => onLocationChange(location?.location_id || null)}
+              error={undefined}
+              disabled={disabled}
+              placeholder="Search city..."
+              variant="search"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ interface LocationAutocompleteProps {
   error?: string;
   disabled?: boolean;
   placeholder?: string;
+  variant?: 'default' | 'search';
 }
 
 export default function LocationAutocomplete({
@@ -16,6 +17,7 @@ export default function LocationAutocomplete({
   error,
   disabled = false,
   placeholder,
+  variant = 'default',
 }: LocationAutocompleteProps) {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<MapboxSearchResult[]>([]);
@@ -121,12 +123,18 @@ export default function LocationAutocomplete({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           disabled={disabled}
-          className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
+          className={`w-full px-4 py-3 md:py-4 border-0 rounded-xl text-gray-900 text-sm focus:outline-none transition-all duration-200 ${
+            variant === 'search'
+              ? 'bg-gray-50 placeholder-gray-500'
+              : 'bg-gray-100 placeholder-gray-300 focus:ring-2 focus:ring-purple-500 md:text-base'
+          } ${
             error ? 'ring-2 ring-red-500' : ''
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           placeholder={placeholder}
         />
-        <HiLocationMarker className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        {variant === 'default' && (
+          <HiLocationMarker className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        )}
       </div>
 
       {/* 드롭다운 */}
