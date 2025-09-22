@@ -23,32 +23,38 @@ export default function LocationAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isSuggestionClicked = useRef(false);
 
   // 검색 디바운싱
   useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      if (inputValue.trim().length >= 2) {
-        setIsLoading(true);
-        try {
-          const results = await searchLocations(inputValue);
-          setSuggestions(results);
-          setIsOpen(true);
-        } catch (error) {
-          console.error('Location search error:', error);
-          setSuggestions([]);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setSuggestions([]);
-        setIsOpen(false);
-        // input이 비워지면 선택 해제 알림
-        if (inputValue.trim().length === 0) {
-          onSelect(null);
-        }
-      }
-    }, 400);
+    // 클릭으로 인한 업데이트라면 API 호출을 건너뜀
+    if (isSuggestionClicked.current) {
+      isSuggestionClicked.current = false; // 플래그 초기화
+      return;
+    }
 
+    const fetchSuggestions = async () => {
+      setIsLoading(true);
+      try {
+        const results = await searchLocations(inputValue);
+        setSuggestions(results);
+      } catch (error) {
+        console.error('Location search error:', error);
+        setSuggestions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (inputValue.trim().length < 2) {
+      setSuggestions([]);
+      if (inputValue.trim().length === 0) {
+        onSelect(null);
+      }
+      return;
+    }
+
+    const timeoutId = setTimeout(fetchSuggestions, 400);
     return () => clearTimeout(timeoutId);
   }, [inputValue, onSelect]);
 
@@ -80,12 +86,27 @@ export default function LocationAutocomplete({
       location_id: suggestion.id,
     });
 
+    // setInputValue를 호출하기 전에 플래그를 true로 설정
+    isSuggestionClicked.current = true;
     setInputValue(city); // 도시명만 표시
     setIsOpen(false);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+
+    // 사용자가 타이핑하면 드롭다운 열기
+    if (newValue.trim().length >= 2) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
   const handleInputFocus = () => {
-    if (suggestions.length > 0) {
+    // 제안이 있고 input에 값이 있으면 드롭다운 열기
+    if (suggestions.length > 0 && inputValue.trim().length >= 2) {
       setIsOpen(true);
     }
   };
@@ -97,7 +118,7 @@ export default function LocationAutocomplete({
           ref={inputRef}
           type="text"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={handleInputChange}
           onFocus={handleInputFocus}
           disabled={disabled}
           className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
