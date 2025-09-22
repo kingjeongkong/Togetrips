@@ -35,10 +35,6 @@ export const validateGatheringForm = (formData: CreateGatheringRequest): Record<
     errors.city = 'City is required';
   }
 
-  if (!formData.country.trim()) {
-    errors.country = 'Country is required';
-  }
-
   if (formData.max_participants < 2) {
     errors.max_participants = 'Maximum participants must be at least 2';
   }

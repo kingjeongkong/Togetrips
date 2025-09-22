@@ -8,9 +8,11 @@ import SearchAndFilterSection from './SearchAndFilterSection';
 export default function GatheringList() {
   const { gatherings, isListLoading } = useGathering();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [debouncedLocationId, setDebouncedLocationId] = useState<string | null>(null);
 
-  // 디바운싱 처리
+  // 검색어 디바운싱 처리
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
@@ -19,21 +21,38 @@ export default function GatheringList() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // 검색 필터링 함수
-  const filterGatherings = (gatherings: GatheringWithDetails[], query: string) => {
-    if (!query.trim()) {
-      return gatherings;
-    }
+  // 도시 선택 디바운싱 처리
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedLocationId(selectedLocationId);
+    }, 300);
 
-    const lowercaseQuery = query.toLowerCase();
-    return gatherings.filter((gathering) =>
-      gathering.activity_title.toLowerCase().includes(lowercaseQuery),
-    );
+    return () => clearTimeout(timer);
+  }, [selectedLocationId]);
+
+  // 도시 선택 핸들러
+
+  // 검색 필터링 함수
+  const filterGatherings = (
+    gatherings: GatheringWithDetails[],
+    query: string,
+    locationId: string | null,
+  ) => {
+    return gatherings.filter((gathering) => {
+      // 모임 제목 검색
+      const matchesTitle =
+        !query.trim() || gathering.activity_title.toLowerCase().includes(query.toLowerCase());
+
+      // 도시 검색 (location_id 비교)
+      const matchesLocation = !locationId || gathering.location_id === locationId;
+
+      return matchesTitle && matchesLocation;
+    });
   };
 
   const filteredGatherings = useMemo(() => {
-    return filterGatherings(gatherings, debouncedQuery);
-  }, [gatherings, debouncedQuery]);
+    return filterGatherings(gatherings, debouncedQuery, debouncedLocationId);
+  }, [gatherings, debouncedQuery, debouncedLocationId]);
 
   // 로딩 스켈레톤 카드 컴포넌트
   const LoadingSkeletonCard = () => (
@@ -84,6 +103,7 @@ export default function GatheringList() {
       <SearchAndFilterSection
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onLocationChange={(locationId) => setSelectedLocationId(locationId)}
         disabled={isListLoading}
       />
 

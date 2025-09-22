@@ -97,18 +97,29 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
     };
   }, [previewUrl]);
 
-  const handleLocationSelect = (location: {
-    city: string;
-    country: string;
-    location_id: string;
-  }) => {
-    setFormData((prev) => ({
-      ...prev,
-      city: location.city,
-      country: location.country,
-      location_id: location.location_id,
-    }));
-    setErrors((prev) => removeFieldError(prev, 'city'));
+  const handleLocationSelect = (
+    location: {
+      city: string;
+      country: string;
+      location_id: string;
+    } | null,
+  ) => {
+    if (location) {
+      setFormData((prev) => ({
+        ...prev,
+        city: location.city,
+        country: location.country,
+        location_id: location.location_id,
+      }));
+      setErrors((prev) => removeFieldError(prev, 'city'));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        city: '',
+        country: '',
+        location_id: '',
+      }));
+    }
   };
 
   return (
@@ -287,7 +298,12 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
                 >
                   Location (City)
                 </label>
-                <LocationAutocomplete onSelect={handleLocationSelect} error={errors.city} />
+                <LocationAutocomplete
+                  onSelect={handleLocationSelect}
+                  error={errors.city}
+                  placeholder="Select a city"
+                  variant="default"
+                />
               </div>
 
               {/* Max Participants */}

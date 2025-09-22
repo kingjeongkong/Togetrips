@@ -5,41 +5,60 @@ import { useEffect, useRef, useState } from 'react';
 import { HiLocationMarker } from 'react-icons/hi';
 
 interface LocationAutocompleteProps {
-  onSelect: (location: { city: string; country: string; location_id: string }) => void;
+  onSelect: (location: { city: string; country: string; location_id: string } | null) => void;
   error?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  variant?: 'default' | 'search';
 }
 
-export default function LocationAutocomplete({ onSelect, error }: LocationAutocompleteProps) {
-  const [locationInput, setLocationInput] = useState('');
+export default function LocationAutocomplete({
+  onSelect,
+  error,
+  disabled = false,
+  placeholder,
+  variant = 'default',
+}: LocationAutocompleteProps) {
+  const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<MapboxSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isSuggestionClicked = useRef(false);
 
   // 검색 디바운싱
   useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      if (locationInput.trim().length >= 2) {
-        setIsLoading(true);
-        try {
-          const results = await searchLocations(locationInput);
-          setSuggestions(results);
-          setIsOpen(true);
-        } catch (error) {
-          console.error('Location search error:', error);
-          setSuggestions([]);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setSuggestions([]);
-        setIsOpen(false);
-      }
-    }, 400);
+    // 클릭으로 인한 업데이트라면 API 호출을 건너뜀
+    if (isSuggestionClicked.current) {
+      isSuggestionClicked.current = false; // 플래그 초기화
+      return;
+    }
 
+    const fetchSuggestions = async () => {
+      setIsLoading(true);
+      try {
+        const results = await searchLocations(inputValue);
+        setSuggestions(results);
+      } catch (error) {
+        console.error('Location search error:', error);
+        setSuggestions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (inputValue.trim().length < 2) {
+      setSuggestions([]);
+      if (inputValue.trim().length === 0) {
+        onSelect(null);
+      }
+      return;
+    }
+
+    const timeoutId = setTimeout(fetchSuggestions, 400);
     return () => clearTimeout(timeoutId);
-  }, [locationInput]);
+  }, [inputValue, onSelect]);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -58,11 +77,6 @@ export default function LocationAutocomplete({ onSelect, error }: LocationAutoco
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setLocationInput(newValue);
-  };
-
   const handleSuggestionClick = (suggestion: MapboxSearchResult) => {
     // 도시명과 국가명 추출
     const city = suggestion.text;
@@ -74,12 +88,27 @@ export default function LocationAutocomplete({ onSelect, error }: LocationAutoco
       location_id: suggestion.id,
     });
 
-    setLocationInput(suggestion.place_name);
+    // setInputValue를 호출하기 전에 플래그를 true로 설정
+    isSuggestionClicked.current = true;
+    setInputValue(city); // 도시명만 표시
     setIsOpen(false);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+
+    // 사용자가 타이핑하면 드롭다운 열기
+    if (newValue.trim().length >= 2) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
   const handleInputFocus = () => {
-    if (suggestions.length > 0) {
+    // 제안이 있고 input에 값이 있으면 드롭다운 열기
+    if (suggestions.length > 0 && inputValue.trim().length >= 2) {
       setIsOpen(true);
     }
   };
@@ -90,15 +119,22 @@ export default function LocationAutocomplete({ onSelect, error }: LocationAutoco
         <input
           ref={inputRef}
           type="text"
-          value={locationInput}
+          value={inputValue}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
-          className={`w-full px-4 py-3 md:py-4 bg-gray-100 border-0 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-sm md:text-base ${
+          disabled={disabled}
+          className={`w-full px-4 py-3 md:py-4 border-0 rounded-xl text-gray-900 text-sm focus:outline-none transition-all duration-200 ${
+            variant === 'search'
+              ? 'bg-gray-50 placeholder-gray-500'
+              : 'bg-gray-100 placeholder-gray-300 focus:ring-2 focus:ring-purple-500 md:text-base'
+          } ${
             error ? 'ring-2 ring-red-500' : ''
-          }`}
-          placeholder="Search for a city..."
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          placeholder={placeholder}
         />
-        <HiLocationMarker className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        {variant === 'default' && (
+          <HiLocationMarker className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        )}
       </div>
 
       {/* 드롭다운 */}
@@ -129,7 +165,7 @@ export default function LocationAutocomplete({ onSelect, error }: LocationAutoco
                 </div>
               </button>
             ))
-          ) : locationInput.trim().length >= 2 ? (
+          ) : inputValue.trim().length >= 2 ? (
             <div className="px-4 py-3 text-center text-gray-500 text-sm">No locations found</div>
           ) : null}
         </div>
