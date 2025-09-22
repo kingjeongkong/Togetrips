@@ -1,3 +1,4 @@
+import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -92,11 +93,18 @@ export const useCreateGathering = (onSuccess?: () => void) => {
 export const useJoinGathering = (gatheringId: string) => {
   const queryClient = useQueryClient();
   const { userId } = useSession();
+  const { profile: currentUserProfile } = useMyProfile();
 
   const { mutate: joinGatheringMutation, isPending: isJoining } = useMutation({
     mutationFn: () => joinGathering(gatheringId),
     onSuccess: () => {
-      if (!userId) return;
+      if (!userId || !currentUserProfile) return;
+
+      const currentUserDetail = {
+        id: currentUserProfile.id,
+        name: currentUserProfile.name,
+        image: currentUserProfile.image,
+      };
 
       queryClient.setQueryData(['gatherings'], (oldData: GatheringWithDetails[] | undefined) => {
         if (!oldData) return oldData;
@@ -108,6 +116,7 @@ export const useJoinGathering = (gatheringId: string) => {
                 is_joined: true,
                 participants: [...gathering.participants, userId],
                 participant_count: gathering.participant_count + 1,
+                participant_details: [...(gathering.participant_details || []), currentUserDetail],
               }
             : gathering,
         );
@@ -123,6 +132,7 @@ export const useJoinGathering = (gatheringId: string) => {
             is_joined: true,
             participants: [...oldData.participants, userId],
             participant_count: oldData.participant_count + 1,
+            participant_details: [...(oldData.participant_details || []), currentUserDetail],
           };
         },
       );
@@ -130,6 +140,10 @@ export const useJoinGathering = (gatheringId: string) => {
     onError: (error) => {
       console.error('모임 참여 실패:', error);
       toast.error('Failed to join gathering');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
     },
   });
 
@@ -159,6 +173,9 @@ export const useLeaveGathering = (gatheringId: string) => {
                 is_joined: false,
                 participants: gathering.participants.filter((id: string) => id !== userId),
                 participant_count: Math.max(0, gathering.participant_count - 1),
+                participant_details: (gathering.participant_details || []).filter(
+                  (participant) => participant.id !== userId,
+                ),
               }
             : gathering,
         );
@@ -174,6 +191,9 @@ export const useLeaveGathering = (gatheringId: string) => {
             is_joined: false,
             participants: oldData.participants.filter((id: string) => id !== userId),
             participant_count: Math.max(0, oldData.participant_count - 1),
+            participant_details: (oldData.participant_details || []).filter(
+              (participant) => participant.id !== userId,
+            ),
           };
         },
       );
@@ -181,6 +201,10 @@ export const useLeaveGathering = (gatheringId: string) => {
     onError: (error) => {
       console.error('모임 탈퇴 실패:', error);
       toast.error('Failed to leave gathering');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
     },
   });
 
