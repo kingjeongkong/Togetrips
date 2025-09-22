@@ -60,8 +60,6 @@ export default function JoinButton({
       {isLoading ? (
         <div className="flex items-center justify-center">
           <HiRefresh className="animate-spin -ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-          <span className="hidden sm:inline">Loading...</span>
-          <span className="sm:hidden">...</span>
         </div>
       ) : (
         getButtonText()

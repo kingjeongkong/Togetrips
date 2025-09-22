@@ -1,3 +1,4 @@
+import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import {
@@ -90,11 +91,38 @@ export const useCreateGathering = (onSuccess?: () => void) => {
 // 모임 참여
 export const useJoinGathering = (gatheringId: string) => {
   const queryClient = useQueryClient();
+  const { userId } = useSession();
 
   const { mutate: joinGatheringMutation, isPending: isJoining } = useMutation({
     mutationFn: () => joinGathering(gatheringId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
+      if (!userId) return;
+
+      queryClient.setQueryData(['gatherings'], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((gathering: any) =>
+          gathering.id === gatheringId
+            ? {
+                ...gathering,
+                is_joined: true,
+                participants: [...gathering.participants, userId],
+                participant_count: gathering.participant_count + 1,
+              }
+            : gathering,
+        );
+      });
+
+      queryClient.setQueryData(['gathering', gatheringId], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          is_joined: true,
+          participants: [...oldData.participants, userId],
+          participant_count: oldData.participant_count + 1,
+        };
+      });
     },
     onError: (error) => {
       console.error('모임 참여 실패:', error);
@@ -111,11 +139,38 @@ export const useJoinGathering = (gatheringId: string) => {
 // 모임 탈퇴
 export const useLeaveGathering = (gatheringId: string) => {
   const queryClient = useQueryClient();
+  const { userId } = useSession();
 
   const { mutate: leaveGatheringMutation, isPending: isLeaving } = useMutation({
     mutationFn: () => leaveGathering(gatheringId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
+      if (!userId) return;
+
+      queryClient.setQueryData(['gatherings'], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((gathering: any) =>
+          gathering.id === gatheringId
+            ? {
+                ...gathering,
+                is_joined: false,
+                participants: gathering.participants.filter((id: string) => id !== userId),
+                participant_count: Math.max(0, gathering.participant_count - 1),
+              }
+            : gathering,
+        );
+      });
+
+      queryClient.setQueryData(['gathering', gatheringId], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          is_joined: false,
+          participants: oldData.participants.filter((id: string) => id !== userId),
+          participant_count: Math.max(0, oldData.participant_count - 1),
+        };
+      });
     },
     onError: (error) => {
       console.error('모임 탈퇴 실패:', error);
