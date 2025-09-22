@@ -141,6 +141,10 @@ export const useJoinGathering = (gatheringId: string) => {
       console.error('모임 참여 실패:', error);
       toast.error('Failed to join gathering');
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
+    },
   });
 
   return {
@@ -197,6 +201,10 @@ export const useLeaveGathering = (gatheringId: string) => {
     onError: (error) => {
       console.error('모임 탈퇴 실패:', error);
       toast.error('Failed to leave gathering');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
     },
   });
 
