@@ -14,10 +14,10 @@ const mapRowToMessage = (row: Record<string, unknown>): Message => ({
 });
 
 export const chatService = {
-  // 채팅방 목록 조회
-  async getChatRooms(): Promise<ChatRoomListItem[]> {
+  // 1:1 채팅방 목록 조회
+  async getDirectChatRooms(): Promise<ChatRoomListItem[]> {
     try {
-      const response = await fetch('/api/chat/rooms', {
+      const response = await fetch('/api/chat/rooms/direct', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export const chatService = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch chat rooms');
+        throw new Error(errorData.error || 'Failed to fetch direct chat rooms');
       }
 
       const result = await response.json();
@@ -41,9 +41,9 @@ export const chatService = {
       }));
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching chat rooms:', error);
+        console.error('Error fetching direct chat rooms:', error);
       }
-      toast.error('Failed to fetch chat rooms');
+      toast.error('Failed to fetch direct chat rooms');
       return [];
     }
   },
@@ -278,11 +278,14 @@ export const chatService = {
       chatRoomId: string,
       updates: Partial<ChatRoomListItem>,
     ) => {
-      queryClient.setQueryData(['chatRooms', userId], (oldData: ChatRoomListItem[] | undefined) => {
-        if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ['directChatRooms', userId],
+        (oldData: ChatRoomListItem[] | undefined) => {
+          if (!oldData) return oldData;
 
-        return oldData.map((room) => (room.id === chatRoomId ? { ...room, ...updates } : room));
-      });
+          return oldData.map((room) => (room.id === chatRoomId ? { ...room, ...updates } : room));
+        },
+      );
     };
 
     // 사용자의 채팅방만 필터링하는 함수
@@ -308,7 +311,7 @@ export const chatService = {
           const senderId = payload.new.sender_id as string;
 
           // 사용자의 채팅방인지 확인
-          const currentData = queryClient.getQueryData(['chatRooms', userId]) as
+          const currentData = queryClient.getQueryData(['directChatRooms', userId]) as
             | ChatRoomListItem[]
             | undefined;
           if (!isUserChatRoom(chatRoomId, currentData)) return;
@@ -339,7 +342,7 @@ export const chatService = {
           const oldRead = payload.old?.read as boolean;
 
           // 사용자의 채팅방인지 확인
-          const currentData = queryClient.getQueryData(['chatRooms', userId]) as
+          const currentData = queryClient.getQueryData(['directChatRooms', userId]) as
             | ChatRoomListItem[]
             | undefined;
           if (!isUserChatRoom(chatRoomId, currentData)) return;

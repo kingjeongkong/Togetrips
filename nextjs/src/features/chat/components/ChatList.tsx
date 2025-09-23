@@ -22,8 +22,8 @@ const ChatList = () => {
   }, [userId, queryClient]);
 
   const { data: chatRooms = [], isLoading } = useQuery({
-    queryKey: ['chatRooms', userId],
-    queryFn: () => chatService.getChatRooms(),
+    queryKey: ['directChatRooms', userId],
+    queryFn: () => chatService.getDirectChatRooms(),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

@@ -10,7 +10,7 @@ export const useUnreadCount = () => {
     queryFn: async () => {
       if (!userId) return 0;
 
-      const chatRooms = await chatService.getChatRooms();
+      const chatRooms = await chatService.getDirectChatRooms();
       return chatRooms.reduce((total, room) => total + room.unreadCount, 0);
     },
     enabled: !!userId,
