@@ -25,59 +25,31 @@ export async function DELETE(
     const currentUserId = user.id;
 
     const { id: gatheringId } = await params;
+    // leave_gathering RPC 함수 호출
+    const { data: result, error } = await supabase.rpc('leave_gathering', {
+      p_gathering_id: gatheringId,
+      p_user_id: currentUserId,
+    });
 
-    if (!gatheringId) {
-      return NextResponse.json({ error: 'Gathering ID is required' }, { status: 400 });
+    if (error) {
+      console.error('Error calling leave_gathering RPC:', error);
+      return NextResponse.json({ error: 'Failed to leave gathering' }, { status: 500 });
     }
 
-    // 모임 정보 조회
-    const { data: gathering, error: gatheringError } = await supabase
-      .from('gatherings')
-      .select('host_id, participants')
-      .eq('id', gatheringId)
-      .single();
-
-    if (gatheringError || !gathering) {
-      return NextResponse.json({ error: 'Gathering not found' }, { status: 404 });
+    if (!result || result.length === 0) {
+      return NextResponse.json({ error: 'No result from leave_gathering' }, { status: 500 });
     }
 
-    // 호스트는 탈퇴할 수 없음 (모임을 삭제해야 함)
-    if (gathering.host_id === currentUserId) {
-      return NextResponse.json(
-        { error: 'Host cannot leave the gathering. Please delete the gathering instead.' },
-        { status: 403 },
-      );
-    }
+    const { success, message, gathering_data } = result[0];
 
-    // 참여자인지 확인
-    if (!gathering.participants?.includes(currentUserId)) {
-      return NextResponse.json(
-        { error: 'You are not participating in this gathering' },
-        { status: 409 },
-      );
-    }
-
-    // 참여자 제거
-    const updatedParticipants =
-      gathering.participants?.filter((participantId: string) => participantId !== currentUserId) ||
-      [];
-
-    const { error: updateError } = await supabase
-      .from('gatherings')
-      .update({
-        participants: updatedParticipants,
-      })
-      .eq('id', gatheringId)
-      .select('*')
-      .single();
-
-    if (updateError) {
-      throw new Error(updateError.message);
+    if (!success) {
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Successfully left the gathering',
+      message: message,
+      gathering: gathering_data,
     });
   } catch (error: unknown) {
     console.error('Error leaving gathering:', error);
