@@ -2,7 +2,12 @@ import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { ChatRoom, ChatRoomListItem, Message } from '../types/chatTypes';
+import {
+  DirectChatRoom,
+  DirectChatRoomListItem,
+  GatheringChatRoomListItem,
+  Message,
+} from '../types/chatTypes';
 
 // 헬퍼 함수: DB row를 Message 타입으로 변환
 const mapRowToMessage = (row: Record<string, unknown>): Message => ({
@@ -15,7 +20,7 @@ const mapRowToMessage = (row: Record<string, unknown>): Message => ({
 
 export const chatService = {
   // 1:1 채팅방 목록 조회
-  async getDirectChatRooms(): Promise<ChatRoomListItem[]> {
+  async getDirectChatRooms(): Promise<DirectChatRoomListItem[]> {
     try {
       const response = await fetch('/api/chat/rooms/direct', {
         method: 'GET',
@@ -48,8 +53,44 @@ export const chatService = {
     }
   },
 
+  // 그룹 채팅방 목록 조회
+  async getGatheringChatRooms(): Promise<GatheringChatRoomListItem[]> {
+    try {
+      const response = await fetch('/api/chat/rooms/gathering', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch gathering chat rooms');
+      }
+
+      const result = await response.json();
+      return result.chatRooms.map((room: Record<string, unknown>) => ({
+        id: room.id,
+        room_name: room.room_name,
+        room_image: room.room_image,
+        participants: room.participants,
+        last_message: room.last_message,
+        last_message_time: room.last_message_time,
+        participant_count: room.participant_count,
+        participant_details: room.participants || [],
+        unreadCount: room.unreadCount ?? 0,
+      }));
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching gathering chat rooms:', error);
+      }
+      toast.error('Failed to fetch gathering chat rooms');
+      return [];
+    }
+  },
+
   // 개별 채팅방 조회
-  async getChatRoom(chatRoomID: string): Promise<Partial<ChatRoom>> {
+  async getChatRoom(chatRoomID: string): Promise<Partial<DirectChatRoom>> {
     try {
       const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
         method: 'GET',
@@ -276,11 +317,11 @@ export const chatService = {
     // Optimistic Updates: 특정 채팅방만 선택적으로 업데이트
     const updateChatRoomOptimistically = (
       chatRoomId: string,
-      updates: Partial<ChatRoomListItem>,
+      updates: Partial<DirectChatRoomListItem>,
     ) => {
       queryClient.setQueryData(
         ['directChatRooms', userId],
-        (oldData: ChatRoomListItem[] | undefined) => {
+        (oldData: DirectChatRoomListItem[] | undefined) => {
           if (!oldData) return oldData;
 
           return oldData.map((room) => (room.id === chatRoomId ? { ...room, ...updates } : room));
@@ -289,7 +330,7 @@ export const chatService = {
     };
 
     // 사용자의 채팅방만 필터링하는 함수
-    const isUserChatRoom = (chatRoomId: string, oldData: ChatRoomListItem[] | undefined) => {
+    const isUserChatRoom = (chatRoomId: string, oldData: DirectChatRoomListItem[] | undefined) => {
       if (!oldData) return false;
       const targetRoom = oldData.find((room) => room.id === chatRoomId);
       return targetRoom?.participants.includes(userId) || false;
@@ -312,7 +353,7 @@ export const chatService = {
 
           // 사용자의 채팅방인지 확인
           const currentData = queryClient.getQueryData(['directChatRooms', userId]) as
-            | ChatRoomListItem[]
+            | DirectChatRoomListItem[]
             | undefined;
           if (!isUserChatRoom(chatRoomId, currentData)) return;
 
@@ -343,7 +384,7 @@ export const chatService = {
 
           // 사용자의 채팅방인지 확인
           const currentData = queryClient.getQueryData(['directChatRooms', userId]) as
-            | ChatRoomListItem[]
+            | DirectChatRoomListItem[]
             | undefined;
           if (!isUserChatRoom(chatRoomId, currentData)) return;
 

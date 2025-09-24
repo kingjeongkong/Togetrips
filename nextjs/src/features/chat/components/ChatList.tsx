@@ -2,18 +2,22 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useSession } from '@/providers/SessionProvider';
+import { formatRelativeTime } from '@/utils/dateUtils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { chatService } from '../services/chatService';
-import { ChatRoomListItem } from '../types/chatTypes';
+import { DirectChatRoomListItem, GatheringChatRoomListItem } from '../types/chatTypes';
 import ChatListItem from './ChatListItem';
+
+type TabType = 'chats' | 'groups';
 
 const ChatList = () => {
   const { userId } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<TabType>('chats');
 
   useEffect(() => {
     if (!userId) return;
@@ -21,7 +25,7 @@ const ChatList = () => {
     return () => unsubscribe();
   }, [userId, queryClient]);
 
-  const { data: chatRooms = [], isLoading } = useQuery({
+  const { data: directChatRooms = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ['directChatRooms', userId],
     queryFn: () => chatService.getDirectChatRooms(),
     enabled: !!userId,
@@ -29,8 +33,20 @@ const ChatList = () => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const handleChatClick = (chatRoom: ChatRoomListItem) => {
+  const { data: gatheringChatRooms = [], isLoading: isLoadingGathering } = useQuery({
+    queryKey: ['gatheringChatRooms', userId],
+    queryFn: () => chatService.getGatheringChatRooms(),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const handleDirectChatClick = (chatRoom: DirectChatRoomListItem) => {
     if (!chatRoom.otherUser) return;
+    router.push(`/chat/${chatRoom.id}`);
+  };
+
+  const handleGatheringChatClick = (chatRoom: GatheringChatRoomListItem) => {
     router.push(`/chat/${chatRoom.id}`);
   };
 
@@ -51,27 +67,104 @@ const ChatList = () => {
           </button>
           <h1 className="text-xl font-semibold md:text-2xl text-gray-900">Messages</h1>
         </div>
+
+        {/* 탭바 */}
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('chats')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === 'chats'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Chats
+          </button>
+          <button
+            onClick={() => setActiveTab('groups')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === 'groups'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Groups
+          </button>
+        </div>
       </div>
 
-      {isLoading && (
-        <div className="flex justify-center items-center h-full">
-          <LoadingIndicator color="#6366f1" size={50} />
-        </div>
+      {/* Chats 탭 */}
+      {activeTab === 'chats' && (
+        <>
+          {isLoadingDirect ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingIndicator color="#6366f1" size={50} />
+            </div>
+          ) : directChatRooms.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 text-lg py-10 text-center">
+              No direct messages yet.
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto group">
+              {directChatRooms.map((chatRoom) => {
+                if (!chatRoom.otherUser) return null;
+
+                return (
+                  <div key={chatRoom.id} aria-label={`Direct chat room ${chatRoom.id}`}>
+                    <ChatListItem
+                      id={chatRoom.id}
+                      imageUrl={chatRoom.otherUser.image || '/default-traveler.png'}
+                      title={chatRoom.otherUser.name}
+                      lastMessage={chatRoom.lastMessage || 'No messages yet'}
+                      timestamp={formatRelativeTime(chatRoom.lastMessageTime || chatRoom.createdAt)}
+                      unreadCount={chatRoom.unreadCount}
+                      onClick={() => handleDirectChatClick(chatRoom)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
 
-      <div className="flex-1 overflow-y-auto group">
-        {chatRooms.length === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 text-lg py-10 text-center">
-            No chat rooms yet.
-          </div>
-        ) : (
-          chatRooms.map((chatRoom) => (
-            <div key={chatRoom.id} aria-label={`Chat room ${chatRoom.id}`}>
-              <ChatListItem chatRoom={chatRoom} onClick={() => handleChatClick(chatRoom)} />
+      {/* Groups 탭 */}
+      {activeTab === 'groups' && (
+        <>
+          {isLoadingGathering ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingIndicator color="#6366f1" size={50} />
             </div>
-          ))
-        )}
-      </div>
+          ) : gatheringChatRooms.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 text-lg py-10 text-center">
+              No gathering chats yet.
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto group">
+              {gatheringChatRooms.map((chatRoom) => {
+                return (
+                  <div key={chatRoom.id} aria-label={`Gathering chat room ${chatRoom.id}`}>
+                    <ChatListItem
+                      id={chatRoom.id}
+                      imageUrl={chatRoom.room_image || '/default-traveler.png'}
+                      title={chatRoom.room_name}
+                      lastMessage={chatRoom.last_message || 'No messages yet'}
+                      timestamp={
+                        chatRoom.last_message_time
+                          ? formatRelativeTime(chatRoom.last_message_time)
+                          : 'New'
+                      }
+                      unreadCount={chatRoom.unreadCount}
+                      participantCount={chatRoom.participant_count}
+                      onClick={() => handleGatheringChatClick(chatRoom)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
