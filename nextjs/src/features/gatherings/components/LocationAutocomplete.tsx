@@ -50,15 +50,12 @@ export default function LocationAutocomplete({
 
     if (inputValue.trim().length < 2) {
       setSuggestions([]);
-      if (inputValue.trim().length === 0) {
-        onSelect(null);
-      }
       return;
     }
 
     const timeoutId = setTimeout(fetchSuggestions, 400);
     return () => clearTimeout(timeoutId);
-  }, [inputValue, onSelect]);
+  }, [inputValue]);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -78,7 +75,6 @@ export default function LocationAutocomplete({
   }, []);
 
   const handleSuggestionClick = (suggestion: MapboxSearchResult) => {
-    // 도시명과 국가명 추출
     const city = suggestion.text;
     const country = suggestion.context?.find((c) => c.id.startsWith('country'))?.text || '';
 
@@ -90,7 +86,7 @@ export default function LocationAutocomplete({
 
     // setInputValue를 호출하기 전에 플래그를 true로 설정
     isSuggestionClicked.current = true;
-    setInputValue(city); // 도시명만 표시
+    setInputValue(city);
     setIsOpen(false);
   };
 
@@ -103,6 +99,10 @@ export default function LocationAutocomplete({
       setIsOpen(true);
     } else {
       setIsOpen(false);
+    }
+
+    if (newValue.trim() === '') {
+      onSelect(null);
     }
   };
 
