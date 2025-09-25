@@ -1,13 +1,7 @@
 import { supabase } from '@/lib/supabase-config';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
-import {
-  DirectChatRoom,
-  DirectChatRoomListItem,
-  GatheringChatRoomListItem,
-  Message,
-} from '../types/chatTypes';
+import { DirectChatRoomListItem, Message } from '../types/chatTypes';
 
 // 헬퍼 함수: DB row를 Message 타입으로 변환
 const mapRowToMessage = (row: Record<string, unknown>): Message => ({
@@ -18,174 +12,9 @@ const mapRowToMessage = (row: Record<string, unknown>): Message => ({
   read: row.read as boolean,
 });
 
-export const chatService = {
-  // 1:1 채팅방 목록 조회
-  async getDirectChatRooms(): Promise<DirectChatRoomListItem[]> {
-    try {
-      const response = await fetch('/api/chat/rooms/direct', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch direct chat rooms');
-      }
-
-      const result = await response.json();
-      return result.chatRooms.map((room: Record<string, unknown>) => ({
-        id: room.id,
-        participants: room.participants,
-        createdAt: room.created_at,
-        lastMessage: room.last_message || '',
-        lastMessageTime: room.last_message_time || room.created_at,
-        unreadCount: room.unreadCount ?? 0,
-        otherUser: room.otherUser || null,
-      }));
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching direct chat rooms:', error);
-      }
-      toast.error('Failed to fetch direct chat rooms');
-      return [];
-    }
-  },
-
-  // 그룹 채팅방 목록 조회
-  async getGatheringChatRooms(): Promise<GatheringChatRoomListItem[]> {
-    try {
-      const response = await fetch('/api/chat/rooms/gathering', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch gathering chat rooms');
-      }
-
-      const result = await response.json();
-      return result.chatRooms.map((room: Record<string, unknown>) => ({
-        id: room.id,
-        room_name: room.room_name,
-        room_image: room.room_image,
-        participants: room.participants,
-        last_message: room.last_message,
-        last_message_time: room.last_message_time,
-        participant_count: room.participant_count,
-        participant_details: room.participant_details || [],
-        unreadCount: room.unreadCount ?? 0,
-      }));
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching gathering chat rooms:', error);
-      }
-      toast.error('Failed to fetch gathering chat rooms');
-      return [];
-    }
-  },
-
-  // 개별 채팅방 조회
-  async getChatRoom(chatRoomID: string): Promise<Partial<DirectChatRoom>> {
-    try {
-      const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch chat room');
-      }
-
-      const room = await response.json();
-      return {
-        id: room.id,
-        participants: room.participants,
-        otherUser: room.otherUser || null,
-      };
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching chat room:', error);
-      }
-      toast.error('Failed to fetch chat room');
-      throw error;
-    }
-  },
-
-  // 메시지 읽음 처리
-  async markMessagesAsRead(chatRoomID: string, retries = 3): Promise<void> {
-    try {
-      const response = await fetch('/api/chat/mark-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chatRoomID,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to mark messages as read');
-      }
-
-      const result = await response.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Marked ${result.updatedCount} messages as read`);
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error marking messages as read:', error);
-      }
-
-      if (retries > 0) {
-        setTimeout(() => {
-          this.markMessagesAsRead(chatRoomID, retries - 1);
-        }, 500);
-      }
-    }
-  },
-
-  // 메시지 전송
-  async sendMessage(chatRoomID: string, content: string): Promise<boolean> {
-    try {
-      const response = await fetch('/api/chat/send-message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chatRoomID,
-          content,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send message');
-      }
-
-      return true;
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error sending message:', error);
-      }
-      toast.error('Failed to send message');
-      return false;
-    }
-  },
-
-  // Supabase Realtime 메시지 구독 (userId 파라미터로 인증)
-  // ToDo : Supabase access token 인증 로직 추가 후 rls 삭제
-  subscribeToMessagesSupabase(
+export const chatRealtimeService = {
+  // Supabase Realtime 메시지 구독
+  subscribeToMessages(
     chatRoomID: string,
     onMessage: (messages: Message[]) => void,
     onError?: (failedCount: number) => void,
@@ -197,7 +26,7 @@ export const chatService = {
     let channel: RealtimeChannel;
     let isSubscribed = true;
 
-    // 인증 상태 확인 (파라미터로 전달)
+    // 인증 상태 확인
     const checkAuth = () => {
       if (!userId) {
         throw new Error('Authentication required');
@@ -307,12 +136,7 @@ export const chatService = {
     };
   },
 
-  /**
-   * Supabase Realtime을 이용한 채팅방 목록 실시간 갱신 구독 (Optimistic Updates)
-   * @param userId 사용자 ID
-   * @param queryClient React Query의 QueryClient 인스턴스
-   * @returns 구독 해제 함수
-   */
+  // 채팅방 목록 실시간 갱신 구독 (Optimistic Updates)
   subscribeToChatRoomListUpdates(userId: string, queryClient: QueryClient): () => void {
     // Optimistic Updates: 특정 채팅방만 선택적으로 업데이트
     const updateChatRoomOptimistically = (
@@ -404,19 +228,5 @@ export const chatService = {
     return () => {
       supabase.removeChannel(channel);
     };
-  },
-
-  async deleteChatRoom(chatRoomId: string): Promise<void> {
-    const response = await fetch(`/api/chat/rooms/${chatRoomId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete chat room');
-    }
   },
 };

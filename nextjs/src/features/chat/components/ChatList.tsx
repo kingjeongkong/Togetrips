@@ -3,11 +3,12 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useSession } from '@/providers/SessionProvider';
 import { formatRelativeTime } from '@/utils/dateUtils';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
-import { chatService } from '../services/chatService';
+import { useChatRoomListSubscription } from '../hooks/useChatSubscription';
+import { chatApiService } from '../services/chatApiService';
 import { DirectChatRoomListItem, GatheringChatRoomListItem } from '../types/chatTypes';
 import ChatListItem from './ChatListItem';
 
@@ -16,18 +17,14 @@ type TabType = 'chats' | 'groups';
 const ChatList = () => {
   const { userId } = useSession();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('chats');
 
-  useEffect(() => {
-    if (!userId) return;
-    const unsubscribe = chatService.subscribeToChatRoomListUpdates(userId, queryClient);
-    return () => unsubscribe();
-  }, [userId, queryClient]);
+  // 채팅방 목록 구독만 설정
+  useChatRoomListSubscription({ userId: userId || null });
 
   const { data: directChatRooms = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ['directChatRooms', userId],
-    queryFn: () => chatService.getDirectChatRooms(),
+    queryFn: () => chatApiService.getDirectChatRooms(),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -35,7 +32,7 @@ const ChatList = () => {
 
   const { data: gatheringChatRooms = [], isLoading: isLoadingGathering } = useQuery({
     queryKey: ['gatheringChatRooms', userId],
-    queryFn: () => chatService.getGatheringChatRooms(),
+    queryFn: () => chatApiService.getGatheringChatRooms(),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -146,16 +143,16 @@ const ChatList = () => {
                   <div key={chatRoom.id} aria-label={`Gathering chat room ${chatRoom.id}`}>
                     <ChatListItem
                       id={chatRoom.id}
-                      imageUrl={chatRoom.room_image || '/default-traveler.png'}
-                      title={chatRoom.room_name}
-                      lastMessage={chatRoom.last_message || 'No messages yet'}
+                      imageUrl={chatRoom.roomImage || '/default-traveler.png'}
+                      title={chatRoom.roomName}
+                      lastMessage={chatRoom.lastMessage || 'No messages yet'}
                       timestamp={
-                        chatRoom.last_message_time
-                          ? formatRelativeTime(chatRoom.last_message_time)
+                        chatRoom.lastMessageTime
+                          ? formatRelativeTime(chatRoom.lastMessageTime)
                           : 'New'
                       }
                       unreadCount={chatRoom.unreadCount}
-                      participantCount={chatRoom.participant_count}
+                      participantCount={chatRoom.participantCount}
                       onClick={() => handleGatheringChatClick(chatRoom)}
                     />
                   </div>
