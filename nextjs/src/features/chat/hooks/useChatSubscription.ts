@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { chatRealtimeService } from '../services/chatRealtimeService';
+import { Message } from '../types/chatTypes';
 
 // 채팅방 목록 구독 훅
 interface UseChatRoomListSubscriptionProps {
@@ -24,7 +25,7 @@ export const useChatRoomListSubscription = ({ userId }: UseChatRoomListSubscript
 interface UseChatMessageSubscriptionProps {
   userId: string | null;
   chatRoomId: string;
-  onMessage: (messages: any[]) => void;
+  onMessage: (messages: Message[]) => void;
   onError?: (failedCount: number) => void;
 }
 
