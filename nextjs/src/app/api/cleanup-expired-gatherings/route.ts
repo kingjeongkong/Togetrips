@@ -100,12 +100,13 @@ export async function POST(request: Request) {
         })),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Error during cleanup:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: errorMessage,
       },
       { status: 500 },
     );
