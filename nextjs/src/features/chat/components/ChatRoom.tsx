@@ -7,7 +7,7 @@ import { debounce } from 'lodash';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { chatService } from '../services/chatService';
-import type { ChatRoom, Message } from '../types/chatTypes';
+import type { DirectChatRoom, GatheringChatRoom, Message } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -30,8 +30,17 @@ const ChatRoom = () => {
   const router = useRouter();
 
   const chatRoomFromCache = useMemo(() => {
-    const chatRooms = queryClient.getQueryData(['chatRooms', userId]) as ChatRoom[] | undefined;
-    return chatRooms?.find((room) => room.id === chatRoomID);
+    const directChatRooms = queryClient.getQueryData(['directChatRooms', userId]) as
+      | DirectChatRoom[]
+      | undefined;
+    const gatheringChatRooms = queryClient.getQueryData(['gatheringChatRooms', userId]) as
+      | GatheringChatRoom[]
+      | undefined;
+
+    const directRoom = directChatRooms?.find((room) => room.id === chatRoomID);
+    const gatheringRoom = gatheringChatRooms?.find((room) => room.id === chatRoomID);
+
+    return directRoom || gatheringRoom;
   }, [queryClient, userId, chatRoomID]);
 
   const {
@@ -47,6 +56,29 @@ const ChatRoom = () => {
   });
 
   const chatRoom = chatRoomFromCache || chatRoomFromAPI;
+
+  // 채팅방 타입 확인 (그룹 채팅인지 1:1 채팅인지)
+  const isGroupChat = 'room_name' in (chatRoom || {});
+
+  // 그룹 채팅의 경우 메시지에 참여자 정보를 미리 조합
+  const messagesWithSender = useMemo(() => {
+    if (!isGroupChat || !chatRoom || !('participant_details' in chatRoom)) {
+      return combinedMessages;
+    }
+
+    // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
+    const participantsMap = new Map(
+      chatRoom.participant_details.map((p: { id: string; name: string; image: string }) => [
+        p.id,
+        p,
+      ]),
+    );
+
+    return combinedMessages.map((message) => ({
+      ...message,
+      sender: participantsMap.get(message.senderId),
+    }));
+  }, [combinedMessages, isGroupChat, chatRoom]);
 
   // Supabase 실시간 메시지 구독
   useEffect(() => {
@@ -190,12 +222,28 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-full bg-gray-100 overflow-hidden">
       <ChatRoomHeader
-        profileImage={chatRoom?.otherUser?.image || '/default-traveler.png'}
-        name={chatRoom?.otherUser?.name || ''}
+        image={
+          isGroupChat
+            ? (chatRoom && 'room_image' in chatRoom ? chatRoom.room_image : null) ||
+              '/default-traveler.png'
+            : (chatRoom && 'otherUser' in chatRoom ? chatRoom.otherUser?.image : null) ||
+              '/default-traveler.png'
+        }
+        title={
+          isGroupChat
+            ? (chatRoom && 'room_name' in chatRoom ? chatRoom.room_name : null) || 'Group Chat'
+            : (chatRoom && 'otherUser' in chatRoom ? chatRoom.otherUser?.name : null) || ''
+        }
+        participantCount={
+          isGroupChat && chatRoom && 'participant_count' in chatRoom
+            ? chatRoom.participant_count
+            : undefined
+        }
         chatRoomId={chatRoomID}
+        isGroupChat={isGroupChat}
       />
       <ChatRoomMessageList
-        messages={combinedMessages}
+        messages={messagesWithSender}
         currentUserID={userId || ''}
         onResend={handleResend}
       />

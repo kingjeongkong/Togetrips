@@ -192,30 +192,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 모임 생성
-    const { error: createError } = await supabase
-      .from('gatherings')
-      .insert({
-        host_id: hostId,
-        activity_title,
-        description,
-        gathering_time,
-        location_id,
-        city,
-        country,
-        max_participants,
-        participants: [hostId], // 호스트를 첫 번째 참여자로 추가
-        cover_image_url: coverImageUrl,
-      })
-      .select('*')
-      .single();
+    // 모임과 그룹 채팅방을 함께 생성 (트랜잭션 처리)
+    const { data: result, error: createError } = await supabase.rpc(
+      'create_gathering_with_chat_room',
+      {
+        p_host_id: hostId,
+        p_activity_title: activity_title,
+        p_description: description,
+        p_gathering_time: gathering_time,
+        p_location_id: location_id,
+        p_city: city,
+        p_country: country,
+        p_max_participants: max_participants,
+        p_cover_image_url: coverImageUrl,
+      },
+    );
 
     if (createError) {
+      console.error('RPC error:', createError);
       throw new Error(createError.message);
     }
 
+    if (!result || result.length === 0) {
+      throw new Error('No result from create_gathering_with_chat_room');
+    }
+
+    const { success, message, gathering_data, chat_room_data } = result[0];
+
+    if (!success) {
+      throw new Error(message);
+    }
+
     return NextResponse.json({
-      message: 'Gathering created successfully',
+      message: message,
+      gathering: gathering_data,
+      chatRoom: chat_room_data,
     });
   } catch (error: unknown) {
     console.error('Error creating gathering:', error);

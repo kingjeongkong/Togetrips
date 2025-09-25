@@ -1,23 +1,32 @@
 'use client';
 
-import { formatRelativeTime } from '@/utils/dateUtils';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ChatRoomListItem } from '../types/chatTypes';
 
+// 범용적인 props 타입을 정의합니다.
 interface ChatListItemProps {
-  chatRoom: ChatRoomListItem;
+  id: string;
+  imageUrl: string;
+  title: string;
+  lastMessage: string;
+  timestamp: string;
+  unreadCount: number;
+  participantCount?: number; // 그룹 채팅을 위한 선택적 prop
   onClick: () => void;
 }
 
-const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
+const ChatListItem = ({
+  id,
+  imageUrl,
+  title,
+  lastMessage,
+  timestamp,
+  unreadCount,
+  participantCount,
+  onClick,
+}: ChatListItemProps) => {
   const pathname = usePathname();
-  const isSelected = pathname.includes(chatRoom.id);
-
-  // otherUser 정보가 없으면 렌더링하지 않음
-  if (!chatRoom.otherUser) {
-    return null;
-  }
+  const isSelected = pathname.includes(id);
 
   return (
     <div
@@ -28,32 +37,31 @@ const ChatListItem = ({ chatRoom, onClick }: ChatListItemProps) => {
     >
       <div className="items-center justify-center flex-shrink-0">
         <Image
-          src={chatRoom.otherUser.image || '/default-traveler.png'}
-          alt={chatRoom.otherUser.name}
+          src={imageUrl}
+          alt={title}
           width={48}
           height={48}
           className="w-12 h-12 rounded-full"
         />
       </div>
-      <div className="flex flex-col flex-1 gap-1">
-        <span className="text-gray-900">{chatRoom.otherUser.name}</span>
+      <div className="flex flex-col flex-1 gap-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-900 truncate">{title}</span>
+          {participantCount && (
+            <span className="text-xs text-gray-500 flex-shrink-0">({participantCount})</span>
+          )}
+        </div>
         <span
-          className={`line-lamp-1 text-sm ml-1 text-gray-700 ${
-            chatRoom.unreadCount > 0 ? 'font-bold' : ''
-          }`}
+          className={`truncate text-sm ml-1 text-gray-700 ${unreadCount > 0 ? 'font-bold' : ''}`}
         >
-          {chatRoom.lastMessage}
+          {lastMessage}
         </span>
       </div>
-      <div className="flex flex-col items-center gap-2">
-        <span className="text-sm text-gray-500">
-          {chatRoom.lastMessageTime
-            ? formatRelativeTime(chatRoom.lastMessageTime)
-            : formatRelativeTime(chatRoom.createdAt)}
-        </span>
-        {chatRoom.unreadCount > 0 && (
-          <span className="text-sm rounded-full w-5 h-5 ml-5 text-center text-white bg-orange-400">
-            {chatRoom.unreadCount}
+      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+        <span className="text-sm text-gray-500 whitespace-nowrap">{timestamp}</span>
+        {unreadCount > 0 && (
+          <span className="text-sm rounded-full w-5 h-5 flex items-center justify-center text-white bg-orange-400">
+            {unreadCount}
           </span>
         )}
       </div>

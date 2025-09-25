@@ -7,7 +7,7 @@ import ChatRoomDateDivider from './ChatRoomDateDivider';
 import ChatRoomMessage from './ChatRoomMessage';
 
 interface ChatRoomMessageListProps {
-  messages: Message[];
+  messages: (Message & { sender?: { id: string; name: string; image: string } })[];
   currentUserID: string;
   onResend: (message: Message) => void;
 }
@@ -102,6 +102,11 @@ const ChatRoomMessageList = ({ messages, currentUserID, onResend }: ChatRoomMess
               key={message.id}
               message={message}
               isOwnMessage={message.senderId === currentUserID}
+              sender={
+                'sender' in message
+                  ? (message.sender as { id: string; name: string; image: string } | undefined)
+                  : undefined
+              } // sender 정보는 이미 messages에 포함되어 있음
               onResend={onResend}
             />
           ))}

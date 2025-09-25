@@ -1,4 +1,4 @@
-export interface ChatRoom {
+export interface DirectChatRoom {
   id: string;
   participants: string[];
   createdAt: string;
@@ -11,7 +11,27 @@ export interface ChatRoom {
   } | null;
 }
 
-export interface ChatRoomListItem extends ChatRoom {
+export interface DirectChatRoomListItem extends DirectChatRoom {
+  unreadCount: number;
+}
+
+// 그룹 채팅방을 위한 타입 정의
+export interface GatheringChatRoom {
+  id: string;
+  room_name: string;
+  room_image: string | null;
+  participants: string[]; // 참여자 ID 목록
+  last_message: string | null;
+  last_message_time: string | null;
+  participant_count: number;
+  participant_details: Array<{
+    id: string;
+    name: string;
+    image: string;
+  }>; // 참여자 상세 정보
+}
+
+export interface GatheringChatRoomListItem extends GatheringChatRoom {
   unreadCount: number;
 }
 

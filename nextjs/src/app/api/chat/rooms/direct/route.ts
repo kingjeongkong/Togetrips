@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 사용자가 참여한 채팅방 목록 조회 (최신 메시지 순으로 정렬)
+    // 사용자가 참여한 1:1 채팅방 목록 조회 (최신 메시지 순으로 정렬)
     const { data: chatRooms, error } = await supabase
       .from('chat_rooms')
       .select(
@@ -34,6 +33,7 @@ export async function GET(request: NextRequest) {
         last_message_time
       `,
       )
+      .eq('room_type', 'direct')
       .contains('participants', [user.id])
       .order('last_message_time', { ascending: false });
 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       throw new Error(error.message);
     }
 
-    // 각 채팅방의 unreadCount(내가 안 읽은 메시지 개수) 집계 및 상대방 프로필 정보 조회
+    // 각 1:1 채팅방의 unreadCount(내가 안 읽은 메시지 개수) 집계 및 상대방 프로필 정보 조회
     const chatRoomsWithUnreadAndProfiles = await Promise.all(
       (chatRooms || []).map(async (room) => {
         // unreadCount 계산
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       chatRooms: chatRoomsWithUnreadAndProfiles,
     });
   } catch (error) {
-    console.error('Error fetching chat rooms:', error);
+    console.error('Error fetching direct chat rooms:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
