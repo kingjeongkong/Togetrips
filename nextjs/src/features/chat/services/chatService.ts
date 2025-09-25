@@ -77,7 +77,7 @@ export const chatService = {
         last_message: room.last_message,
         last_message_time: room.last_message_time,
         participant_count: room.participant_count,
-        participant_details: room.participants || [],
+        participant_details: room.participant_details || [],
         unreadCount: room.unreadCount ?? 0,
       }));
     } catch (error) {

@@ -73,7 +73,7 @@ export async function GET(
     const chatRoomWithDetails = {
       ...chatRoom,
       participant_count: chatRoom.participants.length,
-      participants:
+      participants_details:
         participants?.map((p) => ({
           id: p.id,
           name: p.name,

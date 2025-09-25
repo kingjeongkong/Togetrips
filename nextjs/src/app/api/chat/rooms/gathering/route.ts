@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       throw new Error(error.message);
     }
 
-    // 각 그룹 채팅방의 unreadCount 계산
+    // 각 그룹 채팅방의 unreadCount와 참여자 상세 정보 계산
     const chatRoomsWithDetails = await Promise.all(
       (chatRooms || []).map(async (room) => {
         // unreadCount 계산 (내가 안 읽은 메시지 개수)
@@ -52,10 +52,24 @@ export async function GET(request: NextRequest) {
           .eq('read', false)
           .neq('sender_id', user.id);
 
+        // 참여자 상세 정보 조회
+        const { data: participants } = await supabase
+          .from('users')
+          .select('id, name, image')
+          .in('id', room.participants);
+
+        const participantDetails =
+          participants?.map((p) => ({
+            id: p.id,
+            name: p.name,
+            image: p.image || '/default-traveler.png',
+          })) || [];
+
         return {
           ...room,
           unreadCount: unreadMessages ? unreadMessages.length : 0,
           participant_count: room.participants.length,
+          participant_details: participantDetails,
         };
       }),
     );

@@ -5,12 +5,20 @@ import { useEffect, useRef, useState } from 'react';
 import { FiArrowLeft, FiMoreVertical } from 'react-icons/fi';
 
 interface ChatRoomHeaderProps {
-  profileImage: string;
-  name: string;
+  image: string;
+  title: string;
+  participantCount?: number;
   chatRoomId: string;
+  isGroupChat?: boolean;
 }
 
-const ChatRoomHeader = ({ profileImage, name, chatRoomId }: ChatRoomHeaderProps) => {
+const ChatRoomHeader = ({
+  image,
+  title,
+  participantCount,
+  chatRoomId,
+  isGroupChat = false,
+}: ChatRoomHeaderProps) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const deleteChatRoom = useDeleteChatRoom();
@@ -31,11 +39,11 @@ const ChatRoomHeader = ({ profileImage, name, chatRoomId }: ChatRoomHeaderProps)
   }, []);
 
   const handleDeleteChatRoom = async () => {
-    if (
-      window.confirm(
-        'Are you sure you want to leave this chat room?\nMessages in the chat room cannot be recovered.',
-      )
-    ) {
+    const confirmMessage = isGroupChat
+      ? 'Are you sure you want to leave this group?\nYou will no longer receive messages from this group.'
+      : 'Are you sure you want to leave this chat room?\nMessages in the chat room cannot be recovered.';
+
+    if (window.confirm(confirmMessage)) {
       await deleteChatRoom.mutateAsync(chatRoomId);
     }
     setShowMenu(false);
@@ -57,13 +65,16 @@ const ChatRoomHeader = ({ profileImage, name, chatRoomId }: ChatRoomHeaderProps)
             <FiArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <Image
-            src={profileImage}
-            alt={name}
+            src={image}
+            alt={title}
             width={40}
             height={40}
             className="w-10 h-10 rounded-full mr-3"
           />
-          <h2 className="text-lg font-semibold text-gray-900">{name}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          {participantCount && (
+            <span className="text-xs text-gray-500 flex-shrink-0">({participantCount})</span>
+          )}
         </div>
 
         {/* 메뉴 버튼 */}
@@ -82,7 +93,7 @@ const ChatRoomHeader = ({ profileImage, name, chatRoomId }: ChatRoomHeaderProps)
                 onClick={handleDeleteChatRoom}
                 className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors rounded-lg text-sm"
               >
-                Leave chat room
+                {isGroupChat ? 'Leave group' : 'Leave chat room'}
               </button>
             </div>
           )}
