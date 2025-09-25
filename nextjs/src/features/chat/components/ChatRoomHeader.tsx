@@ -49,6 +49,10 @@ const ChatRoomHeader = ({
     setShowMenu(false);
   };
 
+  const handleLeaveGroup = async () => {
+    // TODO: 그룹 탈퇴 로직 구현
+  };
+
   const handleBackClick = () => {
     router.back();
   };
@@ -90,7 +94,7 @@ const ChatRoomHeader = ({
           {showMenu && (
             <div className="absolute right-0 top-full mt-1 bg-white shadow-lg rounded-lg border border-gray-200 min-w-[160px] z-50">
               <button
-                onClick={handleDeleteChatRoom}
+                onClick={isGroupChat ? handleLeaveGroup : handleDeleteChatRoom}
                 className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors rounded-lg text-sm"
               >
                 {isGroupChat ? 'Leave group' : 'Leave chat room'}

@@ -33,7 +33,7 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
   // 날짜 제한 계산 (오늘부터 7일 후까지)
   const today = new Date().toISOString().split('T')[0];
   const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 10);
+  maxDate.setDate(maxDate.getDate() + 7);
   const maxDateString = maxDate.toISOString().split('T')[0];
 
   const handleSubmit = (e: React.FormEvent) => {
