@@ -1,4 +1,4 @@
-import { chatService } from '@/features/chat/services/chatService';
+import { chatApiService } from '@/features/chat/services/chatApiService';
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
 
@@ -10,7 +10,7 @@ export const useUnreadCount = () => {
     queryFn: async () => {
       if (!userId) return 0;
 
-      const chatRooms = await chatService.getDirectChatRooms();
+      const chatRooms = await chatApiService.getDirectChatRooms();
       return chatRooms.reduce((total, room) => total + room.unreadCount, 0);
     },
     enabled: !!userId,

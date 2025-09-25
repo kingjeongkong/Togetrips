@@ -1,4 +1,4 @@
-import { chatService } from '@/features/chat/services/chatService';
+import { chatApiService } from '@/features/chat/services/chatApiService';
 import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,7 +11,7 @@ export const useDeleteChatRoom = () => {
   const pathname = usePathname();
 
   return useMutation({
-    mutationFn: (chatRoomId: string) => chatService.deleteChatRoom(chatRoomId),
+    mutationFn: (chatRoomId: string) => chatApiService.deleteChatRoom(chatRoomId),
     onSuccess: (_, chatRoomId) => {
       // 채팅방 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
