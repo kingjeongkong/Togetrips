@@ -2,12 +2,10 @@
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useSession } from '@/providers/SessionProvider';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { debounce } from 'lodash';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { chatService } from '../services/chatService';
-import type { DirectChatRoom, GatheringChatRoom, Message } from '../types/chatTypes';
+import { useEffect, useRef } from 'react';
+import { useChatRoom } from '../hooks/useChatRoom';
+import { useChatMessageSubscription } from '../hooks/useChatSubscription';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -16,110 +14,28 @@ const ChatRoom = () => {
   const params = useParams();
   const chatRoomID = params.chatRoomID as string;
   const { userId } = useSession();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [pendingMessages, setPendingMessages] = useState<Message[]>([]); // 임시 메시지
-  const isKeyboardActiveRef = useRef<boolean>(false); // 키보드 활성화 상태를 저장하기 위한 ref
-  const [subscriptionFailed, setSubscriptionFailed] = useState(false);
-
-  // [수정] useMemo를 사용하여 messages와 pendingMessages가 변경될 때만
-  // 새로운 배열을 생성하도록 합니다.
-  const combinedMessages = useMemo(() => {
-    return [...messages, ...pendingMessages];
-  }, [messages, pendingMessages]);
-  const queryClient = useQueryClient();
   const router = useRouter();
-
-  const chatRoomFromCache = useMemo(() => {
-    const directChatRooms = queryClient.getQueryData(['directChatRooms', userId]) as
-      | DirectChatRoom[]
-      | undefined;
-    const gatheringChatRooms = queryClient.getQueryData(['gatheringChatRooms', userId]) as
-      | GatheringChatRoom[]
-      | undefined;
-
-    const directRoom = directChatRooms?.find((room) => room.id === chatRoomID);
-    const gatheringRoom = gatheringChatRooms?.find((room) => room.id === chatRoomID);
-
-    return directRoom || gatheringRoom;
-  }, [queryClient, userId, chatRoomID]);
-
+  const isKeyboardActiveRef = useRef<boolean>(false); // 키보드 활성화 상태를 저장하기 위한 ref
   const {
-    data: chatRoomFromAPI,
+    messages,
+    chatRoom,
+    isGroupChat,
     isLoading,
     isError,
-  } = useQuery({
-    queryKey: ['chatRoom', chatRoomID],
-    queryFn: () => chatService.getChatRoom(chatRoomID),
-    enabled: !chatRoomFromCache && !!chatRoomID && !!userId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    subscriptionFailed,
+    sendMessage,
+    resendMessage,
+    handleMessageUpdate,
+    handleSubscriptionError,
+  } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
+
+  // 메시지 구독만 설정
+  useChatMessageSubscription({
+    userId: userId || null,
+    chatRoomId: chatRoomID,
+    onMessage: handleMessageUpdate,
+    onError: handleSubscriptionError,
   });
-
-  const chatRoom = chatRoomFromCache || chatRoomFromAPI;
-
-  // 채팅방 타입 확인 (그룹 채팅인지 1:1 채팅인지)
-  const isGroupChat = 'room_name' in (chatRoom || {});
-
-  // 그룹 채팅의 경우 메시지에 참여자 정보를 미리 조합
-  const messagesWithSender = useMemo(() => {
-    if (!isGroupChat || !chatRoom || !('participant_details' in chatRoom)) {
-      return combinedMessages;
-    }
-
-    // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
-    const participantsMap = new Map(
-      chatRoom.participant_details.map((p: { id: string; name: string; image: string }) => [
-        p.id,
-        p,
-      ]),
-    );
-
-    return combinedMessages.map((message) => ({
-      ...message,
-      sender: participantsMap.get(message.senderId),
-    }));
-  }, [combinedMessages, isGroupChat, chatRoom]);
-
-  // Supabase 실시간 메시지 구독
-  useEffect(() => {
-    if (!chatRoomID || !userId) return;
-
-    const debouncedMarkAsRead = debounce((roomId: string) => {
-      chatService.markMessagesAsRead(roomId).then(() => {
-        queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
-        queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
-      });
-    }, 500);
-
-    const unsubscribe = chatService.subscribeToMessagesSupabase(
-      chatRoomID,
-      (newMessages) => {
-        setMessages(newMessages); // 실제 메시지 전체 갱신
-        // 임시 메시지와 DB 메시지 중복 제거
-        setPendingMessages((prev) =>
-          prev.filter(
-            (pending) =>
-              !newMessages.some(
-                (real) => real.senderId === pending.senderId && real.content === pending.content,
-              ),
-          ),
-        );
-        debouncedMarkAsRead(chatRoomID);
-      },
-      (failedCount) => {
-        if (failedCount >= 3) {
-          setSubscriptionFailed(true);
-        }
-      },
-      3,
-      userId,
-    );
-
-    return () => {
-      unsubscribe();
-      debouncedMarkAsRead.cancel();
-    };
-  }, [chatRoomID, userId, queryClient]);
 
   // 키보드 활성화 시 스크롤 제어
   useEffect(() => {
@@ -133,34 +49,6 @@ const ChatRoom = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleSendMessage = async (message: string) => {
-    if (!userId || !chatRoomID) return;
-
-    const tempId = `temp-${Date.now()}`;
-    const optimisticMessage: Message = {
-      id: tempId,
-      senderId: userId,
-      content: message,
-      timestamp: new Date().toISOString(),
-      read: true,
-      pending: true,
-    };
-    setPendingMessages((prev) => [...prev, optimisticMessage]);
-
-    const success = await chatService.sendMessage(chatRoomID, message);
-
-    if (!success) {
-      setPendingMessages((prev) =>
-        prev.map((msg) => (msg.id === tempId ? { ...msg, pending: false, error: true } : msg)),
-      );
-    }
-  };
-
-  const handleResend = (message: Message) => {
-    setPendingMessages((prev) => prev.filter((msg) => msg.id !== message.id));
-    handleSendMessage(message.content);
-  };
 
   // 입력창 포커스/블러 핸들러
   const handleInputFocus = () => {
@@ -224,31 +112,31 @@ const ChatRoom = () => {
       <ChatRoomHeader
         image={
           isGroupChat
-            ? (chatRoom && 'room_image' in chatRoom ? chatRoom.room_image : null) ||
+            ? (chatRoom && 'roomImage' in chatRoom ? chatRoom.roomImage : null) ||
               '/default-traveler.png'
             : (chatRoom && 'otherUser' in chatRoom ? chatRoom.otherUser?.image : null) ||
               '/default-traveler.png'
         }
         title={
           isGroupChat
-            ? (chatRoom && 'room_name' in chatRoom ? chatRoom.room_name : null) || 'Group Chat'
+            ? (chatRoom && 'roomName' in chatRoom ? chatRoom.roomName : null) || 'Group Chat'
             : (chatRoom && 'otherUser' in chatRoom ? chatRoom.otherUser?.name : null) || ''
         }
         participantCount={
-          isGroupChat && chatRoom && 'participant_count' in chatRoom
-            ? chatRoom.participant_count
+          isGroupChat && chatRoom && 'participantCount' in chatRoom
+            ? chatRoom.participantCount
             : undefined
         }
         chatRoomId={chatRoomID}
         isGroupChat={isGroupChat}
       />
       <ChatRoomMessageList
-        messages={messagesWithSender}
+        messages={messages}
         currentUserID={userId || ''}
-        onResend={handleResend}
+        onResend={resendMessage}
       />
       <ChatRoomInput
-        onSendMessage={handleSendMessage}
+        onSendMessage={sendMessage}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
       />
