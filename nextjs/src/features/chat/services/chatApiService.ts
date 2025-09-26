@@ -1,5 +1,10 @@
 import { toast } from 'react-toastify';
-import { DirectChatRoomListItem, GatheringChatRoomListItem, Message } from '../types/chatTypes';
+import {
+  DirectChatRoomApiResponse,
+  DirectChatRoomListItem,
+  GatheringChatRoomApiResponse,
+  GatheringChatRoomListItem,
+} from '../types/chatTypes';
 
 export const chatApiService = {
   // 1:1 채팅방 목록 조회
@@ -73,11 +78,7 @@ export const chatApiService = {
   },
 
   // 개별 채팅방 조회 (메시지 포함)
-  async getDirectChatRoomWithMessages(chatRoomID: string): Promise<{
-    id: string;
-    otherUser: { id: string; name: string; image: string } | null;
-    messages: Message[];
-  }> {
+  async getDirectChatRoomWithMessages(chatRoomID: string): Promise<DirectChatRoomApiResponse> {
     try {
       const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
         method: 'GET',
@@ -112,7 +113,7 @@ export const chatApiService = {
   },
 
   // 그룹 채팅방 조회 (메시지 포함)
-  async getGroupChatRoomWithMessages(chatRoomID: string): Promise<any> {
+  async getGroupChatRoomWithMessages(chatRoomID: string): Promise<GatheringChatRoomApiResponse> {
     try {
       const response = await fetch(`/api/chat/rooms/gathering/${chatRoomID}`, {
         method: 'GET',

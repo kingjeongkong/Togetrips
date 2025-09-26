@@ -2,7 +2,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
-import { Message } from '../types/chatTypes';
+import {
+  DirectChatRoomApiResponse,
+  GatheringChatRoomApiResponse,
+  Message,
+} from '../types/chatTypes';
 
 interface UseChatRoomProps {
   chatRoomId: string;
@@ -37,7 +41,8 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     staleTime: Infinity,
   });
 
-  const chatRoom = directChatRoomData || groupChatRoomData;
+  const chatRoom: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | undefined =
+    directChatRoomData || groupChatRoomData;
   const messages = directChatRoomData?.messages || groupChatRoomData?.messages || [];
   const isGroupChat = roomType === 'group';
 
@@ -53,12 +58,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     }
 
     // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
-    const participantsMap = new Map(
-      chatRoom.participantDetails.map((p: { id: string; name: string; image: string }) => [
-        p.id,
-        p,
-      ]),
-    );
+    const participantsMap = new Map(chatRoom.participantDetails.map((p) => [p.id, p]));
 
     return combinedMessages.map((message) => ({
       ...message,
@@ -104,18 +104,21 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
         ? ['groupChatRoomWithMessages', chatRoomId]
         : ['directChatRoomWithMessages', chatRoomId];
 
-      queryClient.setQueryData(queryKey, (oldData: any) => {
-        if (!oldData) return { messages: [newMessage] };
+      queryClient.setQueryData(
+        queryKey,
+        (oldData: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | undefined) => {
+          if (!oldData) return { messages: [newMessage] };
 
-        // 중복 방지: 이미 존재하는 메시지인지 확인
-        const exists = oldData.messages.some((msg: Message) => msg.id === newMessage.id);
-        if (exists) return oldData;
+          // 중복 방지: 이미 존재하는 메시지인지 확인
+          const exists = oldData.messages.some((msg: Message) => msg.id === newMessage.id);
+          if (exists) return oldData;
 
-        return {
-          ...oldData,
-          messages: [...oldData.messages, newMessage],
-        };
-      });
+          return {
+            ...oldData,
+            messages: [...oldData.messages, newMessage],
+          };
+        },
+      );
 
       // 임시 메시지와 DB 메시지 중복 제거
       setPendingMessages((prev) =>
