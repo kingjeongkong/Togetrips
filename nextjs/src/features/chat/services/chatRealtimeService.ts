@@ -13,16 +13,15 @@ const mapRowToMessage = (row: Record<string, unknown>): Message => ({
 });
 
 export const chatRealtimeService = {
-  // Supabase Realtime 메시지 구독
-  subscribeToMessages(
+  // Supabase Realtime 새 메시지 구독
+  subscribeToNewMessages(
     chatRoomID: string,
-    onMessage: (messages: Message[]) => void,
+    onNewMessage: (newMessage: Message) => void,
     onError?: (failedCount: number) => void,
     maxRetries = 3,
     userId?: string,
   ) {
     let failedCount = 0;
-    let currentMessages: Message[] = [];
     let channel: RealtimeChannel;
     let isSubscribed = true;
 
@@ -32,28 +31,6 @@ export const chatRealtimeService = {
         throw new Error('Authentication required');
       }
       return { user: { id: userId } };
-    };
-
-    // 초기 메시지 로딩 (최근 50개만 로드)
-    const loadInitialMessages = async () => {
-      try {
-        const { data: messages, error } = await supabase
-          .from('messages')
-          .select('id, sender_id, content, timestamp, read')
-          .eq('chat_room_id', chatRoomID)
-          .order('timestamp', { ascending: true })
-          .limit(50);
-
-        if (error) throw error;
-
-        currentMessages = messages?.map(mapRowToMessage) || [];
-        onMessage(currentMessages);
-      } catch (error) {
-        console.error('Error loading initial messages:', error);
-        failedCount++;
-        onError?.(failedCount);
-        throw error;
-      }
     };
 
     // 실시간 구독 설정 (INSERT만 처리)
@@ -73,12 +50,8 @@ export const chatRealtimeService = {
               if (!isSubscribed) return;
               try {
                 const { new: row } = payload as { new: Record<string, unknown> };
-                // 새 메시지 추가만 처리
                 const newMessage = mapRowToMessage(row);
-                currentMessages = [...currentMessages, newMessage];
-                // 타임스탬프 순서 정렬 (안전장치)
-                currentMessages.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-                onMessage(currentMessages);
+                onNewMessage(newMessage);
               } catch (error) {
                 console.error('Error processing realtime change:', error);
                 failedCount++;
@@ -114,11 +87,10 @@ export const chatRealtimeService = {
       }
     };
 
-    // 순차 실행: 인증 → 초기 로딩 → 구독
+    // 순차 실행: 인증 → 구독
     (async () => {
       try {
         checkAuth(); // 파라미터로 인증 확인
-        await loadInitialMessages();
         await setupSubscription();
       } catch (error) {
         console.error('Failed to initialize chat subscription:', error);

@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
         `
         id,
         participants,
-        created_at,
         last_message,
         last_message_time
       `,

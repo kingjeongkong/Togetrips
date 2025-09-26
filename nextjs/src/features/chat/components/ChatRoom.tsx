@@ -25,15 +25,15 @@ const ChatRoom = () => {
     subscriptionFailed,
     sendMessage,
     resendMessage,
-    handleMessageUpdate,
+    handleNewMessage,
     handleSubscriptionError,
   } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
 
-  // 메시지 구독만 설정
+  // 새 메시지 구독 설정
   useChatMessageSubscription({
     userId: userId || null,
     chatRoomId: chatRoomID,
-    onMessage: handleMessageUpdate,
+    onNewMessage: handleNewMessage,
     onError: handleSubscriptionError,
   });
 

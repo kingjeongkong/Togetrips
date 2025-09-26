@@ -21,26 +21,26 @@ export const useChatRoomListSubscription = ({ userId }: UseChatRoomListSubscript
   return {};
 };
 
-// 메시지 구독 훅
+// 새 메시지 구독 훅
 interface UseChatMessageSubscriptionProps {
   userId: string | null;
   chatRoomId: string;
-  onMessage: (messages: Message[]) => void;
+  onNewMessage: (newMessage: Message) => void;
   onError?: (failedCount: number) => void;
 }
 
 export const useChatMessageSubscription = ({
   userId,
   chatRoomId,
-  onMessage,
+  onNewMessage,
   onError,
 }: UseChatMessageSubscriptionProps) => {
   useEffect(() => {
-    if (!chatRoomId || !userId || !onMessage) return;
+    if (!chatRoomId || !userId || !onNewMessage) return;
 
-    const unsubscribe = chatRealtimeService.subscribeToMessages(
+    const unsubscribe = chatRealtimeService.subscribeToNewMessages(
       chatRoomId,
-      onMessage,
+      onNewMessage,
       onError,
       3,
       userId,
@@ -49,7 +49,7 @@ export const useChatMessageSubscription = ({
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [chatRoomId, userId, onMessage, onError]);
+  }, [chatRoomId, userId, onNewMessage, onError]);
 
   return {};
 };

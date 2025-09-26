@@ -41,5 +41,24 @@ export interface Message {
   error?: boolean;
 }
 
+// API 응답 타입들 (실제 반환되는 데이터만)
+export interface DirectChatRoomApiResponse {
+  id: string;
+  otherUser: ChatRoomUser | null;
+  messages: Message[];
+}
+
+export interface GatheringChatRoomApiResponse {
+  id: string;
+  roomName: string;
+  roomImage: string | null;
+  participants: string[];
+  participantCount: number;
+  participantDetails: ChatRoomUser[];
+  messages: Message[];
+}
+
+// Union 타입들
 export type ChatRoom = DirectChatRoom | GatheringChatRoom;
 export type ChatRoomListItem = DirectChatRoomListItem | GatheringChatRoomListItem;
+export type ChatRoomWithMessages = DirectChatRoomApiResponse | GatheringChatRoomApiResponse;

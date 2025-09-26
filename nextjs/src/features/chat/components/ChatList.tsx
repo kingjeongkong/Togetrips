@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useChatRoomListSubscription } from '../hooks/useChatSubscription';
 import { chatApiService } from '../services/chatApiService';
-import { DirectChatRoomListItem, GatheringChatRoomListItem } from '../types/chatTypes';
 import ChatListItem from './ChatListItem';
 
 type TabType = 'chats' | 'groups';
@@ -38,26 +37,13 @@ const ChatList = () => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const handleDirectChatClick = (chatRoom: DirectChatRoomListItem) => {
-    if (!chatRoom.otherUser) return;
-    router.push(`/chat/${chatRoom.id}`);
-  };
-
-  const handleGatheringChatClick = (chatRoom: GatheringChatRoomListItem) => {
-    router.push(`/chat/${chatRoom.id}`);
-  };
-
-  const handleBackClick = () => {
-    router.back();
-  };
-
   return (
     <div className="flex flex-col h-full bg-gray-100 overflow-hidden" aria-label="Chat list">
       <div className="flex-shrink-0 bg-gray-100">
         <div className="flex items-center px-4 py-2 md:px-4 md:py-4">
           <button
-            onClick={handleBackClick}
-            className="p-1 rounded-full hover:bg-gray-200 transition-colors mr-2"
+            onClick={() => router.back()}
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors mr-2 md:hidden"
             aria-label="Go back"
           >
             <FiArrowLeft className="w-5 h-5 text-gray-600" />
@@ -115,7 +101,7 @@ const ChatList = () => {
                       lastMessage={chatRoom.lastMessage || 'No messages yet'}
                       timestamp={formatRelativeTime(chatRoom.lastMessageTime || chatRoom.createdAt)}
                       unreadCount={chatRoom.unreadCount}
-                      onClick={() => handleDirectChatClick(chatRoom)}
+                      onClick={() => router.push(`/chat/${chatRoom.id}?type=direct`)}
                     />
                   </div>
                 );
@@ -153,7 +139,7 @@ const ChatList = () => {
                       }
                       unreadCount={chatRoom.unreadCount}
                       participantCount={chatRoom.participantCount}
-                      onClick={() => handleGatheringChatClick(chatRoom)}
+                      onClick={() => router.push(`/chat/${chatRoom.id}?type=group`)}
                     />
                   </div>
                 );

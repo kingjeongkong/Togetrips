@@ -1,7 +1,8 @@
 import { toast } from 'react-toastify';
 import {
-  DirectChatRoom,
+  DirectChatRoomApiResponse,
   DirectChatRoomListItem,
+  GatheringChatRoomApiResponse,
   GatheringChatRoomListItem,
 } from '../types/chatTypes';
 
@@ -76,8 +77,8 @@ export const chatApiService = {
     }
   },
 
-  // 개별 채팅방 조회
-  async getChatRoom(chatRoomID: string): Promise<Partial<DirectChatRoom>> {
+  // 개별 채팅방 조회 (메시지 포함)
+  async getDirectChatRoomWithMessages(chatRoomID: string): Promise<DirectChatRoomApiResponse> {
     try {
       const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
         method: 'GET',
@@ -88,20 +89,65 @@ export const chatApiService = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch chat room');
+        throw new Error(errorData.error || 'Failed to fetch chat room with messages');
       }
 
       const room = await response.json();
       return {
         id: room.id,
-        participants: room.participants,
         otherUser: room.otherUser || null,
+        messages: room.messages.map((message: Record<string, unknown>) => ({
+          id: message.id as string,
+          senderId: message.sender_id as string,
+          content: message.content as string,
+          timestamp: message.timestamp as string,
+          read: message.read as boolean,
+        })),
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching chat room:', error);
+        console.error('Error fetching chat room with messages:', error);
       }
-      toast.error('Failed to fetch chat room');
+      throw error;
+    }
+  },
+
+  // 그룹 채팅방 조회 (메시지 포함)
+  async getGroupChatRoomWithMessages(chatRoomID: string): Promise<GatheringChatRoomApiResponse> {
+    try {
+      const response = await fetch(`/api/chat/rooms/gathering/${chatRoomID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch chat room with messages');
+      }
+
+      const result = await response.json();
+      const room = result.chatRoom;
+      return {
+        id: room.id,
+        roomName: room.room_name,
+        roomImage: room.room_image,
+        participants: room.participants,
+        messages: room.messages.map((message: Record<string, unknown>) => ({
+          id: message.id as string,
+          senderId: message.sender_id as string,
+          content: message.content as string,
+          timestamp: message.timestamp as string,
+          read: message.read as boolean,
+        })),
+        participantCount: room.participant_count,
+        participantDetails: room.participants_details,
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching chat room with messages:', error);
+      }
       throw error;
     }
   },
