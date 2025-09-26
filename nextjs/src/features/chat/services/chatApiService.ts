@@ -3,6 +3,7 @@ import {
   DirectChatRoom,
   DirectChatRoomListItem,
   GatheringChatRoomListItem,
+  Message,
 } from '../types/chatTypes';
 
 export const chatApiService = {
@@ -76,7 +77,47 @@ export const chatApiService = {
     }
   },
 
-  // 개별 채팅방 조회
+  // 개별 채팅방 조회 (메시지 포함)
+  async getChatRoomWithMessages(chatRoomID: string): Promise<{
+    id: string;
+    otherUser: { id: string; name: string; image: string } | null;
+    messages: Message[];
+  }> {
+    try {
+      const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch chat room with messages');
+      }
+
+      const room = await response.json();
+      return {
+        id: room.id,
+        otherUser: room.otherUser || null,
+        messages: room.messages.map((message: Record<string, unknown>) => ({
+          id: message.id as string,
+          senderId: message.sender_id as string,
+          content: message.content as string,
+          timestamp: message.timestamp as string,
+          read: message.read as boolean,
+        })),
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching chat room with messages:', error);
+      }
+      toast.error('Failed to fetch chat room');
+      throw error;
+    }
+  },
+
+  // 개별 채팅방 조회 (기존 함수 유지 - 호환성을 위해)
   async getChatRoom(chatRoomID: string): Promise<Partial<DirectChatRoom>> {
     try {
       const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {

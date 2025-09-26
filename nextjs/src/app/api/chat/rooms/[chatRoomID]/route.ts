@@ -56,6 +56,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // 초기 메시지 50개 조회
+    const { data: messages, error: messagesError } = await supabase
+      .from('messages')
+      .select('id, sender_id, content, timestamp, read')
+      .eq('chat_room_id', chatRoomID)
+      .order('timestamp', { ascending: true })
+      .limit(50);
+
+    if (messagesError) {
+      console.error('Error fetching messages:', messagesError);
+      return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    }
+
     const result = {
       id: chatRoom.id,
       otherUser: {
@@ -63,6 +76,7 @@ export async function GET(request: NextRequest) {
         name: otherUser.name,
         image: otherUser.image || '/default-traveler.png',
       },
+      messages: messages || [],
     };
 
     return NextResponse.json(result);

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
-import { DirectChatRoom, GatheringChatRoom, Message } from '../types/chatTypes';
+import { Message } from '../types/chatTypes';
 
 interface UseChatRoomProps {
   chatRoomId: string;
@@ -9,45 +9,42 @@ interface UseChatRoomProps {
 }
 
 export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const queryClient = useQueryClient();
 
-  // 디버깅: 핵심 원인 추적
-  const prevChatRoomRef = useRef<any>(null);
-  const prevCombinedMessagesRef = useRef<Message[]>([]);
-  const prevIsGroupChatRef = useRef<boolean>(false);
-
   // 캐시에서 채팅방 정보 조회
-  const chatRoomFromCache = useMemo(() => {
-    const directChatRooms = queryClient.getQueryData(['directChatRooms', userId]) as
-      | DirectChatRoom[]
-      | undefined;
-    const gatheringChatRooms = queryClient.getQueryData(['gatheringChatRooms', userId]) as
-      | GatheringChatRoom[]
-      | undefined;
+  // const chatRoomFromCache = useMemo(() => {
+  //   const directChatRooms = queryClient.getQueryData(['directChatRooms', userId]) as
+  //     | DirectChatRoom[]
+  //     | undefined;
+  //   const gatheringChatRooms = queryClient.getQueryData(['gatheringChatRooms', userId]) as
+  //     | GatheringChatRoom[]
+  //     | undefined;
 
-    const directRoom = directChatRooms?.find((room) => room.id === chatRoomId);
-    const gatheringRoom = gatheringChatRooms?.find((room) => room.id === chatRoomId);
+  //   const directRoom = directChatRooms?.find((room) => room.id === chatRoomId);
+  //   const gatheringRoom = gatheringChatRooms?.find((room) => room.id === chatRoomId);
 
-    return directRoom || gatheringRoom;
-  }, [userId, chatRoomId]);
+  //   return directRoom || gatheringRoom;
+  // }, [userId, chatRoomId]);
 
-  // API에서 채팅방 정보 조회
+  // 통합된 useQuery: 채팅방 정보와 초기 메시지를 한 번에 가져옵니다
   const {
-    data: chatRoomFromAPI,
+    data: chatRoomData,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['chatRoom', chatRoomId],
-    queryFn: () => chatApiService.getChatRoom(chatRoomId),
-    enabled: !chatRoomFromCache && !!chatRoomId && !!userId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    queryKey: ['chatRoomWithMessages', chatRoomId],
+    queryFn: () => chatApiService.getChatRoomWithMessages(chatRoomId),
+    // enabled: !chatRoomFromCache && !!chatRoomId && !!userId,
+    enabled: !!chatRoomId && !!userId,
+    staleTime: Infinity,
   });
 
-  const chatRoom = chatRoomFromCache || chatRoomFromAPI;
+  // 채팅방 정보와 메시지를 분리
+  // const chatRoom = chatRoomFromCache || chatRoomData;
+  const chatRoom = chatRoomData;
+  const messages = chatRoomData?.messages || [];
 
   // 채팅방 타입 확인 (그룹 채팅인지 1:1 채팅인지)
   const isGroupChat = 'roomName' in (chatRoom || {});
@@ -64,54 +61,13 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     }
 
     // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
-    const participantsMap = new Map(chatRoom.participantDetails.map((p) => [p.id, p]));
+    const participantsMap = new Map(chatRoom.participantDetails.map((p: any) => [p.id, p]));
 
     return combinedMessages.map((message) => ({
       ...message,
       sender: participantsMap.get(message.senderId),
     }));
   }, [combinedMessages, isGroupChat, chatRoom]);
-
-  // 디버깅: 핵심 원인 추적
-  useEffect(() => {
-    const prevChatRoom = prevChatRoomRef.current;
-    const prevCombinedMessages = prevCombinedMessagesRef.current;
-    const prevIsGroupChat = prevIsGroupChatRef.current;
-
-    // 1. chatRoom 객체 변경 추적
-    const chatRoomChanged = prevChatRoom !== chatRoom;
-    const chatRoomParticipantDetailsChanged =
-      prevChatRoom &&
-      'participantDetails' in prevChatRoom &&
-      chatRoom &&
-      'participantDetails' in chatRoom
-        ? prevChatRoom.participantDetails !== chatRoom.participantDetails
-        : false;
-
-    // 2. combinedMessages 변경 추적
-    const combinedMessagesChanged = prevCombinedMessages !== combinedMessages;
-
-    // 3. isGroupChat 변경 추적
-    const isGroupChatChanged = prevIsGroupChat !== isGroupChat;
-
-    console.log('🔍 useChatRoom - 핵심 원인 추적:', {
-      chatRoomChanged,
-      chatRoomParticipantDetailsChanged,
-      combinedMessagesChanged,
-      isGroupChatChanged,
-      chatRoom: chatRoom ? 'exists' : 'null',
-      participantDetailsLength:
-        chatRoom && 'participantDetails' in chatRoom ? chatRoom.participantDetails.length : 'N/A',
-      combinedMessagesLength: combinedMessages.length,
-      isGroupChat,
-      timestamp: new Date().toLocaleTimeString(),
-    });
-
-    // 참조 업데이트
-    prevChatRoomRef.current = chatRoom;
-    prevCombinedMessagesRef.current = combinedMessages;
-    prevIsGroupChatRef.current = isGroupChat;
-  }, [chatRoom, combinedMessages, isGroupChat]);
 
   // 메시지 전송 (Optimistic UI 포함)
   const sendMessage = async (content: string) => {
@@ -143,19 +99,33 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     sendMessage(message.content);
   };
 
-  // 메시지 업데이트 핸들러
-  const handleMessageUpdate = useCallback((newMessages: Message[]) => {
-    setMessages(newMessages);
-    // 임시 메시지와 DB 메시지 중복 제거
-    setPendingMessages((prev) =>
-      prev.filter(
-        (pending) =>
-          !newMessages.some(
-            (real) => real.senderId === pending.senderId && real.content === pending.content,
-          ),
-      ),
-    );
-  }, []);
+  // 새 메시지 핸들러 (React Query 캐시 업데이트)
+  const handleNewMessage = useCallback(
+    (newMessage: Message) => {
+      // React Query 캐시를 직접 업데이트하여 상태 동기화
+      queryClient.setQueryData(['chatRoomWithMessages', chatRoomId], (oldData: any) => {
+        if (!oldData) return { messages: [newMessage] };
+
+        // 중복 방지: 이미 존재하는 메시지인지 확인
+        const exists = oldData.messages.some((msg: Message) => msg.id === newMessage.id);
+        if (exists) return oldData;
+
+        return {
+          ...oldData,
+          messages: [...oldData.messages, newMessage],
+        };
+      });
+
+      // 임시 메시지와 DB 메시지 중복 제거
+      setPendingMessages((prev) =>
+        prev.filter(
+          (pending) =>
+            !(pending.senderId === newMessage.senderId && pending.content === newMessage.content),
+        ),
+      );
+    },
+    [queryClient, chatRoomId],
+  );
 
   // 구독 에러 핸들러
   const handleSubscriptionError = useCallback((failedCount: number) => {
@@ -178,7 +148,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     resendMessage,
 
     // 구독 핸들러
-    handleMessageUpdate,
+    handleNewMessage,
     handleSubscriptionError,
   };
 };
