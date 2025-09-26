@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ gatheringId: string }> },
+  { params }: { params: Promise<{ chatRoomID: string }> },
 ) {
   try {
     const supabase = createServerSupabaseClient(request);
@@ -23,8 +23,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { gatheringId } = await params;
-    if (!gatheringId) {
+    const { chatRoomID } = await params;
+    if (!chatRoomID) {
       return NextResponse.json({ error: 'Gathering ID is required' }, { status: 400 });
     }
 
@@ -36,13 +36,11 @@ export async function GET(
         id,
         room_name,
         room_image,
-        participants,
-        last_message,
-        last_message_time
+        participants
       `,
       )
       .eq('room_type', 'gathering')
-      .eq('gathering_id', gatheringId)
+      .eq('id', chatRoomID)
       .single();
 
     if (error) {
@@ -70,8 +68,22 @@ export async function GET(
       .select('id, name, image')
       .in('id', participantIds);
 
+    // 초기 메시지 50개 조회
+    const { data: messages, error: messagesError } = await supabase
+      .from('messages')
+      .select('id, sender_id, content, timestamp, read')
+      .eq('chat_room_id', chatRoom.id)
+      .order('timestamp', { ascending: true })
+      .limit(50);
+
+    if (messagesError) {
+      console.error('Error fetching messages:', messagesError);
+      return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    }
+
     const chatRoomWithDetails = {
       ...chatRoom,
+      messages: messages || [],
       participant_count: chatRoom.participants.length,
       participants_details:
         participants?.map((p) => ({

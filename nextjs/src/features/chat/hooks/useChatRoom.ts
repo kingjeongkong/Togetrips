@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
 import { Message } from '../types/chatTypes';
@@ -11,43 +12,34 @@ interface UseChatRoomProps {
 export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
+  const roomType = useSearchParams().get('type');
   const queryClient = useQueryClient();
 
-  // 캐시에서 채팅방 정보 조회
-  // const chatRoomFromCache = useMemo(() => {
-  //   const directChatRooms = queryClient.getQueryData(['directChatRooms', userId]) as
-  //     | DirectChatRoom[]
-  //     | undefined;
-  //   const gatheringChatRooms = queryClient.getQueryData(['gatheringChatRooms', userId]) as
-  //     | GatheringChatRoom[]
-  //     | undefined;
-
-  //   const directRoom = directChatRooms?.find((room) => room.id === chatRoomId);
-  //   const gatheringRoom = gatheringChatRooms?.find((room) => room.id === chatRoomId);
-
-  //   return directRoom || gatheringRoom;
-  // }, [userId, chatRoomId]);
-
-  // 통합된 useQuery: 채팅방 정보와 초기 메시지를 한 번에 가져옵니다
   const {
-    data: chatRoomData,
-    isLoading,
-    isError,
+    data: directChatRoomData,
+    isLoading: isDirectChatLoading,
+    isError: isDirectChatError,
   } = useQuery({
-    queryKey: ['chatRoomWithMessages', chatRoomId],
-    queryFn: () => chatApiService.getChatRoomWithMessages(chatRoomId),
-    // enabled: !chatRoomFromCache && !!chatRoomId && !!userId,
-    enabled: !!chatRoomId && !!userId,
+    queryKey: ['directChatRoomWithMessages', chatRoomId],
+    queryFn: () => chatApiService.getDirectChatRoomWithMessages(chatRoomId),
+    enabled: !!chatRoomId && !!userId && roomType === 'direct',
     staleTime: Infinity,
   });
 
-  // 채팅방 정보와 메시지를 분리
-  // const chatRoom = chatRoomFromCache || chatRoomData;
-  const chatRoom = chatRoomData;
-  const messages = chatRoomData?.messages || [];
+  const {
+    data: groupChatRoomData,
+    isLoading: isGroupChatLoading,
+    isError: isGroupChatError,
+  } = useQuery({
+    queryKey: ['groupChatRoomWithMessages', chatRoomId],
+    queryFn: () => chatApiService.getGroupChatRoomWithMessages(chatRoomId),
+    enabled: !!chatRoomId && !!userId && roomType === 'group',
+    staleTime: Infinity,
+  });
 
-  // 채팅방 타입 확인 (그룹 채팅인지 1:1 채팅인지)
-  const isGroupChat = 'roomName' in (chatRoom || {});
+  const chatRoom = directChatRoomData || groupChatRoomData;
+  const messages = directChatRoomData?.messages || groupChatRoomData?.messages || [];
+  const isGroupChat = roomType === 'group';
 
   // 메시지와 임시 메시지 결합
   const combinedMessages = useMemo(() => {
@@ -61,7 +53,12 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     }
 
     // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
-    const participantsMap = new Map(chatRoom.participantDetails.map((p: any) => [p.id, p]));
+    const participantsMap = new Map(
+      chatRoom.participantDetails.map((p: { id: string; name: string; image: string }) => [
+        p.id,
+        p,
+      ]),
+    );
 
     return combinedMessages.map((message) => ({
       ...message,
@@ -103,7 +100,11 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const handleNewMessage = useCallback(
     (newMessage: Message) => {
       // React Query 캐시를 직접 업데이트하여 상태 동기화
-      queryClient.setQueryData(['chatRoomWithMessages', chatRoomId], (oldData: any) => {
+      const queryKey = isGroupChat
+        ? ['groupChatRoomWithMessages', chatRoomId]
+        : ['directChatRoomWithMessages', chatRoomId];
+
+      queryClient.setQueryData(queryKey, (oldData: any) => {
         if (!oldData) return { messages: [newMessage] };
 
         // 중복 방지: 이미 존재하는 메시지인지 확인
@@ -139,8 +140,8 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     messages: messagesWithSender,
     chatRoom,
     isGroupChat,
-    isLoading,
-    isError,
+    isLoading: isDirectChatLoading || isGroupChatLoading,
+    isError: isDirectChatError || isGroupChatError,
     subscriptionFailed,
 
     // 액션
