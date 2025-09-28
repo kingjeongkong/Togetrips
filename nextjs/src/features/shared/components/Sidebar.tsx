@@ -8,7 +8,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useRealtimeStore } from '@/stores/realtimeStore';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconType } from 'react-icons';
 import { FaBell, FaHome, FaUserAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
@@ -34,7 +34,10 @@ const Sidebar = () => {
 
   const { data: apiUnreadCount = 0 } = useUnreadCount();
   const { data: apiRequestCount = 0 } = useRequestCount();
-  setInitialCounts(apiUnreadCount, apiRequestCount);
+
+  useEffect(() => {
+    setInitialCounts(apiUnreadCount, apiRequestCount);
+  }, [apiUnreadCount, apiRequestCount, setInitialCounts]);
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
@@ -43,13 +46,13 @@ const Sidebar = () => {
       title: 'Chat',
       icon: MdChat,
       to: '/chat',
-      count: totalUnreadMessages,
+      count: totalUnreadMessages > 0 ? totalUnreadMessages : undefined,
     },
     {
       title: 'Requests',
       icon: FaBell,
       to: '/request',
-      count: pendingRequestCount,
+      count: pendingRequestCount > 0 ? pendingRequestCount : undefined,
     },
     { title: 'Profile', icon: FaUserAlt, to: '/profile' },
   ];
