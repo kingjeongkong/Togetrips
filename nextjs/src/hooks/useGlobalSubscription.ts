@@ -1,13 +1,10 @@
-import {
-  DirectChatRoomListItem,
-  GatheringChatRoomListItem,
-  Message,
-} from '@/features/chat/types/chatTypes';
+import { chatApiService } from '@/features/chat/services/chatApiService';
+import { Message } from '@/features/chat/types/chatTypes';
 import { supabase } from '@/lib/supabase-config';
 import { useSession } from '@/providers/SessionProvider';
 import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useGlobalSubscription = () => {
   const { userId } = useSession();
@@ -15,10 +12,17 @@ export const useGlobalSubscription = () => {
   const { incrementMessageCount, incrementRequestCount, decrementRequestCount } =
     useRealtimeStore();
 
+  const chatRoomRef = useRef<Map<string, 'direct' | 'group'>>(new Map());
+
   useEffect(() => {
     if (!userId) return;
 
-    console.log('🎯 중앙 관제실: 실시간 구독 시작', { userId });
+    const fetchUserChatRooms = async () => {
+      const userChatRoomsMap = await chatApiService.getMyChatRoomInfo();
+      chatRoomRef.current = userChatRoomsMap;
+    };
+
+    fetchUserChatRooms();
 
     // 모든 messages 테이블의 INSERT 이벤트를 구독
     const messageChannel = supabase
@@ -38,36 +42,17 @@ export const useGlobalSubscription = () => {
 
           if (senderId === userId) return;
 
-          console.log('📬 중앙 관제실: 새 메시지 수신! 캐시 업데이트 시작', rawMessage);
-
-          // 1. 이 메시지가 어떤 종류의 채팅방에 속하는지 캐시를 통해 확인합니다.
-          const directRooms = queryClient.getQueryData<DirectChatRoomListItem[]>([
-            'directChatRooms',
-            userId,
-          ]);
-          const groupRooms = queryClient.getQueryData<GatheringChatRoomListItem[]>([
-            'gatheringChatRooms',
-            userId,
-          ]);
-
-          const isDirectChat = directRooms?.some((room) => room.id === chatRoomId);
-          const isGroupChat = groupRooms?.some((room) => room.id === chatRoomId);
-
-          // 2. 내가 참여한 채팅방의 메시지가 아니면 무시합니다.
-          if (!isDirectChat && !isGroupChat) {
-            console.log('🚫 내가 참여한 채팅방의 메시지가 아니므로 무시합니다.');
+          const roomType = chatRoomRef.current.get(chatRoomId);
+          if (!roomType) {
             return;
           }
 
-          // 3. 중앙 Zustand 스토어의 전체 카운트를 즉시 +1 합니다.
           incrementMessageCount();
 
-          // 4. 타입에 맞는 채팅방 "목록" 캐시만 업데이트합니다.
-          const listQueryKey = isDirectChat
-            ? ['directChatRooms', userId]
-            : ['gatheringChatRooms', userId];
+          const chatListQueryKey =
+            roomType === 'direct' ? ['directChatRooms', userId] : ['gatheringChatRooms', userId];
 
-          queryClient.setQueryData(listQueryKey, (oldData: any[] | undefined) => {
+          queryClient.setQueryData(chatListQueryKey, (oldData: any[] | undefined) => {
             if (!oldData) return oldData;
 
             let targetRoom: any = null;
@@ -81,17 +66,20 @@ export const useGlobalSubscription = () => {
 
             if (!targetRoom) return oldData;
 
-            targetRoom.lastMessage = rawMessage.content;
-            targetRoom.lastMessageTime = rawMessage.timestamp;
-            targetRoom.unreadCount = (targetRoom.unreadCount || 0) + 1;
+            const updatedRoom = {
+              ...targetRoom,
+              lastMessage: rawMessage.content,
+              lastMessageTime: rawMessage.timestamp,
+              unreadCount: (targetRoom.unreadCount || 0) + 1,
+            };
 
-            return [targetRoom, ...otherRooms];
+            return [updatedRoom, ...otherRooms];
           });
 
-          // 5. 타입에 맞는 "상세" 데이터 캐시도 조용히 업데이트합니다.
-          const detailQueryKey = isDirectChat
-            ? ['directChatRoomWithMessages', chatRoomId]
-            : ['groupChatRoomWithMessages', chatRoomId];
+          const chatRoomQueryKey =
+            roomType === 'direct'
+              ? ['directChatRoomWithMessages', chatRoomId]
+              : ['groupChatRoomWithMessages', chatRoomId];
 
           // Message 타입으로 변환
           const newMessage: Message = {
@@ -103,7 +91,7 @@ export const useGlobalSubscription = () => {
             read: rawMessage.read,
           };
 
-          queryClient.setQueryData(detailQueryKey, (oldData: any | undefined) => {
+          queryClient.setQueryData(chatRoomQueryKey, (oldData: any | undefined) => {
             if (!oldData || oldData.messages?.some((msg: Message) => msg.id === newMessage.id)) {
               return oldData;
             }

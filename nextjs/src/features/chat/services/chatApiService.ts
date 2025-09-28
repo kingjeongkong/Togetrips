@@ -267,4 +267,20 @@ export const chatApiService = {
       throw new Error(errorData.error || 'Failed to delete chat room');
     }
   },
+
+  // 사용자가 참여한 채팅방 정보 조회 (중앙 구독용)
+  async getMyChatRoomInfo(): Promise<Map<string, 'direct' | 'group'>> {
+    try {
+      const response = await fetch('/api/chat/my-rooms');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user chat room info');
+      }
+      const data = await response.json();
+      // API에서 받은 배열을 다시 Map으로 변환하여 반환
+      return new Map(data.chatRooms);
+    } catch (error) {
+      console.error('Error fetching user chat room info:', error);
+      return new Map(); // 에러 발생 시 빈 맵 반환
+    }
+  },
 };
