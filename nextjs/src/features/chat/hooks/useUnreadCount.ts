@@ -11,7 +11,11 @@ export const useUnreadCount = () => {
       if (!userId) return 0;
 
       const chatRooms = await chatApiService.getDirectChatRooms();
-      return chatRooms.reduce((total, room) => total + room.unreadCount, 0);
+      const gatheringChatRooms = await chatApiService.getGatheringChatRooms();
+      return (
+        chatRooms.reduce((total, room) => total + room.unreadCount, 0) +
+        gatheringChatRooms.reduce((total, room) => total + room.unreadCount, 0)
+      );
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,

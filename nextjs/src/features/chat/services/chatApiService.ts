@@ -152,7 +152,7 @@ export const chatApiService = {
     }
   },
 
-  // 1:1 채팅 메시지 읽음 처리
+  // 메시지 읽음 처리
   async markMessagesAsRead(chatRoomID: string, retries = 3): Promise<void> {
     try {
       const response = await fetch('/api/chat/mark-read', {
@@ -162,7 +162,6 @@ export const chatApiService = {
         },
         body: JSON.stringify({
           chatRoomID,
-          roomType: 'direct', // 1:1 채팅임을 명시
         }),
       });
 
@@ -173,7 +172,7 @@ export const chatApiService = {
 
       const result = await response.json();
       if (process.env.NODE_ENV === 'development') {
-        console.log(`Marked ${result.updatedCount} messages as read`);
+        console.log(`Marked messages as read: ${result.success}`);
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -183,42 +182,6 @@ export const chatApiService = {
       if (retries > 0) {
         setTimeout(() => {
           this.markMessagesAsRead(chatRoomID, retries - 1);
-        }, 500);
-      }
-    }
-  },
-
-  // 그룹 채팅 메시지 읽음 처리
-  async markGroupMessagesAsRead(chatRoomID: string, retries = 3): Promise<void> {
-    try {
-      const response = await fetch('/api/chat/mark-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chatRoomID,
-          roomType: 'group', // 그룹 채팅임을 명시
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to mark group messages as read');
-      }
-
-      const result = await response.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Marked group chat messages as read: ${result.success}`);
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error marking group messages as read:', error);
-      }
-
-      if (retries > 0) {
-        setTimeout(() => {
-          this.markGroupMessagesAsRead(chatRoomID, retries - 1);
         }, 500);
       }
     }
