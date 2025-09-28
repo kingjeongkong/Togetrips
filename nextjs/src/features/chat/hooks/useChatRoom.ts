@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
 import {
   DirectChatRoomApiResponse,
@@ -45,6 +45,40 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     directChatRoomData || groupChatRoomData;
   const messages = directChatRoomData?.messages || groupChatRoomData?.messages || [];
   const isGroupChat = roomType === 'group';
+  const isLoading = isDirectChatLoading || isGroupChatLoading;
+
+  // 🔽 채팅방 진입 시 읽음 처리 로직 (Direct/Group 분기)
+  useEffect(() => {
+    if (chatRoom && !isLoading && userId) {
+      if (roomType === 'direct') {
+        // 1:1 채팅: 기존 로직 사용
+        chatApiService
+          .markMessagesAsRead(chatRoomId)
+          .then(() => {
+            console.log(`📬 1:1 채팅방(${chatRoomId}) 메시지를 읽음 처리했습니다.`);
+            queryClient.invalidateQueries({ queryKey: ['directChatRooms', userId] });
+            queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
+            queryClient.invalidateQueries({ queryKey: ['directChatRoomWithMessages', chatRoomId] });
+          })
+          .catch((error) => {
+            console.error('1:1 채팅 읽음 처리 중 오류 발생:', error);
+          });
+      } else if (roomType === 'group') {
+        // 그룹 채팅: 새로운 로직 사용
+        chatApiService
+          .markGroupMessagesAsRead(chatRoomId)
+          .then(() => {
+            console.log(`📬 그룹 채팅방(${chatRoomId}) 메시지를 읽음 처리했습니다.`);
+            queryClient.invalidateQueries({ queryKey: ['gatheringChatRooms', userId] });
+            queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
+            queryClient.invalidateQueries({ queryKey: ['groupChatRoomWithMessages', chatRoomId] });
+          })
+          .catch((error) => {
+            console.error('그룹 채팅 읽음 처리 중 오류 발생:', error);
+          });
+      }
+    }
+  }, [chatRoom, isLoading, roomType, chatRoomId, userId, queryClient]);
 
   // 메시지와 임시 메시지 결합
   const combinedMessages = useMemo(() => {
