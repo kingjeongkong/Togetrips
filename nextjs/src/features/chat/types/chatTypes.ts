@@ -33,6 +33,7 @@ export interface GatheringChatRoomListItem extends GatheringChatRoom {
 
 export interface Message {
   id: string;
+  chatRoomId: string;
   senderId: string;
   content: string;
   timestamp: string;

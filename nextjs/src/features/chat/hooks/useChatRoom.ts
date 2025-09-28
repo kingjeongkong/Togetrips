@@ -107,6 +107,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage: Message = {
       id: tempId,
+      chatRoomId,
       senderId: userId,
       content,
       timestamp: new Date().toISOString(),

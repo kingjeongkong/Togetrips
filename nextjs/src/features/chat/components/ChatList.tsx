@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
-import { useChatRoomListSubscription } from '../hooks/useChatSubscription';
 import { chatApiService } from '../services/chatApiService';
 import ChatListItem from './ChatListItem';
 
@@ -17,9 +16,6 @@ const ChatList = () => {
   const { userId } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('chats');
-
-  // 채팅방 목록 구독만 설정
-  useChatRoomListSubscription({ userId: userId || null });
 
   const { data: directChatRooms = [], isLoading: isLoadingDirect } = useQuery({
     queryKey: ['directChatRooms', userId],

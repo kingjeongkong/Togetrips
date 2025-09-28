@@ -71,7 +71,7 @@ export async function GET(
     // 초기 메시지 50개 조회
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
-      .select('id, sender_id, content, timestamp, read')
+      .select('id, chat_room_id, sender_id, content, timestamp, read')
       .eq('chat_room_id', chatRoom.id)
       .order('timestamp', { ascending: true })
       .limit(50);

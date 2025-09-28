@@ -5,6 +5,7 @@ import { useRequestCount } from '@/features/request/hooks/useRequestCount';
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useRealtimeStore } from '@/stores/realtimeStore';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -29,18 +30,26 @@ const Sidebar = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
 
-  const { data: unreadCount = 0 } = useUnreadCount();
-  const { data: requestCount = 0 } = useRequestCount();
+  const { setInitialCounts, totalUnreadMessages, pendingRequestCount } = useRealtimeStore();
+
+  const { data: apiUnreadCount = 0 } = useUnreadCount();
+  const { data: apiRequestCount = 0 } = useRequestCount();
+  setInitialCounts(apiUnreadCount, apiRequestCount);
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
     { title: 'Gatherings', icon: HiUserGroup, to: '/gatherings' },
-    { title: 'Chat', icon: MdChat, to: '/chat', count: unreadCount > 0 ? unreadCount : undefined },
+    {
+      title: 'Chat',
+      icon: MdChat,
+      to: '/chat',
+      count: totalUnreadMessages,
+    },
     {
       title: 'Requests',
       icon: FaBell,
       to: '/request',
-      count: requestCount > 0 ? requestCount : undefined,
+      count: pendingRequestCount,
     },
     { title: 'Profile', icon: FaUserAlt, to: '/profile' },
   ];

@@ -5,7 +5,6 @@ import { useSession } from '@/providers/SessionProvider';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useChatRoom } from '../hooks/useChatRoom';
-import { useChatMessageSubscription } from '../hooks/useChatSubscription';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -28,14 +27,6 @@ const ChatRoom = () => {
     handleNewMessage,
     handleSubscriptionError,
   } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
-
-  // 새 메시지 구독 설정
-  useChatMessageSubscription({
-    userId: userId || null,
-    chatRoomId: chatRoomID,
-    onNewMessage: handleNewMessage,
-    onError: handleSubscriptionError,
-  });
 
   // 키보드 활성화 시 스크롤 제어
   useEffect(() => {
