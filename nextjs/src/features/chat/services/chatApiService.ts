@@ -103,6 +103,7 @@ export const chatApiService = {
           timestamp: message.timestamp as string,
           read: message.read as boolean,
         })),
+        unreadCount: room.unread_count ?? 0,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -143,6 +144,7 @@ export const chatApiService = {
         })),
         participantCount: room.participant_count,
         participantDetails: room.participants_details,
+        unreadCount: room.unread_count ?? 0,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -168,11 +170,6 @@ export const chatApiService = {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to mark messages as read');
-      }
-
-      const result = await response.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Marked ${result.updatedCount} messages as read`);
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -228,6 +225,44 @@ export const chatApiService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Failed to delete chat room');
+    }
+  },
+
+  async getTotalUnreadCount(): Promise<number> {
+    try {
+      const response = await fetch('/api/chat/unread-count', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching total unread count:', errorData);
+      }
+
+      const data = await response.json();
+      return data.unreadCount;
+    } catch (error) {
+      console.error('Error fetching total unread count:', error);
+      return 0;
+    }
+  },
+
+  // 사용자가 참여한 채팅방 정보 조회 (중앙 구독용)
+  async getMyChatRoomInfo(): Promise<Map<string, 'direct' | 'group'>> {
+    try {
+      const response = await fetch('/api/chat/my-rooms');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user chat room info');
+      }
+      const data = await response.json();
+      // API에서 받은 배열을 다시 Map으로 변환하여 반환
+      return new Map(data.chatRooms);
+    } catch (error) {
+      console.error('Error fetching user chat room info:', error);
+      return new Map(); // 에러 발생 시 빈 맵 반환
     }
   },
 };

@@ -5,9 +5,10 @@ import { useRequestCount } from '@/features/request/hooks/useRequestCount';
 import SidebarItem from '@/features/shared/components/SidebarItem';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useRealtimeStore } from '@/stores/realtimeStore';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconType } from 'react-icons';
 import { FaBell, FaHome, FaUserAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
@@ -29,13 +30,24 @@ const Sidebar = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
 
-  const { data: unreadCount = 0 } = useUnreadCount();
-  const { data: requestCount = 0 } = useRequestCount();
+  const { setInitialCounts, messageCount, requestCount } = useRealtimeStore();
+
+  const { data: apiUnreadCount = 0 } = useUnreadCount();
+  const { data: apiRequestCount = 0 } = useRequestCount();
+
+  useEffect(() => {
+    setInitialCounts(apiUnreadCount, apiRequestCount);
+  }, [apiUnreadCount, apiRequestCount, setInitialCounts]);
 
   const menuItems: MenuItem[] = [
     { title: 'Home', icon: FaHome, to: '/home' },
     { title: 'Gatherings', icon: HiUserGroup, to: '/gatherings' },
-    { title: 'Chat', icon: MdChat, to: '/chat', count: unreadCount > 0 ? unreadCount : undefined },
+    {
+      title: 'Chat',
+      icon: MdChat,
+      to: '/chat',
+      count: messageCount > 0 ? messageCount : undefined,
+    },
     {
       title: 'Requests',
       icon: FaBell,

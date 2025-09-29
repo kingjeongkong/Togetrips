@@ -5,7 +5,6 @@ import { useSession } from '@/providers/SessionProvider';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useChatRoom } from '../hooks/useChatRoom';
-import { useChatMessageSubscription } from '../hooks/useChatSubscription';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -16,26 +15,8 @@ const ChatRoom = () => {
   const { userId } = useSession();
   const router = useRouter();
   const isKeyboardActiveRef = useRef<boolean>(false); // 키보드 활성화 상태를 저장하기 위한 ref
-  const {
-    messages,
-    chatRoom,
-    isGroupChat,
-    isLoading,
-    isError,
-    subscriptionFailed,
-    sendMessage,
-    resendMessage,
-    handleNewMessage,
-    handleSubscriptionError,
-  } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
-
-  // 새 메시지 구독 설정
-  useChatMessageSubscription({
-    userId: userId || null,
-    chatRoomId: chatRoomID,
-    onNewMessage: handleNewMessage,
-    onError: handleSubscriptionError,
-  });
+  const { messages, chatRoom, isGroupChat, isLoading, isError, sendMessage, resendMessage } =
+    useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
 
   // 키보드 활성화 시 스크롤 제어
   useEffect(() => {
@@ -83,25 +64,6 @@ const ChatRoom = () => {
           className="px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200"
         >
           Back to Chat List
-        </button>
-      </div>
-    );
-  }
-
-  if (subscriptionFailed) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-4 bg-red-50">
-        <h3 className="text-red-800 font-medium mb-2">Failed to fetch messages</h3>
-        <p className="text-red-600 text-sm mb-4">
-          Please check your internet connection and try again
-        </p>
-        <button
-          onClick={() => {
-            window.location.reload();
-          }}
-          className="px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200"
-        >
-          Refresh Page
         </button>
       </div>
     );

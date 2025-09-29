@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateUnreadCount } from '../../../_utils/calculateUnreadCount';
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +37,8 @@ export async function GET(
         id,
         room_name,
         room_image,
-        participants
+        participants,
+        created_at
       `,
       )
       .eq('room_type', 'gathering')
@@ -71,7 +73,7 @@ export async function GET(
     // 초기 메시지 50개 조회
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
-      .select('id, sender_id, content, timestamp, read')
+      .select('id, chat_room_id, sender_id, content, timestamp, read')
       .eq('chat_room_id', chatRoom.id)
       .order('timestamp', { ascending: true })
       .limit(50);
@@ -80,6 +82,14 @@ export async function GET(
       console.error('Error fetching messages:', messagesError);
       return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
     }
+
+    // unread_count 계산
+    const unreadCount = await calculateUnreadCount(
+      supabase,
+      user.id,
+      chatRoomID,
+      chatRoom.created_at,
+    );
 
     const chatRoomWithDetails = {
       ...chatRoom,
@@ -91,6 +101,7 @@ export async function GET(
           name: p.name,
           image: p.image || '/default-traveler.png',
         })) || [],
+      unread_count: unreadCount || 0,
     };
 
     return NextResponse.json({

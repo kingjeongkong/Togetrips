@@ -1,12 +1,15 @@
 'use client';
 
 import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
+import { useGlobalSubscription } from '@/hooks/useGlobalSubscription';
 import { useSession } from '@/providers/SessionProvider';
 import { useEffect } from 'react';
 
 export const AppInitializer = () => {
   const { isAuthenticated, isLoading } = useSession();
   const { syncTokenOnLogin, settings, isLoadingSettings } = usePushNotifications();
+
+  useGlobalSubscription();
 
   useEffect(() => {
     // 로그인 상태이고, settings 데이터가 로드된 후에만 토큰 동기화 실행

@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateUnreadCount } from '../../_utils/calculateUnreadCount';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const { data: chatRoom, error: chatRoomError } = await supabase
       .from('chat_rooms')
-      .select('id, participants')
+      .select('id, participants, created_at')
       .eq('id', chatRoomID)
       .single();
 
@@ -69,6 +70,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
     }
 
+    // unreadCount 계산
+    const unreadCount = await calculateUnreadCount(
+      supabase,
+      user.id,
+      chatRoomID,
+      chatRoom.created_at,
+    );
+
     const result = {
       id: chatRoom.id,
       otherUser: {
@@ -77,6 +86,7 @@ export async function GET(request: NextRequest) {
         image: otherUser.image || '/default-traveler.png',
       },
       messages: messages || [],
+      unread_count: unreadCount || 0,
     };
 
     return NextResponse.json(result);
@@ -128,7 +138,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // RPC 함수를 사용하여 트랜잭션으로 채팅방과 메시지 삭제
-    const { error: rpcError } = await supabase.rpc('delete_chat_room_with_messages', {
+    const { error: rpcError } = await supabase.rpc('delete_chat_room', {
       p_chat_room_id: chatRoomID,
       p_user_id: user.id,
     });
