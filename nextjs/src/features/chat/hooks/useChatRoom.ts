@@ -16,7 +16,6 @@ interface UseChatRoomProps {
 
 export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
-  const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const roomType = useSearchParams().get('type');
   const queryClient = useQueryClient();
   const { setActiveChatRoomId, decrementMessageCountBy } = useRealtimeStore();
@@ -144,7 +143,6 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     isGroupChat,
     isLoading: isDirectChatLoading || isGroupChatLoading,
     isError: isDirectChatError || isGroupChatError,
-    subscriptionFailed,
 
     // 액션
     sendMessage,
