@@ -138,7 +138,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // RPC 함수를 사용하여 트랜잭션으로 채팅방과 메시지 삭제
-    const { error: rpcError } = await supabase.rpc('delete_chat_room_with_messages', {
+    const { error: rpcError } = await supabase.rpc('delete_chat_room', {
       p_chat_room_id: chatRoomID,
       p_user_id: user.id,
     });
