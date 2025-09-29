@@ -103,6 +103,7 @@ export const chatApiService = {
           timestamp: message.timestamp as string,
           read: message.read as boolean,
         })),
+        unreadCount: room.unread_count ?? 0,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -143,6 +144,7 @@ export const chatApiService = {
         })),
         participantCount: room.participant_count,
         participantDetails: room.participants_details,
+        unreadCount: room.unread_count ?? 0,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const { data: chatRoom, error: chatRoomError } = await supabase
       .from('chat_rooms')
-      .select('id, participants')
+      .select('id, participants, created_at')
       .eq('id', chatRoomID)
       .single();
 
@@ -69,6 +69,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
     }
 
+    // unreadCount 계산
+    const { data: readStatus } = await supabase
+      .from('chat_read_status')
+      .select('last_read_at')
+      .eq('chat_room_id', chatRoomID)
+      .eq('user_id', user.id)
+      .single();
+
+    const lastReadAt = readStatus?.last_read_at || chatRoom.created_at;
+
+    const { count: unreadCount } = await supabase
+      .from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('chat_room_id', chatRoomID)
+      .neq('sender_id', user.id)
+      .gt('timestamp', lastReadAt);
+
     const result = {
       id: chatRoom.id,
       otherUser: {
@@ -77,6 +94,7 @@ export async function GET(request: NextRequest) {
         image: otherUser.image || '/default-traveler.png',
       },
       messages: messages || [],
+      unread_count: unreadCount || 0,
     };
 
     return NextResponse.json(result);

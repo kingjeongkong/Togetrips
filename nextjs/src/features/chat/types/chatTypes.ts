@@ -47,6 +47,7 @@ export interface DirectChatRoomApiResponse {
   id: string;
   otherUser: ChatRoomUser | null;
   messages: Message[];
+  unreadCount: number;
 }
 
 export interface GatheringChatRoomApiResponse {
@@ -57,6 +58,7 @@ export interface GatheringChatRoomApiResponse {
   participantCount: number;
   participantDetails: ChatRoomUser[];
   messages: Message[];
+  unreadCount: number;
 }
 
 // Union 타입들

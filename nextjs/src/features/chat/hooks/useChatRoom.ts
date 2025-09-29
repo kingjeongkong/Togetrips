@@ -19,7 +19,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const roomType = useSearchParams().get('type');
   const queryClient = useQueryClient();
-  const { setActiveChatRoomId } = useRealtimeStore();
+  const { setActiveChatRoomId, decrementMessageCountBy } = useRealtimeStore();
 
   const {
     data: directChatRoomData,
@@ -47,26 +47,44 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     directChatRoomData || groupChatRoomData;
   const messages = directChatRoomData?.messages || groupChatRoomData?.messages || [];
   const isGroupChat = roomType === 'group';
-  const isLoading = isDirectChatLoading || isGroupChatLoading;
 
   // 채팅방 진입/퇴장 시 상태 관리 및 읽음 처리
   useEffect(() => {
-    if (!chatRoomId || !userId) return;
+    if (!chatRoomId || !userId || !chatRoom) return;
 
     setActiveChatRoomId(chatRoomId);
-    chatApiService.markMessagesAsRead(chatRoomId).then(() => {
-      const listQueryKey = isGroupChat
-        ? ['gatheringChatRooms', userId]
-        : ['directChatRooms', userId];
-      queryClient.invalidateQueries({ queryKey: listQueryKey });
-    });
+
+    const currentUnreadCount = chatRoom?.unreadCount || 0;
+
+    chatApiService
+      .markMessagesAsRead(chatRoomId)
+      .then(() => {
+        if (currentUnreadCount > 0) {
+          decrementMessageCountBy(currentUnreadCount);
+        }
+
+        const listQueryKey = isGroupChat
+          ? ['gatheringChatRooms', userId]
+          : ['directChatRooms', userId];
+        queryClient.invalidateQueries({ queryKey: listQueryKey });
+      })
+      .catch((error) => {
+        console.error('Error marking messages as read:', error);
+      });
 
     return () => {
       setActiveChatRoomId(null);
-
       chatApiService.markMessagesAsRead(chatRoomId);
     };
-  }, [chatRoomId, userId, isGroupChat, setActiveChatRoomId, queryClient]);
+  }, [
+    chatRoomId,
+    userId,
+    isGroupChat,
+    setActiveChatRoomId,
+    queryClient,
+    decrementMessageCountBy,
+    chatRoom,
+  ]);
 
   // 메시지와 임시 메시지 결합
   const combinedMessages = useMemo(() => {
