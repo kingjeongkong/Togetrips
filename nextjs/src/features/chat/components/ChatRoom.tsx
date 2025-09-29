@@ -24,8 +24,6 @@ const ChatRoom = () => {
     subscriptionFailed,
     sendMessage,
     resendMessage,
-    handleNewMessage,
-    handleSubscriptionError,
   } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
 
   // 키보드 활성화 시 스크롤 제어

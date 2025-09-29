@@ -1,7 +1,7 @@
 import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
 import {
   DirectChatRoomApiResponse,
@@ -137,48 +137,6 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     sendMessage(message.content);
   };
 
-  // 새 메시지 핸들러 (React Query 캐시 업데이트)
-  const handleNewMessage = useCallback(
-    (newMessage: Message) => {
-      // React Query 캐시를 직접 업데이트하여 상태 동기화
-      const queryKey = isGroupChat
-        ? ['groupChatRoomWithMessages', chatRoomId]
-        : ['directChatRoomWithMessages', chatRoomId];
-
-      queryClient.setQueryData(
-        queryKey,
-        (oldData: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | undefined) => {
-          if (!oldData) return { messages: [newMessage] };
-
-          // 중복 방지: 이미 존재하는 메시지인지 확인
-          const exists = oldData.messages.some((msg: Message) => msg.id === newMessage.id);
-          if (exists) return oldData;
-
-          return {
-            ...oldData,
-            messages: [...oldData.messages, newMessage],
-          };
-        },
-      );
-
-      // 임시 메시지와 DB 메시지 중복 제거
-      setPendingMessages((prev) =>
-        prev.filter(
-          (pending) =>
-            !(pending.senderId === newMessage.senderId && pending.content === newMessage.content),
-        ),
-      );
-    },
-    [queryClient, chatRoomId],
-  );
-
-  // 구독 에러 핸들러
-  const handleSubscriptionError = useCallback((failedCount: number) => {
-    if (failedCount >= 3) {
-      setSubscriptionFailed(true);
-    }
-  }, []);
-
   return {
     // 상태
     messages: messagesWithSender,
@@ -191,9 +149,5 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     // 액션
     sendMessage,
     resendMessage,
-
-    // 구독 핸들러
-    handleNewMessage,
-    handleSubscriptionError,
   };
 };

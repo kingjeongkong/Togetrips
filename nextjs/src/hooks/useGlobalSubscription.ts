@@ -1,5 +1,11 @@
 import { chatApiService } from '@/features/chat/services/chatApiService';
-import { Message } from '@/features/chat/types/chatTypes';
+import {
+  DirectChatRoomApiResponse,
+  DirectChatRoomListItem,
+  GatheringChatRoomApiResponse,
+  GatheringChatRoomListItem,
+  Message,
+} from '@/features/chat/types/chatTypes';
 import { supabase } from '@/lib/supabase-config';
 import { useSession } from '@/providers/SessionProvider';
 import { useRealtimeStore } from '@/stores/realtimeStore';
@@ -57,31 +63,44 @@ export const useGlobalSubscription = () => {
           const chatListQueryKey =
             roomType === 'direct' ? ['directChatRooms', userId] : ['gatheringChatRooms', userId];
 
-          queryClient.setQueryData(chatListQueryKey, (oldData: any[] | undefined) => {
-            if (!oldData) return oldData;
+          queryClient.setQueryData(
+            chatListQueryKey,
+            (oldData: DirectChatRoomListItem[] | GatheringChatRoomListItem[] | undefined) => {
+              if (!oldData) return oldData;
 
-            let targetRoom: any = null;
-            const otherRooms = oldData.filter((room) => {
-              if (room.id === chatRoomId) {
-                targetRoom = room;
-                return false;
-              }
-              return true;
-            });
+              let targetRoom: DirectChatRoomListItem | GatheringChatRoomListItem | null = null;
+              const otherRooms = oldData.filter((room) => {
+                if (room.id === chatRoomId) {
+                  targetRoom = room;
+                  return false;
+                }
+                return true;
+              });
 
-            if (!targetRoom) return oldData;
+              if (!targetRoom) return oldData;
 
-            const updatedRoom = {
-              ...targetRoom,
-              lastMessage: rawMessage.content,
-              lastMessageTime: rawMessage.timestamp,
-              unreadCount: isViewingCurrentRoom
-                ? targetRoom.unreadCount
-                : (targetRoom.unreadCount || 0) + 1,
-            };
+              const updatedRoom =
+                roomType === 'direct'
+                  ? ({
+                      ...(targetRoom as DirectChatRoomListItem),
+                      lastMessage: rawMessage.content,
+                      lastMessageTime: rawMessage.timestamp,
+                      unreadCount: isViewingCurrentRoom
+                        ? (targetRoom as DirectChatRoomListItem).unreadCount
+                        : ((targetRoom as DirectChatRoomListItem).unreadCount || 0) + 1,
+                    } as DirectChatRoomListItem)
+                  : ({
+                      ...(targetRoom as GatheringChatRoomListItem),
+                      lastMessage: rawMessage.content,
+                      lastMessageTime: rawMessage.timestamp,
+                      unreadCount: isViewingCurrentRoom
+                        ? (targetRoom as GatheringChatRoomListItem).unreadCount
+                        : ((targetRoom as GatheringChatRoomListItem).unreadCount || 0) + 1,
+                    } as GatheringChatRoomListItem);
 
-            return [updatedRoom, ...otherRooms];
-          });
+              return [updatedRoom, ...otherRooms];
+            },
+          );
 
           const chatRoomQueryKey =
             roomType === 'direct'
@@ -97,12 +116,15 @@ export const useGlobalSubscription = () => {
             read: rawMessage.read,
           };
 
-          queryClient.setQueryData(chatRoomQueryKey, (oldData: any | undefined) => {
-            if (!oldData || oldData.messages?.some((msg: Message) => msg.id === newMessage.id)) {
-              return oldData;
-            }
-            return { ...oldData, messages: [...(oldData.messages || []), newMessage] };
-          });
+          queryClient.setQueryData(
+            chatRoomQueryKey,
+            (oldData: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | undefined) => {
+              if (!oldData || oldData.messages?.some((msg: Message) => msg.id === newMessage.id)) {
+                return oldData;
+              }
+              return { ...oldData, messages: [...(oldData.messages || []), newMessage] };
+            },
+          );
         },
       )
       .subscribe();
