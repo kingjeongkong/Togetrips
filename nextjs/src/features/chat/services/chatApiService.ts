@@ -228,6 +228,28 @@ export const chatApiService = {
     }
   },
 
+  async getTotalUnreadCount(): Promise<number> {
+    try {
+      const response = await fetch('/api/chat/unread-count', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching total unread count:', errorData);
+      }
+
+      const data = await response.json();
+      return data.unreadCount;
+    } catch (error) {
+      console.error('Error fetching total unread count:', error);
+      return 0;
+    }
+  },
+
   // 사용자가 참여한 채팅방 정보 조회 (중앙 구독용)
   async getMyChatRoomInfo(): Promise<Map<string, 'direct' | 'group'>> {
     try {

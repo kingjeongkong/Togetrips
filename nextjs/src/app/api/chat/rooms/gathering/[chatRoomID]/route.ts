@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateUnreadCount } from '../../../_utils/calculateUnreadCount';
 
 export async function GET(
   request: NextRequest,
@@ -83,21 +84,12 @@ export async function GET(
     }
 
     // unread_count 계산
-    const { data: readStatus } = await supabase
-      .from('chat_read_status')
-      .select('last_read_at')
-      .eq('chat_room_id', chatRoomID)
-      .eq('user_id', user.id)
-      .single();
-
-    const lastReadAt = readStatus?.last_read_at || chatRoom.created_at;
-
-    const { count: unreadCount } = await supabase
-      .from('messages')
-      .select('id', { count: 'exact', head: true })
-      .eq('chat_room_id', chatRoomID)
-      .neq('sender_id', user.id)
-      .gt('timestamp', lastReadAt);
+    const unreadCount = await calculateUnreadCount(
+      supabase,
+      user.id,
+      chatRoomID,
+      chatRoom.created_at,
+    );
 
     const chatRoomWithDetails = {
       ...chatRoom,
