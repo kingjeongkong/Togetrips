@@ -47,7 +47,12 @@ export const useGlobalSubscription = () => {
             return;
           }
 
-          incrementMessageCount();
+          const currentActiveRoomId = useRealtimeStore.getState().activeChatRoomId;
+          const isViewingCurrentRoom = chatRoomId === currentActiveRoomId;
+
+          if (!isViewingCurrentRoom) {
+            incrementMessageCount();
+          }
 
           const chatListQueryKey =
             roomType === 'direct' ? ['directChatRooms', userId] : ['gatheringChatRooms', userId];
@@ -70,7 +75,9 @@ export const useGlobalSubscription = () => {
               ...targetRoom,
               lastMessage: rawMessage.content,
               lastMessageTime: rawMessage.timestamp,
-              unreadCount: (targetRoom.unreadCount || 0) + 1,
+              unreadCount: isViewingCurrentRoom
+                ? targetRoom.unreadCount
+                : (targetRoom.unreadCount || 0) + 1,
             };
 
             return [updatedRoom, ...otherRooms];
@@ -81,7 +88,6 @@ export const useGlobalSubscription = () => {
               ? ['directChatRoomWithMessages', chatRoomId]
               : ['groupChatRoomWithMessages', chatRoomId];
 
-          // Message 타입으로 변환
           const newMessage: Message = {
             id: rawMessage.id,
             chatRoomId: rawMessage.chat_room_id,

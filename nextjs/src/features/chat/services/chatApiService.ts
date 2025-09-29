@@ -169,11 +169,6 @@ export const chatApiService = {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to mark messages as read');
       }
-
-      const result = await response.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Marked messages as read: ${result.success}`);
-      }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error marking messages as read:', error);

@@ -1,3 +1,4 @@
+import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -18,6 +19,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const [subscriptionFailed, setSubscriptionFailed] = useState(false);
   const roomType = useSearchParams().get('type');
   const queryClient = useQueryClient();
+  const { setActiveChatRoomId } = useRealtimeStore();
 
   const {
     data: directChatRoomData,
@@ -47,22 +49,24 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const isGroupChat = roomType === 'group';
   const isLoading = isDirectChatLoading || isGroupChatLoading;
 
-  // 채팅방 진입 시 읽음 처리 로직
+  // 채팅방 진입/퇴장 시 상태 관리 및 읽음 처리
   useEffect(() => {
-    if (chatRoom && !isLoading && userId) {
-      // ✅ 통일된 읽음 처리 (direct/group 구분 없음)
-      chatApiService
-        .markMessagesAsRead(chatRoomId)
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ['directChatRooms', userId] });
-          queryClient.invalidateQueries({ queryKey: ['gatheringChatRooms', userId] });
-          queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
-        })
-        .catch((error) => {
-          console.error('Error marking messages as read:', error);
-        });
-    }
-  }, [chatRoom, isLoading, chatRoomId, userId, queryClient]);
+    if (!chatRoomId || !userId) return;
+
+    setActiveChatRoomId(chatRoomId);
+    chatApiService.markMessagesAsRead(chatRoomId).then(() => {
+      const listQueryKey = isGroupChat
+        ? ['gatheringChatRooms', userId]
+        : ['directChatRooms', userId];
+      queryClient.invalidateQueries({ queryKey: listQueryKey });
+    });
+
+    return () => {
+      setActiveChatRoomId(null);
+
+      chatApiService.markMessagesAsRead(chatRoomId);
+    };
+  }, [chatRoomId, userId, isGroupChat, setActiveChatRoomId, queryClient]);
 
   // 메시지와 임시 메시지 결합
   const combinedMessages = useMemo(() => {

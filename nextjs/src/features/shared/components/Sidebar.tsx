@@ -30,7 +30,7 @@ const Sidebar = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isChatRoute = pathname.startsWith('/chat');
 
-  const { setInitialCounts, totalUnreadMessages, pendingRequestCount } = useRealtimeStore();
+  const { setInitialCounts, messageCount, requestCount } = useRealtimeStore();
 
   const { data: apiUnreadCount = 0 } = useUnreadCount();
   const { data: apiRequestCount = 0 } = useRequestCount();
@@ -46,13 +46,13 @@ const Sidebar = () => {
       title: 'Chat',
       icon: MdChat,
       to: '/chat',
-      count: totalUnreadMessages > 0 ? totalUnreadMessages : undefined,
+      count: messageCount > 0 ? messageCount : undefined,
     },
     {
       title: 'Requests',
       icon: FaBell,
       to: '/request',
-      count: pendingRequestCount > 0 ? pendingRequestCount : undefined,
+      count: requestCount > 0 ? requestCount : undefined,
     },
     { title: 'Profile', icon: FaUserAlt, to: '/profile' },
   ];
