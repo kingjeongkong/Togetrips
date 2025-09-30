@@ -1,13 +1,9 @@
 import { useRealtimeStore } from '@/stores/realtimeStore';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
-import {
-  DirectChatRoomApiResponse,
-  GatheringChatRoomApiResponse,
-  Message,
-} from '../types/chatTypes';
+import { ChatRoomPage, ChatRoomUser, Message } from '../types/chatTypes';
 
 interface UseChatRoomProps {
   chatRoomId: string;
@@ -21,39 +17,75 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const { setActiveChatRoomId, decrementMessageCountBy } = useRealtimeStore();
 
   const {
-    data: directChatRoomData,
-    isLoading: isDirectChatLoading,
-    isError: isDirectChatError,
-  } = useQuery({
-    queryKey: ['directChatRoomWithMessages', chatRoomId],
-    queryFn: () => chatApiService.getDirectChatRoomWithMessages(chatRoomId),
-    enabled: !!chatRoomId && !!userId && roomType === 'direct',
+    data: chatRoomData,
+    isLoading: isChatRoomLoading,
+    isError: isChatRoomError,
+    fetchNextPage: fetchNextMessagePage,
+    hasNextPage: hasNextMessagesPage,
+    isFetchingNextPage: isFetchingNextMessagesPage,
+  } = useInfiniteQuery({
+    queryKey: ['chatRoom', chatRoomId, roomType],
+    queryFn: ({ pageParam }) => {
+      if (!pageParam) {
+        return roomType === 'direct'
+          ? chatApiService.getDirectChatRoomWithInitialMessages(chatRoomId)
+          : chatApiService.getGroupChatRoomWithInitialMessages(chatRoomId);
+      } else {
+        return roomType === 'direct'
+          ? chatApiService.getDirectChatMessagesOnly(chatRoomId, pageParam as string)
+          : chatApiService.getGatheringChatMessagesOnly(chatRoomId, pageParam as string);
+      }
+    },
+    getNextPageParam: (lastPage: ChatRoomPage) => {
+      if ('paginationInfo' in lastPage) {
+        return lastPage.paginationInfo?.hasMore ? lastPage.paginationInfo?.nextCursor : undefined;
+      }
+      return undefined;
+    },
+    enabled: !!chatRoomId && !!userId && !!roomType,
     staleTime: Infinity,
+    initialPageParam: null as string | null,
   });
 
-  const {
-    data: groupChatRoomData,
-    isLoading: isGroupChatLoading,
-    isError: isGroupChatError,
-  } = useQuery({
-    queryKey: ['groupChatRoomWithMessages', chatRoomId],
-    queryFn: () => chatApiService.getGroupChatRoomWithMessages(chatRoomId),
-    enabled: !!chatRoomId && !!userId && roomType === 'group',
-    staleTime: Infinity,
-  });
+  // 채팅방 정보는 첫 페이지에서만 추출
+  const chatRoomInfo = useMemo(() => {
+    if (!chatRoomData?.pages?.[0]) return null;
 
-  const chatRoom: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | undefined =
-    directChatRoomData || groupChatRoomData;
-  const messages = directChatRoomData?.messages || groupChatRoomData?.messages || [];
+    const firstPage = chatRoomData.pages[0];
+    if (!firstPage) return null;
+
+    // 첫 페이지에서 채팅방 정보만 추출
+    if ('paginationInfo' in firstPage) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { messages, paginationInfo, ...chatRoomInfo } = firstPage;
+      return chatRoomInfo;
+    }
+    return firstPage;
+  }, [chatRoomData?.pages]);
+
+  // 모든 메시지를 시간순으로 정렬
+  const allMessages = useMemo(() => {
+    if (!chatRoomData?.pages) return [];
+
+    return chatRoomData.pages
+      .flatMap((page) => {
+        if ('messages' in page) {
+          return page.messages;
+        }
+        return [];
+      })
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }, [chatRoomData?.pages]);
+
   const isGroupChat = roomType === 'group';
 
   // 채팅방 진입/퇴장 시 상태 관리 및 읽음 처리
   useEffect(() => {
-    if (!chatRoomId || !userId || !chatRoom) return;
+    if (!chatRoomId || !userId || !chatRoomInfo) return;
 
     setActiveChatRoomId(chatRoomId);
 
-    const currentUnreadCount = chatRoom?.unreadCount || 0;
+    const currentUnreadCount = (chatRoomInfo as { unreadCount?: number })?.unreadCount || 0;
 
     chatApiService
       .markMessagesAsRead(chatRoomId)
@@ -82,28 +114,35 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     setActiveChatRoomId,
     queryClient,
     decrementMessageCountBy,
-    chatRoom,
+    chatRoomInfo,
   ]);
 
   // 메시지와 임시 메시지 결합
   const combinedMessages = useMemo(() => {
-    return [...messages, ...pendingMessages];
-  }, [messages, pendingMessages]);
+    return [...allMessages, ...pendingMessages];
+  }, [allMessages, pendingMessages]);
 
   // 그룹 채팅의 경우 메시지에 참여자 정보를 미리 조합
   const messagesWithSender = useMemo(() => {
-    if (!isGroupChat || !chatRoom || !('participantDetails' in chatRoom)) {
+    if (
+      !isGroupChat ||
+      !chatRoomInfo ||
+      !('participantDetails' in chatRoomInfo) ||
+      !chatRoomInfo.participantDetails
+    ) {
       return combinedMessages;
     }
 
     // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
-    const participantsMap = new Map(chatRoom.participantDetails.map((p) => [p.id, p]));
+    const participantsMap = new Map(
+      (chatRoomInfo.participantDetails as ChatRoomUser[]).map((p: ChatRoomUser) => [p.id, p]),
+    );
 
     return combinedMessages.map((message) => ({
       ...message,
       sender: participantsMap.get(message.senderId),
     }));
-  }, [combinedMessages, isGroupChat, chatRoom]);
+  }, [combinedMessages, isGroupChat, chatRoomInfo]);
 
   // 메시지 전송 (Optimistic UI 포함)
   const sendMessage = async (content: string) => {
@@ -139,10 +178,15 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   return {
     // 상태
     messages: messagesWithSender,
-    chatRoom,
+    chatRoom: chatRoomInfo,
     isGroupChat,
-    isLoading: isDirectChatLoading || isGroupChatLoading,
-    isError: isDirectChatError || isGroupChatError,
+    isLoading: isChatRoomLoading,
+    isError: isChatRoomError,
+
+    // 무한 스크롤 관련
+    fetchNextMessagePage,
+    hasNextMessagesPage,
+    isFetchingNextMessagesPage,
 
     // 액션
     sendMessage,

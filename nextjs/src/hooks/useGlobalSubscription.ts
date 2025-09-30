@@ -1,8 +1,7 @@
 import { chatApiService } from '@/features/chat/services/chatApiService';
 import {
-  DirectChatRoomApiResponse,
+  ChatRoomPage,
   DirectChatRoomListItem,
-  GatheringChatRoomApiResponse,
   GatheringChatRoomListItem,
   Message,
 } from '@/features/chat/types/chatTypes';
@@ -102,10 +101,7 @@ export const useGlobalSubscription = () => {
             },
           );
 
-          const chatRoomQueryKey =
-            roomType === 'direct'
-              ? ['directChatRoomWithMessages', chatRoomId]
-              : ['groupChatRoomWithMessages', chatRoomId];
+          const chatRoomQueryKey = ['chatRoom', chatRoomId, roomType];
 
           const newMessage: Message = {
             id: rawMessage.id,
@@ -118,11 +114,37 @@ export const useGlobalSubscription = () => {
 
           queryClient.setQueryData(
             chatRoomQueryKey,
-            (oldData: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | undefined) => {
-              if (!oldData || oldData.messages?.some((msg: Message) => msg.id === newMessage.id)) {
+            (oldData: { pages: ChatRoomPage[] } | undefined) => {
+              // 이전 데이터가 없으면 아무것도 하지 않음
+              if (!oldData) {
                 return oldData;
               }
-              return { ...oldData, messages: [...(oldData.messages || []), newMessage] };
+
+              // 중복 메시지 방지 (이미 캐시에 메시지가 있으면 업데이트하지 않음)
+              const firstPage = oldData.pages?.[0];
+              if (!firstPage || !('messages' in firstPage)) {
+                return oldData;
+              }
+
+              const firstPageMessages = firstPage.messages || [];
+              if (firstPageMessages.some((msg: Message) => msg.id === newMessage.id)) {
+                return oldData;
+              }
+
+              const newData = {
+                ...oldData,
+                pages: oldData.pages.map((page, index) => {
+                  if (index === 0 && 'messages' in page) {
+                    return {
+                      ...page,
+                      messages: [newMessage, ...page.messages],
+                    };
+                  }
+                  return page;
+                }),
+              };
+
+              return newData;
             },
           );
         },
