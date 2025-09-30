@@ -3,7 +3,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
-import { ChatRoomPage, Message } from '../types/chatTypes';
+import { ChatRoomPage, ChatRoomUser, Message } from '../types/chatTypes';
 
 interface UseChatRoomProps {
   chatRoomId: string;
@@ -56,6 +56,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
 
     // 첫 페이지에서 채팅방 정보만 추출
     if ('paginationInfo' in firstPage) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { messages, paginationInfo, ...chatRoomInfo } = firstPage;
       return chatRoomInfo;
     }
@@ -84,7 +85,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
 
     setActiveChatRoomId(chatRoomId);
 
-    const currentUnreadCount = (chatRoomInfo as any)?.unreadCount || 0;
+    const currentUnreadCount = (chatRoomInfo as { unreadCount?: number })?.unreadCount || 0;
 
     chatApiService
       .markMessagesAsRead(chatRoomId)
@@ -134,7 +135,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
 
     // 참여자 정보를 Map으로 변환하여 O(1) 검색 성능 확보
     const participantsMap = new Map(
-      (chatRoomInfo.participantDetails as any[]).map((p: any) => [p.id, p]),
+      (chatRoomInfo.participantDetails as ChatRoomUser[]).map((p: ChatRoomUser) => [p.id, p]),
     );
 
     return combinedMessages.map((message) => ({
