@@ -102,10 +102,7 @@ export const useGlobalSubscription = () => {
             },
           );
 
-          const chatRoomQueryKey =
-            roomType === 'direct'
-              ? ['directChatRoomWithMessages', chatRoomId]
-              : ['groupChatRoomWithMessages', chatRoomId];
+          const chatRoomQueryKey = ['chatRoom', chatRoomId, roomType];
 
           const newMessage: Message = {
             id: rawMessage.id,
