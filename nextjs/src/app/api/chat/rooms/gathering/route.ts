@@ -31,11 +31,13 @@ export async function GET(request: NextRequest) {
         participants,
         created_at,
         last_message,
-        last_message_time
+        last_message_time,
+        gatherings!inner(id, gathering_time)
       `,
       )
       .eq('room_type', 'gathering')
       .contains('participants', [user.id])
+      .gte('gatherings.gathering_time', new Date().toISOString())
       .order('last_message_time', { ascending: false });
 
     if (error) {
