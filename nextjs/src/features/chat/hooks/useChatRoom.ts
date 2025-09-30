@@ -3,12 +3,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
-import {
-  DirectChatRoomApiResponse,
-  GatheringChatRoomApiResponse,
-  Message,
-  MessagePagination,
-} from '../types/chatTypes';
+import { ChatRoomPage, Message } from '../types/chatTypes';
 
 interface UseChatRoomProps {
   chatRoomId: string;
@@ -41,9 +36,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
           : chatApiService.getGatheringChatMessagesOnly(chatRoomId, pageParam as string);
       }
     },
-    getNextPageParam: (
-      lastPage: DirectChatRoomApiResponse | GatheringChatRoomApiResponse | MessagePagination,
-    ) => {
+    getNextPageParam: (lastPage: ChatRoomPage) => {
       if ('paginationInfo' in lastPage) {
         return lastPage.paginationInfo?.hasMore ? lastPage.paginationInfo?.nextCursor : undefined;
       }

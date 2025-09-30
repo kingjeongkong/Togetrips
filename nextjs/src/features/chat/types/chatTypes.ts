@@ -79,3 +79,8 @@ export interface MessagePagination {
 export type ChatRoom = DirectChatRoom | GatheringChatRoom;
 export type ChatRoomListItem = DirectChatRoomListItem | GatheringChatRoomListItem;
 export type ChatRoomWithMessages = DirectChatRoomApiResponse | GatheringChatRoomApiResponse;
+// useInfiniteQuery의 pages 배열에 사용되는 타입
+export type ChatRoomPage =
+  | DirectChatRoomApiResponse
+  | GatheringChatRoomApiResponse
+  | MessagePagination;
