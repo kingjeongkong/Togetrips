@@ -155,7 +155,6 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
       senderId: userId,
       content,
       timestamp: new Date().toISOString(),
-      read: true,
       pending: true,
     };
     setPendingMessages((prev) => [...prev, optimisticMessage]);

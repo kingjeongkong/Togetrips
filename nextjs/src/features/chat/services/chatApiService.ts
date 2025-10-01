@@ -105,7 +105,6 @@ export const chatApiService = {
           senderId: message.sender_id as string,
           content: message.content as string,
           timestamp: message.timestamp as string,
-          read: message.read as boolean,
         })),
         unreadCount: room.unread_count ?? 0,
         paginationInfo: room.paginationInfo || undefined,
@@ -147,7 +146,6 @@ export const chatApiService = {
           senderId: message.sender_id as string,
           content: message.content as string,
           timestamp: message.timestamp as string,
-          read: message.read as boolean,
         })),
         participantCount: room.participant_count,
         participantDetails: room.participants_details,
@@ -306,7 +304,6 @@ export const chatApiService = {
           senderId: message.sender_id as string,
           content: message.content as string,
           timestamp: message.timestamp as string,
-          read: message.read as boolean,
         })),
         paginationInfo: {
           hasMore: data.hasMore || false,
@@ -351,7 +348,6 @@ export const chatApiService = {
           senderId: message.sender_id as string,
           content: message.content as string,
           timestamp: message.timestamp as string,
-          read: message.read as boolean,
         })),
         paginationInfo: {
           hasMore: data.hasMore || false,

@@ -77,7 +77,7 @@ export async function GET(
     // 메시지 조회 (최신 메시지부터, 커서 기반 페이징)
     let messagesQuery = supabase
       .from('messages')
-      .select('id, chat_room_id, sender_id, content, timestamp, read')
+      .select('id, chat_room_id, sender_id, content, timestamp')
       .eq('chat_room_id', chatRoom.id)
       .order('timestamp', { ascending: false }) // 최신 메시지부터
       .limit(MESSAGE_LIMIT);

@@ -109,7 +109,6 @@ export const useGlobalSubscription = () => {
             senderId: rawMessage.sender_id,
             content: rawMessage.content,
             timestamp: rawMessage.timestamp,
-            read: rawMessage.read,
           };
 
           queryClient.setQueryData(

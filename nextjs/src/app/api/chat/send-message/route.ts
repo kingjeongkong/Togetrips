@@ -63,7 +63,6 @@ export async function POST(request: NextRequest) {
         sender_id: user.id,
         content: content.trim(),
         timestamp: new Date().toISOString(),
-        read: false,
       })
       .select('id')
       .single();
@@ -93,7 +92,6 @@ export async function POST(request: NextRequest) {
         senderId: user.id,
         content: content.trim(),
         timestamp: new Date().toISOString(),
-        read: false,
       },
     });
   } catch (error) {
