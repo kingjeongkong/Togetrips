@@ -1,7 +1,8 @@
 'use client';
 
 import { useVisualViewport } from '@/hooks/useVisualViewport';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { FaArrowDown } from 'react-icons/fa';
 import { Message } from '../types/chatTypes';
 import ChatRoomDateDivider from './ChatRoomDateDivider';
 import ChatRoomMessage from './ChatRoomMessage';
@@ -33,6 +34,10 @@ const ChatRoomMessageList = ({
   const prevScrollHeightRef = useRef<number | null>(null); // 이전 메시지 로딩 전 스크롤 높이 저장
   const isLoadingMoreRef = useRef(false); // 이전 메시지 로딩 중 상태 저장
 
+  // 스크롤 상태 관리
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
   // [추가] 사용자의 직접적인 스크롤을 감지하여 우리 저장소에 업데이트하는 로직
   useEffect(() => {
     const scrollEl = scrollContainerRef.current;
@@ -48,13 +53,18 @@ const ChatRoomMessageList = ({
         isLoadingMoreRef.current = true;
         onLoadMore();
       }
+
+      // 스크롤 위치에 따라 "최신 메시지로 이동" 버튼 표시/숨김
+      const isNearBottom =
+        scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 500;
+      setShowScrollToBottom(!isNearBottom);
     };
 
     scrollEl.addEventListener('scroll', handleScroll);
     return () => scrollEl.removeEventListener('scroll', handleScroll);
   }, [hasMore, onLoadMore, isLoadingMore]);
 
-  // messages가 추가 로딩되었을 때 스크롤 위치를 조정하는 useEffect
+  // 이전 messages가 추가 로딩되었을 때 스크롤 위치를 조정하는 useEffect
   useEffect(() => {
     const scrollEl = scrollContainerRef.current;
     // 이전 메시지를 로딩 중이었고, 스크롤 요소가 존재할 때만 실행
@@ -103,21 +113,27 @@ const ChatRoomMessageList = ({
     }
   });
 
-  // 새 메시지가 왔을 때의 스크롤 로직 (맨 아래로 이동)
+  // 초기 로드 시 최하단으로 스크롤
   useEffect(() => {
-    const scrollEl = scrollContainerRef.current;
-    if (scrollEl) {
-      // 현재 스크롤이 맨 아래 근처에 있을 때만 자동 스크롤
-      const isNearBottom =
-        scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 100;
-
-      if (isNearBottom) {
-        scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
-        // 맨 아래로 이동했으므로 우리 저장소도 업데이트 해줍니다.
+    if (isInitialLoad && messages.length > 0) {
+      const scrollEl = scrollContainerRef.current;
+      if (scrollEl) {
+        scrollEl.scrollTop = scrollEl.scrollHeight;
         lastScrollTopRef.current = scrollEl.scrollHeight;
+        setIsInitialLoad(false);
       }
     }
-  }, [messages]);
+  }, [messages, isInitialLoad]);
+
+  // 최신 메시지로 이동하는 함수
+  const scrollToBottom = () => {
+    const scrollEl = scrollContainerRef.current;
+    if (scrollEl) {
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+      lastScrollTopRef.current = scrollEl.scrollHeight;
+      setShowScrollToBottom(false);
+    }
+  };
 
   const groupMessagesByDate = (messages: Message[]) => {
     const groups: { [key: string]: Message[] } = {};
@@ -137,35 +153,47 @@ const ChatRoomMessageList = ({
 
   return (
     // [수정] 스크롤 컨테이너에 ref를 연결합니다.
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-200">
-      {isLoadingMore && (
-        <div className="flex justify-center py-4">
-          <div
-            className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"
-            aria-label="Loading"
-          />
-        </div>
-      )}
-
-      {Object.entries(messageGroups).map(([date, dateMessages]) => (
-        <div key={date}>
-          <ChatRoomDateDivider date={date} />
-          {dateMessages.map((message) => (
-            <ChatRoomMessage
-              key={message.id}
-              message={message}
-              isOwnMessage={message.senderId === currentUserID}
-              sender={
-                'sender' in message
-                  ? (message.sender as { id: string; name: string; image: string } | undefined)
-                  : undefined
-              } // sender 정보는 이미 messages에 포함되어 있음
-              onResend={onResend}
+    <div className="relative flex-1 bg-gray-200 overflow-y-hidden">
+      <div ref={scrollContainerRef} className="h-full overflow-y-auto p-4">
+        {isLoadingMore && (
+          <div className="flex justify-center py-4">
+            <div
+              className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"
+              aria-label="Loading"
             />
-          ))}
-        </div>
-      ))}
-      <div ref={messagesEndRef} />
+          </div>
+        )}
+
+        {Object.entries(messageGroups).map(([date, dateMessages]) => (
+          <div key={date}>
+            <ChatRoomDateDivider date={date} />
+            {dateMessages.map((message) => (
+              <ChatRoomMessage
+                key={message.id}
+                message={message}
+                isOwnMessage={message.senderId === currentUserID}
+                sender={
+                  'sender' in message
+                    ? (message.sender as { id: string; name: string; image: string } | undefined)
+                    : undefined
+                } // sender 정보는 이미 messages에 포함되어 있음
+                onResend={onResend}
+              />
+            ))}
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {showScrollToBottom && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-4 right-4 bg-white hover:bg-gray-200 text-gray-900 rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-105"
+          aria-label="Scroll to latest message"
+        >
+          <FaArrowDown className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 };
