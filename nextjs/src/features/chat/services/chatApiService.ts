@@ -4,6 +4,7 @@ import {
   DirectChatRoomListItem,
   GatheringChatRoomApiResponse,
   GatheringChatRoomListItem,
+  Message,
   MessagePagination,
 } from '../types/chatTypes';
 
@@ -192,7 +193,7 @@ export const chatApiService = {
   },
 
   // 메시지 전송
-  async sendMessage(chatRoomID: string, content: string): Promise<boolean> {
+  async sendMessage(chatRoomID: string, content: string): Promise<Message | null> {
     try {
       const response = await fetch('/api/chat/send-message', {
         method: 'POST',
@@ -210,13 +211,15 @@ export const chatApiService = {
         throw new Error(errorData.error || 'Failed to send message');
       }
 
-      return true;
+      const result = await response.json();
+
+      return result.message;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error sending message:', error);
       }
       toast.error('Failed to send message');
-      return false;
+      return null;
     }
   },
 

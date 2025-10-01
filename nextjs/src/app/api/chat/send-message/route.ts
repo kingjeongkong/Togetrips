@@ -87,7 +87,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      messageID: message.id,
+      message: {
+        id: message.id,
+        chatRoomId: chatRoomID,
+        senderId: user.id,
+        content: content.trim(),
+        timestamp: new Date().toISOString(),
+        read: false,
+      },
     });
   } catch (error) {
     console.error('Error sending message:', error);
