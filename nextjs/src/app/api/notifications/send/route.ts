@@ -76,6 +76,12 @@ export async function POST(request: NextRequest) {
     const uniqueId = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const timestamp = Date.now().toString();
 
+    // 알림 타입에 따른 추가 데이터 설정
+    const additionalData: Record<string, string> = {};
+    if (type === 'chat' && notificationPayload.chatRoomId) {
+      additionalData.chatRoomId = notificationPayload.chatRoomId;
+    }
+
     const message = {
       data: {
         title: notificationPayload.title,
@@ -85,6 +91,7 @@ export async function POST(request: NextRequest) {
         timestamp: timestamp,
         id: uniqueId,
         source: 'togetrips-api',
+        ...additionalData,
       },
       webpush: {
         fcmOptions: {

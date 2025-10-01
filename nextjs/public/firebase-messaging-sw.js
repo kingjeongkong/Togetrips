@@ -62,22 +62,10 @@ messaging.onBackgroundMessage((payload) => {
       },
     ],
     requireInteraction: true,
-    tag: notificationId, // 고유한 ID를 태그로 사용
-    renotify: false, // 같은 태그의 알림이 있어도 재알림하지 않음
+    renotify: true,
   };
 
-  // 강력한 중복 방지: 모든 기존 알림 확인
-  return self.registration.getNotifications().then((existingNotifications) => {
-    // 모든 기존 알림 제거 (완전한 중복 방지)
-    existingNotifications.forEach((notification) => {
-      console.log('Removing all existing notifications:', notification.title);
-      notification.close();
-    });
-
-    // 새 알림 표시
-    console.log('Showing new notification:', notificationTitle);
-    return self.registration.showNotification(notificationTitle, notificationOptions);
-  });
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // 알림 클릭 시 처리
@@ -87,29 +75,39 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   if (event.action === 'open' || !event.action) {
-    // 앱 열기
+    const data = event.notification.data;
+    let targetUrl = '/';
+
+    // 알림 타입에 따라 적절한 페이지로 이동
+    if (data?.type === 'chat' && data?.chatRoomId) {
+      targetUrl = `/chat/${data.chatRoomId}`;
+    } else if (data?.type === 'request') {
+      targetUrl = '/request';
+    } else if (data?.type === 'gathering') {
+      targetUrl = '/gathering';
+    } else if (data?.url) {
+      targetUrl = data.url;
+    }
+
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
         // 이미 열린 창이 있는지 확인
         for (const client of clientList) {
           if (client.url.includes('/') && 'focus' in client) {
+            // 기존 창이 있으면 클라이언트로 알림 클릭 이벤트 전달
+            client.postMessage({
+              type: 'NOTIFICATION_CLICK',
+              url: targetUrl,
+              notificationType: data?.type,
+              chatRoomId: data?.chatRoomId,
+            });
             return client.focus();
           }
         }
 
         // 새 창 열기
         if (clients.openWindow) {
-          const data = event.notification.data;
-          let url = '/';
-
-          // 알림 타입에 따라 적절한 페이지로 이동
-          if (data?.type === 'chat' && data?.chatRoomId) {
-            url = `/chat/${data.chatRoomId}`;
-          } else if (data?.type === 'request') {
-            url = '/request';
-          }
-
-          return clients.openWindow(url);
+          return clients.openWindow(targetUrl);
         }
       }),
     );
