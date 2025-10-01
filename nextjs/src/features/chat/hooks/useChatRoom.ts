@@ -189,6 +189,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
         setPendingMessages((prev) => prev.filter((msg) => msg.id !== tempId));
       }
     } catch (error) {
+      console.error('Error sending message:', error);
       setPendingMessages((prev) =>
         prev.map((msg) => (msg.id === tempId ? { ...msg, pending: false, error: true } : msg)),
       );
