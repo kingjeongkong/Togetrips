@@ -155,14 +155,41 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
       senderId: userId,
       content,
       timestamp: new Date().toISOString(),
-      read: true,
       pending: true,
     };
     setPendingMessages((prev) => [...prev, optimisticMessage]);
 
-    const success = await chatApiService.sendMessage(chatRoomId, content);
+    try {
+      const sentMessage = await chatApiService.sendMessage(chatRoomId, content);
 
-    if (!success) {
+      if (sentMessage) {
+        const chatRoomQueryKey = ['chatRoom', chatRoomId, roomType];
+        queryClient.setQueryData(
+          chatRoomQueryKey,
+          (oldData: { pages: ChatRoomPage[] } | undefined) => {
+            if (!oldData) return oldData;
+
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page, index) => {
+                if (index === 0 && 'messages' in page) {
+                  return {
+                    ...page,
+                    messages: [sentMessage, ...page.messages],
+                  };
+                }
+                return page;
+              }),
+            };
+          },
+        );
+        setPendingMessages((prev) => prev.filter((msg) => msg.id !== tempId));
+      } else {
+        await queryClient.invalidateQueries({ queryKey: ['chatRoom', chatRoomId, roomType] });
+        setPendingMessages((prev) => prev.filter((msg) => msg.id !== tempId));
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
       setPendingMessages((prev) =>
         prev.map((msg) => (msg.id === tempId ? { ...msg, pending: false, error: true } : msg)),
       );

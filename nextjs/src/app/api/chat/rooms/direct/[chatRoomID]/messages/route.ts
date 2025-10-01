@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     // 메시지 조회 (최신 메시지부터, 커서 기반 페이징)
     let messagesQuery = supabase
       .from('messages')
-      .select('id, sender_id, content, timestamp, read')
+      .select('id, sender_id, content, timestamp')
       .eq('chat_room_id', chatRoomID)
       .order('timestamp', { ascending: false })
       .limit(limit);
