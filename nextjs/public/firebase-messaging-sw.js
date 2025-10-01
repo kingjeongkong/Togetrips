@@ -62,22 +62,10 @@ messaging.onBackgroundMessage((payload) => {
       },
     ],
     requireInteraction: true,
-    tag: notificationId, // 고유한 ID를 태그로 사용
-    renotify: false, // 같은 태그의 알림이 있어도 재알림하지 않음
+    renotify: true,
   };
 
-  // 강력한 중복 방지: 모든 기존 알림 확인
-  return self.registration.getNotifications().then((existingNotifications) => {
-    // 모든 기존 알림 제거 (완전한 중복 방지)
-    existingNotifications.forEach((notification) => {
-      console.log('Removing all existing notifications:', notification.title);
-      notification.close();
-    });
-
-    // 새 알림 표시
-    console.log('Showing new notification:', notificationTitle);
-    return self.registration.showNotification(notificationTitle, notificationOptions);
-  });
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // 알림 클릭 시 처리
