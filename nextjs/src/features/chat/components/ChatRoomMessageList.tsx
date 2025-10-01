@@ -113,17 +113,27 @@ const ChatRoomMessageList = ({
     }
   });
 
-  // 초기 로드 시 최하단으로 스크롤
+  // 초기 로드 및 메시지 전송 시 스크롤 처리 로직
   useEffect(() => {
+    const scrollEl = scrollContainerRef.current;
+    if (!scrollEl) return;
+
+    // 초기 로드 시 최하단으로 즉시 스크롤
     if (isInitialLoad && messages.length > 0) {
-      const scrollEl = scrollContainerRef.current;
-      if (scrollEl) {
-        scrollEl.scrollTop = scrollEl.scrollHeight;
-        lastScrollTopRef.current = scrollEl.scrollHeight;
-        setIsInitialLoad(false);
-      }
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+      lastScrollTopRef.current = scrollEl.scrollHeight;
+      setIsInitialLoad(false);
+      return;
     }
-  }, [messages, isInitialLoad]);
+
+    // 내가 보낸 새 메시지(pending 포함)가 추가되었는지 확인
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.senderId === currentUserID) {
+      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'auto' });
+      lastScrollTopRef.current = scrollEl.scrollHeight;
+      setShowScrollToBottom(false);
+    }
+  }, [messages, isInitialLoad, currentUserID]);
 
   // 최신 메시지로 이동하는 함수
   const scrollToBottom = () => {
