@@ -3,7 +3,13 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
-import { ChatRoomPage, ChatRoomUser, Message } from '../types/chatTypes';
+import {
+  ChatRoomPage,
+  ChatRoomUser,
+  DirectChatRoomListItem,
+  GatheringChatRoomListItem,
+  Message,
+} from '../types/chatTypes';
 
 interface UseChatRoomProps {
   chatRoomId: string;
@@ -87,21 +93,25 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
 
     const currentUnreadCount = (chatRoomInfo as { unreadCount?: number })?.unreadCount || 0;
 
-    chatApiService
-      .markMessagesAsRead(chatRoomId)
-      .then(() => {
-        if (currentUnreadCount > 0) {
-          decrementMessageCountBy(currentUnreadCount);
-        }
+    if (currentUnreadCount > 0) {
+      decrementMessageCountBy(currentUnreadCount);
+    }
 
-        const listQueryKey = isGroupChat
-          ? ['gatheringChatRooms', userId]
-          : ['directChatRooms', userId];
-        queryClient.invalidateQueries({ queryKey: listQueryKey });
-      })
-      .catch((error) => {
-        console.error('Error marking messages as read:', error);
-      });
+    const listQueryKey = isGroupChat ? ['gatheringChatRooms', userId] : ['directChatRooms', userId];
+
+    queryClient.setQueryData(
+      listQueryKey,
+      (oldData: DirectChatRoomListItem[] | GatheringChatRoomListItem[] | undefined) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((room) => (room.id === chatRoomId ? { ...room, unreadCount: 0 } : room));
+      },
+    );
+
+    chatApiService.markMessagesAsRead(chatRoomId).catch((error) => {
+      console.error('Error marking messages as read:', error);
+      queryClient.invalidateQueries({ queryKey: listQueryKey });
+    });
 
     return () => {
       setActiveChatRoomId(null);

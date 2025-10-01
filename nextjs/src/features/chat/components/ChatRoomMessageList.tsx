@@ -162,7 +162,6 @@ const ChatRoomMessageList = ({
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    // [수정] 스크롤 컨테이너에 ref를 연결합니다.
     <div className="relative flex-1 bg-gray-200 overflow-y-hidden">
       <div ref={scrollContainerRef} className="h-full overflow-y-auto p-4">
         {isLoadingMore && (
