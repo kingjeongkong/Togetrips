@@ -31,6 +31,7 @@ const ChatRoomInput = ({ onSendMessage, onFocus, onBlur }: ChatRoomInputProps) =
 
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
+        textareaRef.current.focus();
       }
     }
   };
