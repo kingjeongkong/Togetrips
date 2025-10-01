@@ -75,29 +75,39 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   if (event.action === 'open' || !event.action) {
-    // 앱 열기
+    const data = event.notification.data;
+    let targetUrl = '/';
+
+    // 알림 타입에 따라 적절한 페이지로 이동
+    if (data?.type === 'chat' && data?.chatRoomId) {
+      targetUrl = `/chat/${data.chatRoomId}`;
+    } else if (data?.type === 'request') {
+      targetUrl = '/request';
+    } else if (data?.type === 'gathering') {
+      targetUrl = '/gathering';
+    } else if (data?.url) {
+      targetUrl = data.url;
+    }
+
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
         // 이미 열린 창이 있는지 확인
         for (const client of clientList) {
           if (client.url.includes('/') && 'focus' in client) {
+            // 기존 창이 있으면 클라이언트로 알림 클릭 이벤트 전달
+            client.postMessage({
+              type: 'NOTIFICATION_CLICK',
+              url: targetUrl,
+              notificationType: data?.type,
+              chatRoomId: data?.chatRoomId,
+            });
             return client.focus();
           }
         }
 
         // 새 창 열기
         if (clients.openWindow) {
-          const data = event.notification.data;
-          let url = '/';
-
-          // 알림 타입에 따라 적절한 페이지로 이동
-          if (data?.type === 'chat' && data?.chatRoomId) {
-            url = `/chat/${data.chatRoomId}`;
-          } else if (data?.type === 'request') {
-            url = '/request';
-          }
-
-          return clients.openWindow(url);
+          return clients.openWindow(targetUrl);
         }
       }),
     );
