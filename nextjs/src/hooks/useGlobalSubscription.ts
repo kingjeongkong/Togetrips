@@ -5,7 +5,7 @@ import {
   GatheringChatRoomListItem,
   Message,
 } from '@/features/chat/types/chatTypes';
-import { supabase } from '@/lib/supabase-config';
+import { createBrowserSupabaseClient } from '@/lib/supabase-config';
 import { useSession } from '@/providers/SessionProvider';
 import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,6 +14,7 @@ import { useEffect, useRef } from 'react';
 export const useGlobalSubscription = () => {
   const { userId } = useSession();
   const queryClient = useQueryClient();
+  const supabase = createBrowserSupabaseClient();
   const { incrementMessageCount, incrementRequestCount, decrementRequestCount } =
     useRealtimeStore();
 

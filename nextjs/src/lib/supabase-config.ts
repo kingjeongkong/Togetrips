@@ -57,6 +57,3 @@ export const createServerSupabaseStorageClient = () => {
     },
   );
 };
-
-// 기존 호환성을 위한 export (점진적 마이그레이션용)
-export const supabase = createBrowserSupabaseClient();

@@ -2,6 +2,7 @@
 
 import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
 import { useGlobalSubscription } from '@/hooks/useGlobalSubscription';
+import { createBrowserSupabaseClient } from '@/lib/supabase-config';
 import { useSession } from '@/providers/SessionProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ export const AppInitializer = () => {
   const { syncTokenOnLogin, settings, isLoadingSettings } = usePushNotifications();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const supabase = createBrowserSupabaseClient();
 
   useGlobalSubscription();
 
@@ -46,11 +48,14 @@ export const AppInitializer = () => {
     };
   }, [router]);
 
-  // 앱이 다시 활성화될 때 WebSocket 연결 복구
+  // 앱 활성화/비활성화 시 WebSocket 연결 직접 제어
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
+        supabase.realtime.connect();
         queryClient.invalidateQueries();
+      } else if (document.visibilityState === 'hidden') {
+        supabase.realtime.disconnect();
       }
     };
 
