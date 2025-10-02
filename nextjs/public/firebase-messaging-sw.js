@@ -18,7 +18,7 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 // Service Worker 버전 업데이트 (캐시 무효화)
-const SW_VERSION = '3.0.0';
+const SW_VERSION = '3.0.1';
 console.log('Service Worker version:', SW_VERSION);
 
 // 백그라운드에서 메시지 수신 시 처리
@@ -76,18 +76,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'open' || !event.action) {
     const data = event.notification.data;
-    let targetUrl = '/';
-
-    // 알림 타입에 따라 적절한 페이지로 이동
-    if (data?.type === 'chat' && data?.chatRoomId) {
-      targetUrl = `/chat/${data.chatRoomId}`;
-    } else if (data?.type === 'request') {
-      targetUrl = '/request';
-    } else if (data?.type === 'gathering') {
-      targetUrl = '/gathering';
-    } else if (data?.url) {
-      targetUrl = data.url;
-    }
+    const targetUrl = data?.url || '/';
 
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -98,8 +87,6 @@ self.addEventListener('notificationclick', (event) => {
             client.postMessage({
               type: 'NOTIFICATION_CLICK',
               url: targetUrl,
-              notificationType: data?.type,
-              chatRoomId: data?.chatRoomId,
             });
             return client.focus();
           }
