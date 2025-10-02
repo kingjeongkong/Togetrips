@@ -54,13 +54,9 @@ const ChatRoomHeader = ({
   };
 
   const handleBackClick = () => {
-    // 히스토리 스택의 길이를 확인하여 딥링크 진입인지 판단
     if (window.history.length <= 2) {
-      // 히스토리 스택이 거의 비어있으면(PWA 초기 진입 등),
-      // 채팅 목록 페이지로 직접 이동시켜 인위적으로 스택을 만들어 줌
       router.push('/chat');
     } else {
-      // 히스토리 스택에 이전 페이지가 있으면 정상적으로 뒤로가기
       router.back();
     }
   };
