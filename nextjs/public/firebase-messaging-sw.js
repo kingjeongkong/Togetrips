@@ -18,7 +18,7 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 // Service Worker 버전 업데이트 (캐시 무효화)
-const SW_VERSION = '3.0.0';
+const SW_VERSION = '3.0.1';
 console.log('Service Worker version:', SW_VERSION);
 
 // 백그라운드에서 메시지 수신 시 처리
