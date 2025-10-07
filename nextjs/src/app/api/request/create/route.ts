@@ -36,21 +36,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is too long' }, { status: 400 });
     }
 
-    // 중복 요청 체크
+    // 중복 요청 체크 (양방향)
     const { data: existing } = await supabase
       .from('requests')
-      .select('id, status')
-      .eq('sender_id', senderID)
-      .eq('receiver_id', receiverID)
+      .select('id, status, sender_id, receiver_id')
+      .or(
+        `and(sender_id.eq.${senderID},receiver_id.eq.${receiverID}),and(sender_id.eq.${receiverID},receiver_id.eq.${senderID})`,
+      )
       .in('status', ['pending', 'accepted', 'declined'])
       .limit(1)
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json(
-        { error: `A request with '${existing.status}' status already exists.` },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: `A request already exists` }, { status: 409 });
     }
 
     // 요청 생성
