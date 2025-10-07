@@ -1,8 +1,15 @@
+// API 에러 응답 타입 정의
+interface ApiErrorResponse {
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
+
 export class HttpError extends Error {
   public readonly status: number;
-  public readonly data?: any;
+  public readonly data?: ApiErrorResponse;
 
-  constructor(message: string, status: number, data?: any) {
+  constructor(message: string, status: number, data?: ApiErrorResponse) {
     super(message);
     this.status = status;
     this.data = data;
