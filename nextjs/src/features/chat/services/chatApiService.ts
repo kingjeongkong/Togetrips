@@ -223,7 +223,7 @@ export const chatApiService = {
 
   // 채팅방 삭제
   async deleteChatRoom(chatRoomId: string): Promise<void> {
-    const response = await fetch(`/api/chat/rooms/${chatRoomId}`, {
+    const response = await fetch(`/api/chat/rooms/direct/${chatRoomId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
