@@ -63,3 +63,20 @@ export interface NotificationHistoryItem {
   read: boolean;
   created_at: string;
 }
+
+// 인앱 알림 타입
+export type InAppNotificationType = 'chat' | 'request';
+
+// 인앱 알림 데이터
+export interface InAppNotification {
+  id: string;
+  type: InAppNotificationType;
+  title: string;
+  message: string;
+  senderName?: string;
+  senderImage?: string;
+  chatRoomId?: string;
+  requestId?: string;
+  roomType?: 'direct' | 'group';
+  timestamp: number;
+}
