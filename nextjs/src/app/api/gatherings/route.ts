@@ -156,10 +156,10 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // 파일 크기 검사 (1MB 제한)
-        if (file.size > 1 * 1024 * 1024) {
+        // 파일 크기 검사 (2MB 제한)
+        if (file.size > 2 * 1024 * 1024) {
           return NextResponse.json(
-            { error: 'File size too large. Maximum 1MB allowed.' },
+            { error: 'File size too large. Maximum 2MB allowed.' },
             { status: 400 },
           );
         }
