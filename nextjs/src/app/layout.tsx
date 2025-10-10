@@ -65,7 +65,7 @@ export default function RootLayout({
             <PwaInstallPrompt />
             {children}
             <ToastContainer
-              position="top-center"
+              position="top-right"
               autoClose={5000}
               hideProgressBar={true}
               newestOnTop={true}
@@ -75,8 +75,6 @@ export default function RootLayout({
               draggable
               pauseOnHover
               theme="light"
-              className="in-app-notification-container"
-              toastClassName="in-app-notification-toast-wrapper"
             />
           </SessionProvider>
         </QueryClientProvider>
