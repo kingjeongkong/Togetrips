@@ -50,7 +50,7 @@ export const showInAppNotification = (
 
   // Toast 표시 (간단한 텍스트로 표시)
   // TODO: 알림 UI 커스텀
-  toast(`${getNotificationIcon()} ${title}: ${message}`, {
+  toast(`${getNotificationIcon()} ${title}${type === 'chat' ? ':' : ''} ${message}`, {
     ...toastOptions,
     onClick: handleClick,
   });

@@ -223,7 +223,6 @@ export const useGlobalSubscription = () => {
         (payload) => {
           // 나에게 온 새로운 요청(pending)일 경우 카운트 증가
           if (payload.eventType === 'INSERT' && payload.new.receiver_id === userId) {
-            console.log('📬 중앙 관제실: 새 요청 수신!', payload.new);
             incrementRequestCount();
 
             // TODO: 향후 최적화 - 서버 사이드에서 sender 정보를 포함한 payload 전송
@@ -239,7 +238,7 @@ export const useGlobalSubscription = () => {
 
                 showRequestNotification({
                   title: senderProfile?.name || 'Someone',
-                  message: payload.new.message || 'wants to travel with you!',
+                  message: 'wants to travel with you!',
                   senderName: senderProfile?.name,
                   senderImage: senderProfile?.image,
                   requestId: payload.new.id,
@@ -259,7 +258,6 @@ export const useGlobalSubscription = () => {
           }
           // 내 요청이 수락/거절된 경우 카운트 감소
           if (payload.eventType === 'UPDATE' && payload.old.receiver_id === userId) {
-            console.log('📬 중앙 관제실: 요청 상태 변경!', payload.new);
             decrementRequestCount();
           }
         },
@@ -267,7 +265,6 @@ export const useGlobalSubscription = () => {
       .subscribe();
 
     return () => {
-      console.log('🎯 중앙 관제실: 실시간 구독 종료');
       supabase.removeChannel(messageChannel);
       supabase.removeChannel(requestChannel);
     };
