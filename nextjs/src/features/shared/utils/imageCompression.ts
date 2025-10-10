@@ -1,7 +1,7 @@
 import imageCompression from 'browser-image-compression';
 
 const compressionOptions = {
-  maxSizeMB: 1, // 최대 1MB
+  maxSizeMB: 2, // 최대 2MB
   maxWidthOrHeight: 1920, // 최대 가로/세로 1920px (FHD)
   useWebWorker: true, // 웹 워커 사용으로 성능 향상
   fileType: 'image/webp', // WebP 형식으로 압축 (JPEG 대비 25-35% 작은 용량)

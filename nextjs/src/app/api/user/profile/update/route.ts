@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest) {
           return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
         }
 
-        if (imageFile.size > 1 * 1024 * 1024) {
+        if (imageFile.size > 2 * 1024 * 1024) {
           return NextResponse.json({ error: 'File size too large' }, { status: 400 });
         }
 
