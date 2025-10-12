@@ -5,10 +5,10 @@ import {
   UpdateNotificationSettingsRequest,
 } from '../types/notification';
 
-// FCM 토큰 관련 API 서비스
-export class FCMTokenService {
+// FCM 토큰 관련 API 함수들
+export const FCMTokenService = {
   // FCM 토큰 등록
-  static async registerToken(request: RegisterTokenRequest): Promise<FCMToken> {
+  async registerToken(request: RegisterTokenRequest): Promise<FCMToken> {
     const response = await fetch('/api/notifications/tokens/register', {
       method: 'POST',
       headers: {
@@ -24,10 +24,10 @@ export class FCMTokenService {
     }
 
     return data.data;
-  }
+  },
 
   // 사용자의 FCM 토큰 목록 조회
-  static async getTokens(): Promise<FCMToken[]> {
+  async getTokens(): Promise<FCMToken[]> {
     const response = await fetch('/api/notifications/tokens/get');
     const data = await response.json();
 
@@ -36,10 +36,10 @@ export class FCMTokenService {
     }
 
     return data.data || [];
-  }
+  },
 
   // FCM 토큰 삭제
-  static async deleteToken(token: string): Promise<void> {
+  async deleteToken(token: string): Promise<void> {
     const response = await fetch('/api/notifications/tokens/delete', {
       method: 'DELETE',
       headers: {
@@ -53,13 +53,13 @@ export class FCMTokenService {
     if (!response.ok) {
       throw new Error(data.error || 'Failed to delete FCM token');
     }
-  }
-}
+  },
+};
 
-// 알림 설정 관련 API 서비스
-export class NotificationSettingsService {
+// 알림 설정 관련 API 함수들
+export const NotificationSettingsService = {
   // 알림 설정 조회
-  static async getSettings(): Promise<NotificationSettings> {
+  async getSettings(): Promise<NotificationSettings> {
     const response = await fetch('/api/notifications/settings');
     const data = await response.json();
 
@@ -68,12 +68,10 @@ export class NotificationSettingsService {
     }
 
     return data.data;
-  }
+  },
 
   // 알림 설정 업데이트
-  static async updateSettings(
-    updates: UpdateNotificationSettingsRequest,
-  ): Promise<NotificationSettings> {
+  async updateSettings(updates: UpdateNotificationSettingsRequest): Promise<NotificationSettings> {
     const response = await fetch('/api/notifications/settings', {
       method: 'PUT',
       headers: {
@@ -89,5 +87,5 @@ export class NotificationSettingsService {
     }
 
     return data.data;
-  }
-}
+  },
+};
