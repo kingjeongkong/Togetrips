@@ -21,11 +21,11 @@ const mockLocationUtils = locationUtils as jest.Mocked<typeof locationUtils>;
 
 // 헬퍼 함수들
 const mockLocationSuccess = () => {
-  mockLocationUtils.fetchAndSyncUserLocation.mockResolvedValue({
-    currentLocation: { lat: 37.5, lng: 127.0 },
-    cityInfo: { id: 'place.123', city: 'Seoul', state: 'Seoul', country: 'South Korea' },
+  mockLocationUtils.getCurrentPosition.mockResolvedValue({
+    lat: 37.5,
+    lng: 127.0,
   });
-  // fetchAndSyncUserLocation 내부에서 syncCurrentLocation을 호출하므로 모킹
+
   mockUserLocationService.syncCurrentLocation.mockResolvedValue({
     message: 'Location updated successfully',
     location: { id: 'place.123', city: 'Seoul', state: 'Seoul', country: 'South Korea' },
@@ -40,7 +40,7 @@ const mockUsersSuccess = () => {
 };
 
 const mockLocationError = () => {
-  mockLocationUtils.fetchAndSyncUserLocation.mockRejectedValue(new Error('위치 에러'));
+  mockLocationUtils.getCurrentPosition.mockRejectedValue(new Error('위치 에러'));
 };
 
 const mockUsersError = () => {
@@ -78,8 +78,8 @@ describe('useUserLocation', () => {
     ]);
 
     // 모킹된 함수들이 호출되었는지 확인
-    expect(mockLocationUtils.fetchAndSyncUserLocation).toHaveBeenCalled();
-    // fetchAndSyncUserLocation이 완전히 모킹되어 있으므로 내부 syncCurrentLocation 호출은 확인하지 않음
+    expect(mockLocationUtils.getCurrentPosition).toHaveBeenCalled();
+    expect(mockUserLocationService.syncCurrentLocation).toHaveBeenCalledWith(37.5, 127.0);
     expect(mockUserLocationService.fetchNearbyUsers).toHaveBeenCalledWith('place.123');
   });
 
@@ -101,8 +101,8 @@ describe('useUserLocation', () => {
     ]);
 
     // enabled 플래그로 자동 실행되었는지 확인
-    expect(mockLocationUtils.fetchAndSyncUserLocation).toHaveBeenCalled();
-    // fetchAndSyncUserLocation이 완전히 모킹되어 있으므로 내부 syncCurrentLocation 호출은 확인하지 않음
+    expect(mockLocationUtils.getCurrentPosition).toHaveBeenCalled();
+    expect(mockUserLocationService.syncCurrentLocation).toHaveBeenCalledWith(37.5, 127.0);
     expect(mockUserLocationService.fetchNearbyUsers).toHaveBeenCalledWith('place.123');
   });
 
@@ -129,21 +129,23 @@ describe('useUserLocation', () => {
     // 주변 유저 에러가 발생할 때까지 대기
     await waitFor(() => expect(result.current.usersError).toBeDefined());
 
-    // 위치는 성공했으므로 fetchAndSyncUserLocation은 호출되어야 함
-    expect(mockLocationUtils.fetchAndSyncUserLocation).toHaveBeenCalled();
+    // 위치는 성공했으므로 getCurrentPosition과 syncCurrentLocation은 호출되어야 함
+    expect(mockLocationUtils.getCurrentPosition).toHaveBeenCalled();
+    expect(mockUserLocationService.syncCurrentLocation).toHaveBeenCalledWith(37.5, 127.0);
     // fetchNearbyUsers도 호출되었지만 에러가 발생
     expect(mockUserLocationService.fetchNearbyUsers).toHaveBeenCalledWith('place.123');
   });
 
-  it('fetchAndSyncUserLocation 에러 시 fetchNearbyUsers가 호출되지 않는다', async () => {
-    // fetchAndSyncUserLocation에서 에러 발생
-    mockLocationUtils.fetchAndSyncUserLocation.mockRejectedValue(new Error('위치 에러'));
+  it('getCurrentPosition 에러 시 fetchNearbyUsers가 호출되지 않는다', async () => {
+    // getCurrentPosition에서 에러 발생
+    mockLocationUtils.getCurrentPosition.mockRejectedValue(new Error('위치 에러'));
 
     const { result } = renderHook(() => useUserLocation(), { wrapper: TestWrapper });
 
     await waitFor(() => expect(result.current.locationError).toBeDefined());
 
-    // fetchAndSyncUserLocation 에러 발생 시 fetchNearbyUsers가 호출되지 않는지 확인
+    // getCurrentPosition 에러 발생 시 syncCurrentLocation과 fetchNearbyUsers가 호출되지 않는지 확인
+    expect(mockUserLocationService.syncCurrentLocation).not.toHaveBeenCalled();
     expect(mockUserLocationService.fetchNearbyUsers).not.toHaveBeenCalled();
   });
 
@@ -156,7 +158,8 @@ describe('useUserLocation', () => {
     expect(result.current.users).toBeUndefined();
 
     // 모킹된 함수들이 호출되지 않았는지 확인
-    expect(mockLocationUtils.fetchAndSyncUserLocation).not.toHaveBeenCalled();
+    expect(mockLocationUtils.getCurrentPosition).not.toHaveBeenCalled();
+    expect(mockUserLocationService.syncCurrentLocation).not.toHaveBeenCalled();
     expect(mockUserLocationService.fetchNearbyUsers).not.toHaveBeenCalled();
   });
 });
