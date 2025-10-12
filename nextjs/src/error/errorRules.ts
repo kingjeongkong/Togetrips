@@ -17,15 +17,33 @@ export const ERROR_RULES: ErrorRule[] = [
       const message = error?.message?.toLowerCase() || '';
 
       if (message.includes('permission') || message.includes('denied')) {
-        return {
-          title: 'Location Permission Required',
-          description: 'Location access is needed to find nearby travelers.',
-          solutions: [
-            'Click the lock icon in the browser address bar',
-            'Change "Location" permission to "Allow"',
-            'Refresh the page',
-          ],
-        };
+        // 에러 메시지에서 PWA 정보 파싱
+        const isPWA = message.includes('PWA: true');
+
+        if (isPWA) {
+          return {
+            title: 'Location Permission Required (PWA)',
+            description:
+              'Location access is needed to find nearby travelers. Please enable location permission.',
+            solutions: [
+              '1. Delete the app from your home screen',
+              '2. Reinstall the app from your browser',
+              '3. Allow location permission when prompted',
+            ],
+          };
+        } else {
+          return {
+            title: 'Location Permission Required (Web)',
+            description:
+              'Location access is needed to find nearby travelers. Please enable location permission in your browser.',
+            solutions: [
+              '1. Click the lock icon in the browser address bar',
+              '2. Change "Location" permission to "Allow"',
+              '3. Refresh the page after enabling permission',
+              'Try a different browser if the issue persists',
+            ],
+          };
+        }
       }
 
       if (message.includes('timeout') || message.includes('expired')) {
