@@ -42,9 +42,13 @@ export const fetchAndSyncUserLocation = async (): Promise<{
         const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
 
         if (permissionStatus.state === 'denied') {
+          const isPWA =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true;
+
           reject(
             new Error(
-              'Location permission has been denied. Please enable location access in your browser settings.',
+              `Location permission has been denied. Please enable location access in your browser settings. PWA: ${isPWA}`,
             ),
           );
           return;
@@ -52,7 +56,7 @@ export const fetchAndSyncUserLocation = async (): Promise<{
       }
     } catch (error) {
       // Permissions API를 지원하지 않는 브라우저의 경우 계속 진행
-      console.log('Permissions API not supported, proceeding with location request');
+      console.log('Permissions API not supported, proceeding with location request :', error);
     }
 
     // 위치 정보 요청 함수
