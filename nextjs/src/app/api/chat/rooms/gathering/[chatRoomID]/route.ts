@@ -9,6 +9,10 @@ export async function GET(
   try {
     const supabase = createServerSupabaseClient(request);
 
+    const { searchParams } = new URL(request.url);
+    const before = searchParams.get('before');
+    const MESSAGE_LIMIT = 20;
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -70,13 +74,20 @@ export async function GET(
       .select('id, name, image')
       .in('id', participantIds);
 
-    // 초기 메시지 50개 조회
-    const { data: messages, error: messagesError } = await supabase
+    // 메시지 조회 (최신 메시지부터, 커서 기반 페이징)
+    let messagesQuery = supabase
       .from('messages')
-      .select('id, chat_room_id, sender_id, content, timestamp, read')
+      .select('id, chat_room_id, sender_id, content, timestamp')
       .eq('chat_room_id', chatRoom.id)
-      .order('timestamp', { ascending: true })
-      .limit(50);
+      .order('timestamp', { ascending: false }) // 최신 메시지부터
+      .limit(MESSAGE_LIMIT);
+
+    // before 파라미터가 있으면 해당 시점 이전의 메시지만 조회
+    if (before) {
+      messagesQuery = messagesQuery.lt('timestamp', before);
+    }
+
+    const { data: messages, error: messagesError } = await messagesQuery;
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
@@ -91,6 +102,11 @@ export async function GET(
       chatRoom.created_at,
     );
 
+    // 다음 페이지를 위한 커서 계산
+    const hasMore = messages && messages.length === MESSAGE_LIMIT;
+    const nextCursor =
+      hasMore && messages.length > 0 ? messages[messages.length - 1].timestamp : null;
+
     const chatRoomWithDetails = {
       ...chatRoom,
       messages: messages || [],
@@ -102,6 +118,10 @@ export async function GET(
           image: p.image || '/default-traveler.png',
         })) || [],
       unread_count: unreadCount || 0,
+      paginationInfo: {
+        hasMore,
+        nextCursor,
+      },
     };
 
     return NextResponse.json({

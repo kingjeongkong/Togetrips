@@ -54,7 +54,11 @@ const ChatRoomHeader = ({
   };
 
   const handleBackClick = () => {
-    router.back();
+    if (window.history.length <= 2) {
+      router.push('/chat');
+    } else {
+      router.back();
+    }
   };
 
   return (

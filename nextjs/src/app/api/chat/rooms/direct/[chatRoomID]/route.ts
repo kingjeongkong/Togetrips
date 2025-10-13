@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateUnreadCount } from '../../_utils/calculateUnreadCount';
+import { calculateUnreadCount } from '../../../_utils/calculateUnreadCount';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +12,10 @@ export async function GET(request: NextRequest) {
     if (!chatRoomID) {
       return NextResponse.json({ error: 'Chat room ID is required' }, { status: 400 });
     }
+
+    const { searchParams } = new URL(request.url);
+    const before = searchParams.get('before');
+    const MESSAGE_LIMIT = 20;
 
     const {
       data: { session },
@@ -57,13 +61,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // 초기 메시지 50개 조회
-    const { data: messages, error: messagesError } = await supabase
+    // 메시지 조회 (최신 메시지부터, 커서 기반 페이징)
+    let messagesQuery = supabase
       .from('messages')
-      .select('id, sender_id, content, timestamp, read')
+      .select('id, sender_id, content, timestamp')
       .eq('chat_room_id', chatRoomID)
-      .order('timestamp', { ascending: true })
-      .limit(50);
+      .order('timestamp', { ascending: false })
+      .limit(MESSAGE_LIMIT);
+
+    // before 파라미터가 있으면 해당 시점 이전의 메시지만 조회
+    if (before) {
+      messagesQuery = messagesQuery.lt('timestamp', before);
+    }
+
+    const { data: messages, error: messagesError } = await messagesQuery;
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
@@ -78,6 +89,11 @@ export async function GET(request: NextRequest) {
       chatRoom.created_at,
     );
 
+    // 다음 페이지를 위한 커서 계산
+    const hasMore = messages && messages.length === MESSAGE_LIMIT;
+    const nextCursor =
+      hasMore && messages.length > 0 ? messages[messages.length - 1].timestamp : null;
+
     const result = {
       id: chatRoom.id,
       otherUser: {
@@ -87,6 +103,10 @@ export async function GET(request: NextRequest) {
       },
       messages: messages || [],
       unread_count: unreadCount || 0,
+      paginationInfo: {
+        hasMore,
+        nextCursor,
+      },
     };
 
     return NextResponse.json(result);

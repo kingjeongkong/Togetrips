@@ -5,6 +5,7 @@ import { useSession } from '@/providers/SessionProvider';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useChatRoom } from '../hooks/useChatRoom';
+import { DirectChatRoom, GatheringChatRoom } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -15,8 +16,18 @@ const ChatRoom = () => {
   const { userId } = useSession();
   const router = useRouter();
   const isKeyboardActiveRef = useRef<boolean>(false); // 키보드 활성화 상태를 저장하기 위한 ref
-  const { messages, chatRoom, isGroupChat, isLoading, isError, sendMessage, resendMessage } =
-    useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
+  const {
+    messages,
+    chatRoom,
+    isGroupChat,
+    isLoading,
+    isError,
+    sendMessage,
+    resendMessage,
+    fetchNextMessagePage,
+    hasNextMessagesPage,
+    isFetchingNextMessagesPage,
+  } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
 
   // 키보드 활성화 시 스크롤 제어
   useEffect(() => {
@@ -74,19 +85,25 @@ const ChatRoom = () => {
       <ChatRoomHeader
         image={
           isGroupChat
-            ? (chatRoom && 'roomImage' in chatRoom ? chatRoom.roomImage : null) ||
-              '/default-traveler.png'
-            : (chatRoom && 'otherUser' in chatRoom ? chatRoom.otherUser?.image : null) ||
-              '/default-traveler.png'
+            ? (chatRoom && 'roomImage' in chatRoom
+                ? (chatRoom as GatheringChatRoom).roomImage
+                : null) || '/default-traveler.png'
+            : (chatRoom && 'otherUser' in chatRoom
+                ? (chatRoom as DirectChatRoom).otherUser?.image
+                : null) || '/default-traveler.png'
         }
         title={
           isGroupChat
-            ? (chatRoom && 'roomName' in chatRoom ? chatRoom.roomName : null) || 'Group Chat'
-            : (chatRoom && 'otherUser' in chatRoom ? chatRoom.otherUser?.name : null) || ''
+            ? (chatRoom && 'roomName' in chatRoom
+                ? (chatRoom as GatheringChatRoom).roomName
+                : null) || 'Group Chat'
+            : (chatRoom && 'otherUser' in chatRoom
+                ? (chatRoom as DirectChatRoom).otherUser?.name
+                : null) || ''
         }
         participantCount={
           isGroupChat && chatRoom && 'participantCount' in chatRoom
-            ? chatRoom.participantCount
+            ? (chatRoom as GatheringChatRoom).participantCount
             : undefined
         }
         chatRoomId={chatRoomID}
@@ -96,6 +113,9 @@ const ChatRoom = () => {
         messages={messages}
         currentUserID={userId || ''}
         onResend={resendMessage}
+        onLoadMore={fetchNextMessagePage}
+        hasMore={hasNextMessagesPage}
+        isLoadingMore={isFetchingNextMessagesPage}
       />
       <ChatRoomInput
         onSendMessage={sendMessage}

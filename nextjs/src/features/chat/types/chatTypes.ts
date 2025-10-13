@@ -37,9 +37,14 @@ export interface Message {
   senderId: string;
   content: string;
   timestamp: string;
-  read: boolean;
   pending?: boolean;
   error?: boolean;
+}
+
+// 페이징 정보 타입
+export interface PaginationInfo {
+  hasMore: boolean;
+  nextCursor: string | null;
 }
 
 // API 응답 타입들 (실제 반환되는 데이터만)
@@ -48,6 +53,7 @@ export interface DirectChatRoomApiResponse {
   otherUser: ChatRoomUser | null;
   messages: Message[];
   unreadCount: number;
+  paginationInfo?: PaginationInfo;
 }
 
 export interface GatheringChatRoomApiResponse {
@@ -59,9 +65,21 @@ export interface GatheringChatRoomApiResponse {
   participantDetails: ChatRoomUser[];
   messages: Message[];
   unreadCount: number;
+  paginationInfo?: PaginationInfo;
+}
+
+// 무한 스크롤을 위한 메시지 페이지 타입
+export interface MessagePagination {
+  messages: Message[];
+  paginationInfo?: PaginationInfo;
 }
 
 // Union 타입들
 export type ChatRoom = DirectChatRoom | GatheringChatRoom;
 export type ChatRoomListItem = DirectChatRoomListItem | GatheringChatRoomListItem;
 export type ChatRoomWithMessages = DirectChatRoomApiResponse | GatheringChatRoomApiResponse;
+// useInfiniteQuery의 pages 배열에 사용되는 타입
+export type ChatRoomPage =
+  | DirectChatRoomApiResponse
+  | GatheringChatRoomApiResponse
+  | MessagePagination;

@@ -3,7 +3,7 @@
 import { useSession } from '@/providers/SessionProvider';
 import { useQuery } from '@tanstack/react-query';
 import { userLocationService } from '../services/userLocationService';
-import { fetchAndSyncUserLocation } from '../utils/location';
+import { getCurrentPosition } from '../utils/location';
 
 export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: number }) => {
   const { userId } = useSession();
@@ -19,8 +19,21 @@ export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: num
   } = useQuery({
     queryKey: ['userLocation', userId],
     queryFn: async () => {
-      const { currentLocation, cityInfo } = await fetchAndSyncUserLocation();
-      return { ...currentLocation, ...cityInfo };
+      // 1. GPS 좌표 획득
+      const currentLocation = await getCurrentPosition();
+      const response = await userLocationService.syncCurrentLocation(
+        currentLocation.lat,
+        currentLocation.lng,
+      );
+      const locationData = response.location;
+
+      return {
+        ...currentLocation,
+        id: locationData.id,
+        city: locationData.city,
+        state: locationData.state,
+        country: locationData.country,
+      };
     },
     enabled: !!userId,
     staleTime: 10 * 60 * 1000,

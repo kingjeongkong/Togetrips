@@ -4,6 +4,8 @@ import {
   DirectChatRoomListItem,
   GatheringChatRoomApiResponse,
   GatheringChatRoomListItem,
+  Message,
+  MessagePagination,
 } from '../types/chatTypes';
 
 export const chatApiService = {
@@ -78,9 +80,11 @@ export const chatApiService = {
   },
 
   // 개별 채팅방 조회 (메시지 포함)
-  async getDirectChatRoomWithMessages(chatRoomID: string): Promise<DirectChatRoomApiResponse> {
+  async getDirectChatRoomWithInitialMessages(
+    chatRoomID: string,
+  ): Promise<DirectChatRoomApiResponse> {
     try {
-      const response = await fetch(`/api/chat/rooms/${chatRoomID}`, {
+      const response = await fetch(`/api/chat/rooms/direct/${chatRoomID}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -101,9 +105,9 @@ export const chatApiService = {
           senderId: message.sender_id as string,
           content: message.content as string,
           timestamp: message.timestamp as string,
-          read: message.read as boolean,
         })),
         unreadCount: room.unread_count ?? 0,
+        paginationInfo: room.paginationInfo || undefined,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -114,7 +118,9 @@ export const chatApiService = {
   },
 
   // 그룹 채팅방 조회 (메시지 포함)
-  async getGroupChatRoomWithMessages(chatRoomID: string): Promise<GatheringChatRoomApiResponse> {
+  async getGroupChatRoomWithInitialMessages(
+    chatRoomID: string,
+  ): Promise<GatheringChatRoomApiResponse> {
     try {
       const response = await fetch(`/api/chat/rooms/gathering/${chatRoomID}`, {
         method: 'GET',
@@ -140,11 +146,11 @@ export const chatApiService = {
           senderId: message.sender_id as string,
           content: message.content as string,
           timestamp: message.timestamp as string,
-          read: message.read as boolean,
         })),
         participantCount: room.participant_count,
         participantDetails: room.participants_details,
         unreadCount: room.unread_count ?? 0,
+        paginationInfo: room.paginationInfo || undefined,
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -185,7 +191,7 @@ export const chatApiService = {
   },
 
   // 메시지 전송
-  async sendMessage(chatRoomID: string, content: string): Promise<boolean> {
+  async sendMessage(chatRoomID: string, content: string): Promise<Message | null> {
     try {
       const response = await fetch('/api/chat/send-message', {
         method: 'POST',
@@ -203,19 +209,21 @@ export const chatApiService = {
         throw new Error(errorData.error || 'Failed to send message');
       }
 
-      return true;
+      const result = await response.json();
+
+      return result.message;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error sending message:', error);
       }
       toast.error('Failed to send message');
-      return false;
+      return null;
     }
   },
 
   // 채팅방 삭제
   async deleteChatRoom(chatRoomId: string): Promise<void> {
-    const response = await fetch(`/api/chat/rooms/${chatRoomId}`, {
+    const response = await fetch(`/api/chat/rooms/direct/${chatRoomId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -263,6 +271,94 @@ export const chatApiService = {
     } catch (error) {
       console.error('Error fetching user chat room info:', error);
       return new Map(); // 에러 발생 시 빈 맵 반환
+    }
+  },
+
+  async getDirectChatMessagesOnly(
+    chatRoomID: string,
+    before?: string | null,
+  ): Promise<MessagePagination> {
+    try {
+      const params = new URLSearchParams();
+      if (before) {
+        params.append('before', before);
+      }
+
+      const response = await fetch(`/api/chat/rooms/direct/${chatRoomID}/messages?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch messages');
+      }
+
+      const data = await response.json();
+      return {
+        messages: data.messages.map((message: Record<string, unknown>) => ({
+          id: message.id as string,
+          chatRoomId: chatRoomID,
+          senderId: message.sender_id as string,
+          content: message.content as string,
+          timestamp: message.timestamp as string,
+        })),
+        paginationInfo: {
+          hasMore: data.hasMore || false,
+          nextCursor: data.nextCursor || null,
+        },
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching direct chat messages only:', error);
+      }
+      throw error;
+    }
+  },
+
+  async getGatheringChatMessagesOnly(
+    chatRoomID: string,
+    before?: string | null,
+  ): Promise<MessagePagination> {
+    try {
+      const params = new URLSearchParams();
+      if (before) {
+        params.append('before', before);
+      }
+
+      const response = await fetch(`/api/chat/rooms/gathering/${chatRoomID}/messages?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch messages');
+      }
+
+      const data = await response.json();
+      return {
+        messages: data.messages.map((message: Record<string, unknown>) => ({
+          id: message.id as string,
+          chatRoomId: chatRoomID,
+          senderId: message.sender_id as string,
+          content: message.content as string,
+          timestamp: message.timestamp as string,
+        })),
+        paginationInfo: {
+          hasMore: data.hasMore || false,
+          nextCursor: data.nextCursor || null,
+        },
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching gathering chat messages only:', error);
+      }
+      throw error;
     }
   },
 };

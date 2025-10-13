@@ -152,6 +152,10 @@ export const usePushNotifications = () => {
   // 현재 기기의 FCM 토큰 삭제
   const deleteCurrentDeviceToken = async (): Promise<void> => {
     try {
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+        return;
+      }
+
       const currentToken = await getFCMToken();
 
       if (!currentToken) {

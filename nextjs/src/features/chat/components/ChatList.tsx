@@ -38,7 +38,13 @@ const ChatList = () => {
       <div className="flex-shrink-0 bg-gray-100">
         <div className="flex items-center px-4 py-2 md:px-4 md:py-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              if (window.history.length <= 2) {
+                router.push('/home');
+              } else {
+                router.back();
+              }
+            }}
             className="p-1 rounded-full hover:bg-gray-200 transition-colors mr-2 md:hidden"
             aria-label="Go back"
           >
