@@ -4,7 +4,9 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
 import { useGatheringDetail, useJoinGathering, useLeaveGathering } from '../hooks/useGathering';
-import JoinButton from './JoinButton';
+import EditButton from './EditButton';
+import JoinChatButton from './JoinChatButton';
+import LeaveDeleteButton from './LeaveDeleteButton';
 import ParticipantsModal from './ParticipantsModal';
 
 export default function GatheringDetail({ gatheringId }: { gatheringId: string }) {
@@ -12,6 +14,29 @@ export default function GatheringDetail({ gatheringId }: { gatheringId: string }
   const { joinGathering, isJoining } = useJoinGathering(gatheringId);
   const { leaveGathering, isLeaving } = useLeaveGathering(gatheringId);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+
+  // 채팅방 보기 핸들러
+  const handleViewChat = () => {
+    // TODO: 채팅방 접근 로직 구현
+    console.log('View chat room:', gatheringId);
+  };
+
+  // 모임 수정 핸들러
+  const handleEdit = () => {
+    // TODO: 모임 수정 로직 구현
+    console.log('Edit gathering:', gatheringId);
+  };
+
+  // 모임 삭제 핸들러
+  const handleDelete = () => {
+    // TODO: 모임 삭제 로직 구현
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this gathering? This action cannot be undone and will delete the chat room as well.',
+    );
+    if (confirmed) {
+      console.log('Delete gathering:', gatheringId);
+    }
+  };
 
   // 로딩 상태 처리
   if (isDetailLoading) {
@@ -74,15 +99,44 @@ export default function GatheringDetail({ gatheringId }: { gatheringId: string }
             )}
           </div>
 
-          <JoinButton
-            isHost={gatheringDetail.is_host}
-            isJoined={gatheringDetail.is_joined}
-            isFull={gatheringDetail.is_full}
-            isLoading={isJoining || isLeaving}
-            onJoin={() => joinGathering()}
-            onLeave={() => leaveGathering()}
-            className="w-full sm:w-auto sm:min-w-[160px] sm:h-14 sm:text-lg sm:font-bold"
-          />
+          <div className="hidden sm:block">
+            <div className="flex items-center gap-2 mb-4">
+              <JoinChatButton
+                isJoined={gatheringDetail.is_joined}
+                isFull={gatheringDetail.is_full}
+                isLoading={isJoining}
+                onJoin={() => joinGathering()}
+                onViewChat={() => handleViewChat()}
+                className="flex-1"
+              />
+              <EditButton isHost={gatheringDetail.is_host} onEdit={() => handleEdit()} />
+            </div>
+            <div className="flex justify-center">
+              <LeaveDeleteButton
+                isHost={gatheringDetail.is_host}
+                isJoined={gatheringDetail.is_joined}
+                isLoading={isLeaving}
+                onLeave={() => leaveGathering()}
+                onDelete={() => handleDelete()}
+              />
+            </div>
+          </div>
+
+          {/* Mobile: 상단/하단 분리 */}
+          <div className="block sm:hidden">
+            {/* 상단: Join/View Chat + Edit */}
+            <div className="flex items-center gap-3 mb-4">
+              <JoinChatButton
+                isJoined={gatheringDetail.is_joined}
+                isFull={gatheringDetail.is_full}
+                isLoading={isJoining}
+                onJoin={() => joinGathering()}
+                onViewChat={() => handleViewChat()}
+                className="flex-1"
+              />
+              <EditButton isHost={gatheringDetail.is_host} onEdit={() => handleEdit()} />
+            </div>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -211,6 +265,18 @@ export default function GatheringDetail({ gatheringId }: { gatheringId: string }
                   }}
                 ></div>
               </div>
+            </div>
+
+            {/* Mobile: LeaveDeleteButton */}
+            <div className="block sm:hidden">
+              <LeaveDeleteButton
+                isHost={gatheringDetail.is_host}
+                isJoined={gatheringDetail.is_joined}
+                isLoading={isLeaving}
+                onLeave={() => leaveGathering()}
+                onDelete={() => handleDelete()}
+                className="w-full"
+              />
             </div>
           </div>
         </div>
