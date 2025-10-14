@@ -37,7 +37,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           id,
           name,
           image
-        )
+        ),
+        chat_rooms!inner(id)
       `,
       )
       .eq('id', gatheringId)
@@ -83,6 +84,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       is_joined: isJoined,
       is_host: isHost,
       is_full: isFull,
+      chat_room_id: gathering.chat_rooms[0]?.id,
     };
 
     return NextResponse.json({

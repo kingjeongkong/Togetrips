@@ -29,6 +29,7 @@ export interface GatheringWithDetails extends Gathering {
     name: string;
     image: string;
   }[];
+  chat_room_id: string;
 }
 
 export interface CreateGatheringRequest {

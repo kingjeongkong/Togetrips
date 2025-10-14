@@ -1,8 +1,10 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { formatDetailDate, formatTime } from '@/utils/dateUtils';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
+import { toast } from 'react-toastify';
 import { useGatheringDetail, useJoinGathering, useLeaveGathering } from '../hooks/useGathering';
 import EditButton from './EditButton';
 import JoinChatButton from './JoinChatButton';
@@ -14,11 +16,18 @@ export default function GatheringDetail({ gatheringId }: { gatheringId: string }
   const { joinGathering, isJoining } = useJoinGathering(gatheringId);
   const { leaveGathering, isLeaving } = useLeaveGathering(gatheringId);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+  const router = useRouter();
 
   // 채팅방 보기 핸들러
   const handleViewChat = () => {
-    // TODO: 채팅방 접근 로직 구현
-    console.log('View chat room:', gatheringId);
+    if (!gatheringDetail) return;
+
+    if (gatheringDetail.chat_room_id) {
+      router.push(`/chat/${gatheringDetail.chat_room_id}?type=group`);
+    } else {
+      console.error('Chat room not found for this gathering');
+      toast.error('Chat room not found');
+    }
   };
 
   // 모임 수정 핸들러
