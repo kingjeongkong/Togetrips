@@ -1,11 +1,11 @@
-import { CreateGatheringRequest } from '../types/gatheringTypes';
+import { UpsertGatheringRequest } from '../types/gatheringTypes';
 
 /**
  * 모임 생성 폼 데이터의 유효성을 검사하는 함수
  * @param formData - 검사할 폼 데이터
  * @returns 유효성 검사 에러 객체. 에러가 없으면 빈 객체를 반환
  */
-export const validateGatheringForm = (formData: CreateGatheringRequest): Record<string, string> => {
+export const validateGatheringForm = (formData: UpsertGatheringRequest): Record<string, string> => {
   const errors: Record<string, string> = {};
 
   if (!formData.activity_title.trim()) {

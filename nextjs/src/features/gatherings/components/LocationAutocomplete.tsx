@@ -10,6 +10,7 @@ interface LocationAutocompleteProps {
   disabled?: boolean;
   placeholder?: string;
   variant?: 'default' | 'search';
+  initialValue?: string;
 }
 
 export default function LocationAutocomplete({
@@ -18,8 +19,9 @@ export default function LocationAutocomplete({
   disabled = false,
   placeholder,
   variant = 'default',
+  initialValue,
 }: LocationAutocompleteProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(initialValue || '');
   const [suggestions, setSuggestions] = useState<MapboxSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

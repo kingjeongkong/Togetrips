@@ -1,4 +1,4 @@
-import type { CreateGatheringRequest } from '@/features/gatherings/types/gatheringTypes';
+import type { UpsertGatheringRequest } from '@/features/gatherings/types/gatheringTypes';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -105,12 +105,13 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const dataString = formData.get('data') as string;
+    const gatheringId = formData.get('gatheringId') as string; // 수정 모드일 때만 존재
 
     if (!dataString) {
       return NextResponse.json({ error: 'Missing data field' }, { status: 400 });
     }
 
-    const body: CreateGatheringRequest = JSON.parse(dataString);
+    const body: UpsertGatheringRequest = JSON.parse(dataString);
     const {
       activity_title,
       description,
@@ -192,42 +193,112 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 모임과 그룹 채팅방을 함께 생성 (트랜잭션 처리)
-    const { data: result, error: createError } = await supabase.rpc(
-      'create_gathering_with_chat_room',
-      {
-        p_host_id: hostId,
-        p_activity_title: activity_title,
-        p_description: description,
-        p_gathering_time: gathering_time,
-        p_location_id: location_id,
-        p_city: city,
-        p_country: country,
-        p_max_participants: max_participants,
-        p_cover_image_url: coverImageUrl,
-      },
-    );
+    // 수정 모드인지 확인
+    if (gatheringId) {
+      // 수정 모드: 호스트 권한 확인
+      const { data: existingGathering, error: fetchError } = await supabase
+        .from('gatherings')
+        .select('host_id, cover_image_url')
+        .eq('id', gatheringId)
+        .single();
 
-    if (createError) {
-      console.error('RPC error:', createError);
-      throw new Error(createError.message);
+      if (fetchError || !existingGathering) {
+        return NextResponse.json({ error: 'Gathering not found' }, { status: 404 });
+      }
+
+      if (existingGathering.host_id !== hostId) {
+        return NextResponse.json({ error: 'Unauthorized to edit this gathering' }, { status: 403 });
+      }
+
+      // 기존 이미지 URL 저장
+      const oldImageUrl = existingGathering.cover_image_url;
+
+      // 모임 정보 업데이트
+      const { data: updatedGathering, error: updateError } = await supabase
+        .from('gatherings')
+        .update({
+          activity_title,
+          description,
+          gathering_time,
+          location_id,
+          city,
+          country,
+          max_participants,
+          cover_image_url: coverImageUrl || existingGathering.cover_image_url,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', gatheringId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw new Error(updateError.message);
+      }
+
+      // 새 이미지가 업로드되었고 기존 이미지가 있었다면 기존 파일 삭제
+      if (!updateError && coverImageUrl && oldImageUrl) {
+        try {
+          const oldFileName = oldImageUrl.split('/').pop();
+          if (oldFileName) {
+            supabase.storage
+              .from('gatherings-images')
+              .remove([`gatherings/${oldFileName}`])
+              .then(({ error }) => {
+                if (error) {
+                  console.error('Failed to delete old image:', error);
+                } else {
+                  console.log('Old image deleted successfully:', oldFileName);
+                }
+              });
+          }
+        } catch (error) {
+          console.error('Error deleting old image:', error);
+        }
+      }
+
+      return NextResponse.json({
+        message: 'Gathering updated successfully',
+        gathering: updatedGathering,
+      });
+    } else {
+      // 생성 모드: 모임과 그룹 채팅방을 함께 생성 (트랜잭션 처리)
+      const { data: result, error: createError } = await supabase.rpc(
+        'create_gathering_with_chat_room',
+        {
+          p_host_id: hostId,
+          p_activity_title: activity_title,
+          p_description: description,
+          p_gathering_time: gathering_time,
+          p_location_id: location_id,
+          p_city: city,
+          p_country: country,
+          p_max_participants: max_participants,
+          p_cover_image_url: coverImageUrl,
+        },
+      );
+
+      if (createError) {
+        console.error('RPC error:', createError);
+        throw new Error(createError.message);
+      }
+
+      if (!result || result.length === 0) {
+        throw new Error('No result from create_gathering_with_chat_room');
+      }
+
+      const { success, message, gathering_data, chat_room_data } = result[0];
+
+      if (!success) {
+        throw new Error(message);
+      }
+
+      return NextResponse.json({
+        message: message,
+        gathering: gathering_data,
+        chatRoom: chat_room_data,
+      });
     }
-
-    if (!result || result.length === 0) {
-      throw new Error('No result from create_gathering_with_chat_room');
-    }
-
-    const { success, message, gathering_data, chat_room_data } = result[0];
-
-    if (!success) {
-      throw new Error(message);
-    }
-
-    return NextResponse.json({
-      message: message,
-      gathering: gathering_data,
-      chatRoom: chat_room_data,
-    });
   } catch (error: unknown) {
     console.error('Error creating gathering:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

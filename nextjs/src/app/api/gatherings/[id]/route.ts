@@ -57,6 +57,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       console.error('Error fetching participants:', participantsError);
     }
 
+    // 채팅방 정보 별도 조회 (사용자가 참여한 경우에만)
+    let chatRoomId = null;
+    if (gathering.participants?.includes(currentUserId)) {
+      const { data: chatRoom } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('gathering_id', gatheringId)
+        .eq('room_type', 'gathering')
+        .single();
+
+      chatRoomId = chatRoom?.id || null;
+    }
+
     // 참여자 수와 상태 정보 추가
     const participantCount = gathering.participants?.length || 0;
     const isJoined = gathering.participants?.includes(currentUserId) || false;
@@ -83,6 +96,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       is_joined: isJoined,
       is_host: isHost,
       is_full: isFull,
+      chat_room_id: chatRoomId,
     };
 
     return NextResponse.json({
@@ -92,5 +106,76 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     console.error('Error fetching gathering details:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const supabase = createServerSupabaseClient(request);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const currentUserId = user.id;
+
+    const { id: gatheringId } = await params;
+
+    const { data: result, error } = await supabase.rpc('delete_gathering', {
+      p_gathering_id: gatheringId,
+      p_user_id: currentUserId,
+    });
+
+    if (error || !result?.success) {
+      return NextResponse.json(
+        { error: result?.message || 'Failed to delete gathering' },
+        { status: 500 },
+      );
+    }
+
+    // Storage에서 이미지 삭제
+    const coverImageUrl = result.cover_image_url;
+    if (coverImageUrl) {
+      try {
+        // URL에서 파일 경로 추출
+        const urlParts = coverImageUrl.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        const filePath = `gatherings/${fileName}`;
+
+        const { error: storageError } = await supabase.storage
+          .from('gatherings-images')
+          .remove([filePath]);
+
+        if (storageError) {
+          console.error('Failed to delete image from storage:', storageError);
+          // Storage 삭제 실패해도 gathering은 이미 삭제되었으므로 계속 진행
+        } else {
+          console.log('Image deleted from storage:', filePath);
+        }
+      } catch (storageError) {
+        console.error('Error processing image deletion:', storageError);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: result?.message,
+    });
+  } catch (error: unknown) {
+    console.error('Error deleting gathering:', error);
+    return NextResponse.json({ error: `Internal server error: ${error}` }, { status: 500 });
   }
 }

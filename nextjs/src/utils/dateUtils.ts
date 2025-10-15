@@ -146,3 +146,19 @@ export const isTomorrow = (dateString: string): boolean => {
     date.getFullYear() === tomorrow.getFullYear()
   );
 };
+
+/**
+ * ISO 시간 문자열을 HTML time input용 HH:MM 형식으로 변환
+ * 예: "2024-01-01T14:30:00.000Z" -> "14:30"
+ */
+export const formatTimeForInput = (isoString: string): string => {
+  if (!isoString) return '';
+  try {
+    const timePart = isoString.split('T')[1];
+    if (!timePart) return '';
+    // 초와 밀리초 제거하고 HH:MM 형식으로 반환
+    return timePart.split('.')[0].substring(0, 5);
+  } catch {
+    return '';
+  }
+};

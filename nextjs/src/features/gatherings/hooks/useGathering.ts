@@ -1,15 +1,17 @@
 import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import {
-  createGathering,
+  deleteGathering,
   getGatheringById,
   getGatherings,
   joinGathering,
   leaveGathering,
+  upsertGathering,
 } from '../services/gatheringService';
-import { CreateGatheringRequest, GatheringWithDetails } from '../types/gatheringTypes';
+import { GatheringWithDetails, UpsertGatheringRequest } from '../types/gatheringTypes';
 
 // 모임 목록 조회
 export const useGathering = () => {
@@ -58,32 +60,46 @@ export const useGatheringDetail = (id: string) => {
   };
 };
 
-// 모임 생성
-export const useCreateGathering = (onSuccess?: () => void) => {
+// 모임 생성/수정
+export const useUpsertGathering = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
 
   const {
-    mutate: createGatheringMutation,
+    mutate: upsertGatheringMutation,
     isPending: isCreating,
     error: createError,
   } = useMutation({
-    mutationFn: ({ data, file }: { data: CreateGatheringRequest; file: File }) =>
-      createGathering(data, file),
-    onSuccess: () => {
+    mutationFn: ({
+      data,
+      file,
+      gatheringId,
+    }: {
+      data: UpsertGatheringRequest;
+      file?: File;
+      gatheringId?: string;
+    }) => upsertGathering(data, file, gatheringId),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      if (variables.gatheringId) {
+        queryClient.invalidateQueries({ queryKey: ['gathering', variables.gatheringId] });
+      }
       if (onSuccess) {
         onSuccess();
       }
-      toast.success('Gathering created successfully!');
+      toast.success(
+        variables.gatheringId
+          ? 'Gathering updated successfully!'
+          : 'Gathering created successfully!',
+      );
     },
-    onError: (error) => {
-      console.error('모임 생성 실패:', error);
-      toast.error('Failed to create gathering');
+    onError: (error, variables) => {
+      console.error('모임 생성/수정 실패:', error);
+      toast.error(`Failed to ${variables.gatheringId ? 'update' : 'create'} gathering`);
     },
   });
 
   return {
-    createGathering: createGatheringMutation,
+    upsertGathering: upsertGatheringMutation,
     isCreating,
     createError,
   };
@@ -212,4 +228,30 @@ export const useLeaveGathering = (gatheringId: string) => {
     leaveGathering: leaveGatheringMutation,
     isLeaving,
   };
+};
+
+export const useDeleteGathering = (gatheringId: string) => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { userId } = useSession();
+
+  const { mutate: deleteGatheringMutation, isPending: isDeleting } = useMutation({
+    mutationFn: () => deleteGathering(gatheringId),
+    onSuccess: () => {
+      queryClient.setQueryData(['gatherings'], (oldData: GatheringWithDetails[] | undefined) => {
+        if (!oldData) return oldData;
+
+        return oldData.filter((gathering) => gathering.id !== gatheringId);
+      });
+      queryClient.invalidateQueries({ queryKey: ['gatheringChatRooms', userId] });
+      router.back();
+      toast.success('Gathering and group chat deleted successfully');
+    },
+    onError: (error) => {
+      console.error('Failed to delete gathering:', error);
+      toast.error('Failed to delete gathering');
+    },
+  });
+
+  return { deleteGathering: deleteGatheringMutation, isDeleting };
 };

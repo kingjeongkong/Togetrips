@@ -1,4 +1,4 @@
-import { CreateGatheringRequest, GatheringWithDetails } from '../types/gatheringTypes';
+import { GatheringWithDetails, UpsertGatheringRequest } from '../types/gatheringTypes';
 
 export const getGatherings = async (): Promise<GatheringWithDetails[]> => {
   try {
@@ -44,11 +44,20 @@ export const getGatheringById = async (id: string): Promise<GatheringWithDetails
   }
 };
 
-export const createGathering = async (data: CreateGatheringRequest, file: File): Promise<void> => {
+export const upsertGathering = async (
+  data: UpsertGatheringRequest,
+  file?: File,
+  gatheringId?: string,
+): Promise<void> => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
+    if (file) {
+      formData.append('file', file);
+    }
     formData.append('data', JSON.stringify(data));
+    if (gatheringId) {
+      formData.append('gatheringId', gatheringId);
+    }
 
     const response = await fetch('/api/gatherings', {
       method: 'POST',
@@ -60,8 +69,8 @@ export const createGathering = async (data: CreateGatheringRequest, file: File):
       throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
   } catch (error) {
-    console.error('Error creating gathering:', error);
-    throw error instanceof Error ? error : new Error('Failed to create gathering');
+    console.error('Error creating/updating gathering:', error);
+    throw error instanceof Error ? error : new Error('Failed to create/update gathering');
   }
 };
 
@@ -100,5 +109,24 @@ export const leaveGathering = async (gatheringId: string): Promise<void> => {
   } catch (error) {
     console.error('Error leaving gathering:', error);
     throw error instanceof Error ? error : new Error('Failed to leave gathering');
+  }
+};
+
+export const deleteGathering = async (gatheringId: string) => {
+  try {
+    const response = await fetch(`/api/gatherings/${gatheringId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting gathering:', error);
+    throw error instanceof Error ? error : new Error('Failed to delete gathering');
   }
 };
