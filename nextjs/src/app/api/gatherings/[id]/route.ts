@@ -108,3 +108,74 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const supabase = createServerSupabaseClient(request);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    let user = null;
+    if (session?.access_token) {
+      const { data, error } = await supabase.auth.getUser(session.access_token);
+      if (!error) {
+        user = data.user;
+      }
+    }
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const currentUserId = user.id;
+
+    const { id: gatheringId } = await params;
+
+    const { data: result, error } = await supabase.rpc('delete_gathering', {
+      p_gathering_id: gatheringId,
+      p_user_id: currentUserId,
+    });
+
+    if (error || !result?.success) {
+      return NextResponse.json(
+        { error: result?.message || 'Failed to delete gathering' },
+        { status: 500 },
+      );
+    }
+
+    // Storage에서 이미지 삭제
+    const coverImageUrl = result.cover_image_url;
+    if (coverImageUrl) {
+      try {
+        // URL에서 파일 경로 추출
+        const urlParts = coverImageUrl.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        const filePath = `gatherings/${fileName}`;
+
+        const { error: storageError } = await supabase.storage
+          .from('gatherings-images')
+          .remove([filePath]);
+
+        if (storageError) {
+          console.error('Failed to delete image from storage:', storageError);
+          // Storage 삭제 실패해도 gathering은 이미 삭제되었으므로 계속 진행
+        } else {
+          console.log('Image deleted from storage:', filePath);
+        }
+      } catch (storageError) {
+        console.error('Error processing image deletion:', storageError);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: result?.message,
+    });
+  } catch (error: unknown) {
+    console.error('Error deleting gathering:', error);
+    return NextResponse.json({ error: `Internal server error: ${error}` }, { status: 500 });
+  }
+}

@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
 import { toast } from 'react-toastify';
-import { useGatheringDetail, useJoinGathering, useLeaveGathering } from '../hooks/useGathering';
+import {
+  useDeleteGathering,
+  useGatheringDetail,
+  useJoinGathering,
+  useLeaveGathering,
+} from '../hooks/useGathering';
 import CreateGatheringForm from './CreateGatheringForm';
 import EditButton from './EditButton';
 import JoinChatButton from './JoinChatButton';
@@ -22,6 +27,7 @@ export default function GatheringDetail({
   const { gatheringDetail, isDetailLoading } = useGatheringDetail(gatheringId);
   const { joinGathering, isJoining } = useJoinGathering(gatheringId);
   const { leaveGathering, isLeaving } = useLeaveGathering(gatheringId);
+  const { deleteGathering, isDeleting } = useDeleteGathering(gatheringId);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const router = useRouter();
@@ -46,12 +52,9 @@ export default function GatheringDetail({
 
   // 모임 삭제 핸들러
   const handleDelete = () => {
-    // TODO: 모임 삭제 로직 구현
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this gathering? This action cannot be undone and will delete the chat room as well.',
-    );
+    const confirmed = window.confirm('Are you sure you want to delete this gathering?');
     if (confirmed) {
-      console.log('Delete gathering:', gatheringId);
+      deleteGathering();
     }
   };
 
@@ -145,7 +148,7 @@ export default function GatheringDetail({
               <LeaveDeleteButton
                 isHost={gatheringDetail.is_host}
                 isJoined={gatheringDetail.is_joined}
-                isLoading={isLeaving}
+                isLoading={isLeaving || isDeleting}
                 onLeave={() => leaveGathering()}
                 onDelete={() => handleDelete()}
               />
@@ -302,7 +305,7 @@ export default function GatheringDetail({
               <LeaveDeleteButton
                 isHost={gatheringDetail.is_host}
                 isJoined={gatheringDetail.is_joined}
-                isLoading={isLeaving}
+                isLoading={isLeaving || isDeleting}
                 onLeave={() => leaveGathering()}
                 onDelete={() => handleDelete()}
                 className="w-full"

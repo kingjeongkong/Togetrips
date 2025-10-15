@@ -1,8 +1,10 @@
 import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import {
+  deleteGathering,
   getGatheringById,
   getGatherings,
   joinGathering,
@@ -226,4 +228,30 @@ export const useLeaveGathering = (gatheringId: string) => {
     leaveGathering: leaveGatheringMutation,
     isLeaving,
   };
+};
+
+export const useDeleteGathering = (gatheringId: string) => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { userId } = useSession();
+
+  const { mutate: deleteGatheringMutation, isPending: isDeleting } = useMutation({
+    mutationFn: () => deleteGathering(gatheringId),
+    onSuccess: () => {
+      queryClient.setQueryData(['gatherings'], (oldData: GatheringWithDetails[] | undefined) => {
+        if (!oldData) return oldData;
+
+        return oldData.filter((gathering) => gathering.id !== gatheringId);
+      });
+      queryClient.invalidateQueries({ queryKey: ['gatheringChatRooms', userId] });
+      router.back();
+      toast.success('Gathering and group chat deleted successfully');
+    },
+    onError: (error) => {
+      console.error('Failed to delete gathering:', error);
+      toast.error('Failed to delete gathering');
+    },
+  });
+
+  return { deleteGathering: deleteGatheringMutation, isDeleting };
 };
