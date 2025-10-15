@@ -1,16 +1,12 @@
 import LoadingIndicator from '@/components/LoadingIndicator';
+import { useDeleteGathering, useLeaveGathering } from '@/features/shared/hooks/useSharedGathering';
 import { formatDetailDate, formatTime } from '@/utils/dateUtils';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
 import { toast } from 'react-toastify';
-import {
-  useDeleteGathering,
-  useGatheringDetail,
-  useJoinGathering,
-  useLeaveGathering,
-} from '../hooks/useGathering';
+import { useGatheringDetail, useJoinGathering } from '../hooks/useGathering';
 import CreateGatheringForm from './CreateGatheringForm';
 import EditButton from './EditButton';
 import JoinChatButton from './JoinChatButton';
