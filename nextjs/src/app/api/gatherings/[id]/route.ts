@@ -37,8 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           id,
           name,
           image
-        ),
-        chat_rooms!inner(id)
+        )
       `,
       )
       .eq('id', gatheringId)
@@ -56,6 +55,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (participantsError) {
       console.error('Error fetching participants:', participantsError);
+    }
+
+    // 채팅방 정보 별도 조회 (사용자가 참여한 경우에만)
+    let chatRoomId = null;
+    if (gathering.participants?.includes(currentUserId)) {
+      const { data: chatRoom } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('gathering_id', gatheringId)
+        .eq('room_type', 'gathering')
+        .single();
+
+      chatRoomId = chatRoom?.id || null;
     }
 
     // 참여자 수와 상태 정보 추가
@@ -84,7 +96,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       is_joined: isJoined,
       is_host: isHost,
       is_full: isFull,
-      chat_room_id: gathering.chat_rooms[0]?.id,
+      chat_room_id: chatRoomId,
     };
 
     return NextResponse.json({
