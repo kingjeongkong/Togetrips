@@ -32,7 +32,7 @@ export interface GatheringWithDetails extends Gathering {
   chat_room_id: string;
 }
 
-export interface CreateGatheringRequest {
+export interface UpsertGatheringRequest {
   activity_title: string;
   description: string;
   gathering_time: string;
@@ -40,10 +40,7 @@ export interface CreateGatheringRequest {
   city: string;
   country: string;
   max_participants: number;
-}
-
-export interface UpdateGatheringRequest extends Partial<CreateGatheringRequest> {
-  id: string;
+  id?: string; // 수정 모드일 때만 제공
 }
 
 export interface JoinGatheringRequest {

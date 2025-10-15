@@ -6,16 +6,24 @@ import { useState } from 'react';
 import { HiCalendar, HiClock, HiLocationMarker, HiUsers } from 'react-icons/hi';
 import { toast } from 'react-toastify';
 import { useGatheringDetail, useJoinGathering, useLeaveGathering } from '../hooks/useGathering';
+import CreateGatheringForm from './CreateGatheringForm';
 import EditButton from './EditButton';
 import JoinChatButton from './JoinChatButton';
 import LeaveDeleteButton from './LeaveDeleteButton';
 import ParticipantsModal from './ParticipantsModal';
 
-export default function GatheringDetail({ gatheringId }: { gatheringId: string }) {
+export default function GatheringDetail({
+  gatheringId,
+  setEditMode,
+}: {
+  gatheringId: string;
+  setEditMode: (editMode: boolean) => void;
+}) {
   const { gatheringDetail, isDetailLoading } = useGatheringDetail(gatheringId);
   const { joinGathering, isJoining } = useJoinGathering(gatheringId);
   const { leaveGathering, isLeaving } = useLeaveGathering(gatheringId);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const router = useRouter();
 
   // 채팅방 보기 핸들러
@@ -32,8 +40,8 @@ export default function GatheringDetail({ gatheringId }: { gatheringId: string }
 
   // 모임 수정 핸들러
   const handleEdit = () => {
-    // TODO: 모임 수정 로직 구현
-    console.log('Edit gathering:', gatheringId);
+    setEditMode(true);
+    setShowEditModal(true);
   };
 
   // 모임 삭제 핸들러
@@ -61,6 +69,19 @@ export default function GatheringDetail({ gatheringId }: { gatheringId: string }
           <p className="text-gray-600">
             The gathering you're looking for doesn't exist or has been removed.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showEditModal) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <CreateGatheringForm
+            gathering={gatheringDetail}
+            onClose={() => setShowEditModal(false)}
+          />
         </div>
       </div>
     );

@@ -3,12 +3,14 @@
 import DataFetchErrorBoundary from '@/components/ErrorBoundary/DataFetchErrorBoundary';
 import GatheringDetail from '@/features/gatherings/components/GatheringDetail';
 import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { HiArrowLeft } from 'react-icons/hi';
 
 export default function GatheringDetailPage() {
   const params = useParams();
   const router = useRouter();
   const gatheringId = params.id as string;
+  const [editMode, setEditMode] = useState(false);
 
   // Sticky 헤더 컴포넌트
   const StickyHeader = () => (
@@ -28,11 +30,11 @@ export default function GatheringDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <StickyHeader />
+      {editMode || <StickyHeader />}
       <div className="flex flex-col items-center w-full p-6 pb-20 md:pb-6">
         <div className="flex justify-center w-full">
           <DataFetchErrorBoundary>
-            <GatheringDetail gatheringId={gatheringId} />
+            <GatheringDetail gatheringId={gatheringId} setEditMode={setEditMode} />
           </DataFetchErrorBoundary>
         </div>
       </div>

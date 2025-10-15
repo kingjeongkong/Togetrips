@@ -1,32 +1,36 @@
+import { formatTimeForInput } from '@/utils/dateUtils';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { HiCamera, HiClock, HiMinus, HiPlus } from 'react-icons/hi';
 import { HiCalendar } from 'react-icons/hi2';
 import { compressImage } from '../../shared/utils/imageCompression';
-import { useCreateGathering } from '../hooks/useGathering';
-import { CreateGatheringRequest } from '../types/gatheringTypes';
+import { useUpsertGathering } from '../hooks/useGathering';
+import { GatheringWithDetails, UpsertGatheringRequest } from '../types/gatheringTypes';
 import { isFormValid, removeFieldError, validateGatheringForm } from '../utils/gatheringValidation';
 import LocationAutocomplete from './LocationAutocomplete';
 
 interface CreateGatheringFormProps {
   onClose?: () => void;
+  gathering?: GatheringWithDetails; // 수정 모드일 때 기존 데이터
 }
 
-export default function CreateGatheringForm({ onClose }: CreateGatheringFormProps) {
-  const { createGathering, isCreating } = useCreateGathering(onClose);
-  const [formData, setFormData] = useState<CreateGatheringRequest>({
-    activity_title: '',
-    description: '',
-    gathering_time: '',
-    location_id: '',
-    city: '',
-    country: '',
-    max_participants: 2,
+export default function CreateGatheringForm({ onClose, gathering }: CreateGatheringFormProps) {
+  const isEditMode = !!gathering;
+  const { upsertGathering, isCreating } = useUpsertGathering(onClose);
+
+  const [formData, setFormData] = useState<UpsertGatheringRequest>({
+    activity_title: gathering?.activity_title || '',
+    description: gathering?.description || '',
+    gathering_time: gathering?.gathering_time || '',
+    location_id: gathering?.location_id || '',
+    city: gathering?.city || '',
+    country: gathering?.country || '',
+    max_participants: gathering?.max_participants || 2,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>(gathering?.cover_image_url || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,15 +46,25 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
     setErrors(validationErrors);
 
     if (isFormValid(validationErrors)) {
-      if (selectedFile) {
-        createGathering({ data: formData, file: selectedFile });
+      if (isEditMode) {
+        // 수정 모드: 파일이 선택되지 않아도 기존 이미지 유지
+        upsertGathering({
+          data: formData,
+          file: selectedFile || undefined,
+          gatheringId: gathering?.id,
+        });
       } else {
-        setErrors((prev) => ({ ...prev, cover_image: 'Please select an image' }));
+        // 생성 모드: 파일 필수
+        if (selectedFile) {
+          upsertGathering({ data: formData, file: selectedFile });
+        } else {
+          setErrors((prev) => ({ ...prev, cover_image: 'Please select an image' }));
+        }
       }
     }
   };
 
-  const handleInputChange = (field: keyof CreateGatheringRequest, value: string | number) => {
+  const handleInputChange = (field: keyof UpsertGatheringRequest, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => removeFieldError(prev, field));
@@ -127,7 +141,9 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
       <div className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 md:py-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white">Create a Meetup</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">
+            {isEditMode ? 'Edit Gathering' : 'Create a Gathering'}
+          </h2>
         </div>
 
         <form
@@ -271,7 +287,7 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
                     <input
                       type="time"
                       id="time"
-                      value={formData.gathering_time.split('T')[1] || ''}
+                      value={formatTimeForInput(formData.gathering_time)}
                       onChange={(e) => {
                         const date = formData.gathering_time.split('T')[0] || '';
                         handleInputChange('gathering_time', `${date}T${e.target.value}`);
@@ -303,6 +319,7 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
                   error={errors.city}
                   placeholder="Select a city"
                   variant="default"
+                  initialValue={isEditMode ? `${formData.city}` : undefined}
                 />
               </div>
 
@@ -368,7 +385,13 @@ export default function CreateGatheringForm({ onClose }: CreateGatheringFormProp
                 disabled={isCreating || isProcessing}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
               >
-                {isCreating ? 'Creating...' : 'Create Meetup'}
+                {isCreating
+                  ? isEditMode
+                    ? 'Updating...'
+                    : 'Creating...'
+                  : isEditMode
+                    ? 'Update Gathering'
+                    : 'Create Gathering'}
               </button>
 
               {onClose && (
