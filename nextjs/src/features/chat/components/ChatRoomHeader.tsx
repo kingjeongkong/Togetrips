@@ -66,7 +66,6 @@ const ChatRoomHeader = ({
         }
       } else {
         deleteChatRoom.mutate(chatRoomId);
-        console.log('Direct chat room 삭제 완료');
       }
     }
     setShowMenu(false);

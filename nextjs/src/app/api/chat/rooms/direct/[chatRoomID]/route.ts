@@ -158,16 +158,25 @@ export async function DELETE(request: NextRequest) {
     }
 
     // RPC 함수를 사용하여 트랜잭션으로 채팅방과 메시지 삭제
-    const { error: rpcError } = await supabase.rpc('delete_chat_room', {
+    const { data: deleteSuccess, error: rpcError } = await supabase.rpc('delete_chat_room', {
       p_chat_room_id: chatRoomID,
       p_user_id: user.id,
     });
 
     if (rpcError) {
-      console.error('Error deleting chat room via RPC:', rpcError);
+      console.error('Error calling delete_chat_room RPC:', rpcError);
       return NextResponse.json({ error: 'Failed to delete chat room' }, { status: 500 });
     }
 
+    // RPC 반환값이 false이면, 작업이 수행되지 않은 것이므로 실패 처리
+    if (!deleteSuccess) {
+      return NextResponse.json(
+        { error: 'Could not delete chat room. Permission denied.' },
+        { status: 403 },
+      );
+    }
+
+    // deleteSuccess가 true일 때만 성공 응답을 보냅니다.
     return NextResponse.json({
       success: true,
       message: 'Chat room deleted successfully',
