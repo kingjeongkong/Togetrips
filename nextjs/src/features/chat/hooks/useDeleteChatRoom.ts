@@ -3,6 +3,7 @@ import { useSession } from '@/providers/SessionProvider';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { DirectChatRoomListItem } from '../types/chatTypes';
 
 export const useDeleteChatRoom = () => {
   const queryClient = useQueryClient();
@@ -14,7 +15,13 @@ export const useDeleteChatRoom = () => {
     mutationFn: (chatRoomId: string) => chatApiService.deleteChatRoom(chatRoomId),
     onSuccess: (_, chatRoomId) => {
       // 채팅방 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['chatRooms', userId] });
+      queryClient.setQueryData(
+        ['directChatRooms', userId],
+        (oldData: DirectChatRoomListItem[] | undefined) => {
+          if (!oldData) return oldData;
+          return oldData.filter((chatRoom) => chatRoom.id !== chatRoomId);
+        },
+      );
       // unread count 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['unreadCount', userId] });
       toast.success('Chat room deleted successfully');

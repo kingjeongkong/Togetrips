@@ -1,12 +1,14 @@
 import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { chatApiService } from '../services/chatApiService';
 import {
   ChatRoomPage,
   ChatRoomUser,
+  DirectChatRoomApiResponse,
   DirectChatRoomListItem,
+  GatheringChatRoomApiResponse,
   GatheringChatRoomListItem,
   Message,
 } from '../types/chatTypes';
@@ -21,6 +23,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   const roomType = useSearchParams().get('type');
   const queryClient = useQueryClient();
   const { setActiveChatRoomId, decrementMessageCountBy } = useRealtimeStore();
+  const isLeavingOrDeleting = useRef(false);
 
   const {
     data: chatRoomData,
@@ -54,7 +57,10 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
   });
 
   // 채팅방 정보는 첫 페이지에서만 추출
-  const chatRoomInfo = useMemo(() => {
+  const chatRoomInfo = useMemo(():
+    | DirectChatRoomApiResponse
+    | GatheringChatRoomApiResponse
+    | null => {
     if (!chatRoomData?.pages?.[0]) return null;
 
     const firstPage = chatRoomData.pages[0];
@@ -64,9 +70,9 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     if ('paginationInfo' in firstPage) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { messages, paginationInfo, ...chatRoomInfo } = firstPage;
-      return chatRoomInfo;
+      return chatRoomInfo as DirectChatRoomApiResponse | GatheringChatRoomApiResponse;
     }
-    return firstPage;
+    return firstPage as DirectChatRoomApiResponse | GatheringChatRoomApiResponse;
   }, [chatRoomData?.pages]);
 
   // 모든 메시지를 시간순으로 정렬
@@ -115,7 +121,9 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
 
     return () => {
       setActiveChatRoomId(null);
-      chatApiService.markMessagesAsRead(chatRoomId);
+      if (!isLeavingOrDeleting.current) {
+        chatApiService.markMessagesAsRead(chatRoomId);
+      }
     };
   }, [
     chatRoomId,
@@ -228,5 +236,10 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
     // 액션
     sendMessage,
     resendMessage,
+
+    // Leave/Delete 상태 관리
+    setIsLeavingOrDeleting: () => {
+      isLeavingOrDeleting.current = true;
+    },
   };
 };
