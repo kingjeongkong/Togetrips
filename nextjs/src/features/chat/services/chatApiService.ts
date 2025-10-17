@@ -138,6 +138,8 @@ export const chatApiService = {
       const room = result.chatRoom;
       return {
         id: room.id,
+        gatheringId: room.gathering_id,
+        isHost: room.is_host,
         roomName: room.room_name,
         roomImage: room.room_image,
         participants: room.participants,

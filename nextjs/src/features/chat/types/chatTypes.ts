@@ -66,6 +66,8 @@ export interface GatheringChatRoomApiResponse {
   messages: Message[];
   unreadCount: number;
   paginationInfo?: PaginationInfo;
+  gatheringId: string;
+  isHost: boolean;
 }
 
 // 무한 스크롤을 위한 메시지 페이지 타입

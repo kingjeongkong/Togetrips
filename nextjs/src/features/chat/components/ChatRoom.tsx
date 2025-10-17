@@ -5,7 +5,7 @@ import { useSession } from '@/providers/SessionProvider';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useChatRoom } from '../hooks/useChatRoom';
-import { DirectChatRoom, GatheringChatRoom } from '../types/chatTypes';
+import { DirectChatRoomApiResponse, GatheringChatRoomApiResponse } from '../types/chatTypes';
 import ChatRoomHeader from './ChatRoomHeader';
 import ChatRoomInput from './ChatRoomInput';
 import ChatRoomMessageList from './ChatRoomMessageList';
@@ -27,6 +27,7 @@ const ChatRoom = () => {
     fetchNextMessagePage,
     hasNextMessagesPage,
     isFetchingNextMessagesPage,
+    setIsLeavingOrDeleting,
   } = useChatRoom({ chatRoomId: chatRoomID, userId: userId || null });
 
   // 키보드 활성화 시 스크롤 제어
@@ -86,28 +87,31 @@ const ChatRoom = () => {
         image={
           isGroupChat
             ? (chatRoom && 'roomImage' in chatRoom
-                ? (chatRoom as GatheringChatRoom).roomImage
+                ? (chatRoom as GatheringChatRoomApiResponse).roomImage
                 : null) || '/default-traveler.png'
             : (chatRoom && 'otherUser' in chatRoom
-                ? (chatRoom as DirectChatRoom).otherUser?.image
+                ? (chatRoom as DirectChatRoomApiResponse).otherUser?.image
                 : null) || '/default-traveler.png'
         }
         title={
           isGroupChat
             ? (chatRoom && 'roomName' in chatRoom
-                ? (chatRoom as GatheringChatRoom).roomName
+                ? (chatRoom as GatheringChatRoomApiResponse).roomName
                 : null) || 'Group Chat'
             : (chatRoom && 'otherUser' in chatRoom
-                ? (chatRoom as DirectChatRoom).otherUser?.name
+                ? (chatRoom as DirectChatRoomApiResponse).otherUser?.name
                 : null) || ''
         }
         participantCount={
           isGroupChat && chatRoom && 'participantCount' in chatRoom
-            ? (chatRoom as GatheringChatRoom).participantCount
+            ? (chatRoom as GatheringChatRoomApiResponse).participantCount
             : undefined
         }
         chatRoomId={chatRoomID}
         isGroupChat={isGroupChat}
+        gatheringId={chatRoom && 'gatheringId' in chatRoom ? chatRoom.gatheringId : undefined}
+        isHost={chatRoom && 'isHost' in chatRoom ? chatRoom.isHost : undefined}
+        onBeforeDelete={setIsLeavingOrDeleting}
       />
       <ChatRoomMessageList
         messages={messages}

@@ -42,7 +42,9 @@ export async function GET(
         room_name,
         room_image,
         participants,
-        created_at
+        created_at,
+        gathering_id,
+        gatherings!inner(host_id)
       `,
       )
       .eq('room_type', 'gathering')
@@ -107,6 +109,8 @@ export async function GET(
     const nextCursor =
       hasMore && messages.length > 0 ? messages[messages.length - 1].timestamp : null;
 
+    const isHost = (chatRoom.gatherings as unknown as { host_id: string })?.host_id === user.id;
+
     const chatRoomWithDetails = {
       ...chatRoom,
       messages: messages || [],
@@ -122,6 +126,7 @@ export async function GET(
         hasMore,
         nextCursor,
       },
+      is_host: isHost,
     };
 
     return NextResponse.json({

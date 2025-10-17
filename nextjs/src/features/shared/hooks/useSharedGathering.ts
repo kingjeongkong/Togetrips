@@ -43,7 +43,7 @@ export const useLeaveGathering = (gatheringId: string) => {
   const queryClient = useQueryClient();
   const { userId } = useSession();
 
-  const { mutate: leaveGatheringMutation, isPending: isLeaving } = useMutation({
+  const { mutateAsync: leaveGatheringMutation, isPending: isLeaving } = useMutation({
     mutationFn: () => leaveGathering(gatheringId),
     onSuccess: () => {
       if (!userId) return;
@@ -84,6 +84,8 @@ export const useLeaveGathering = (gatheringId: string) => {
           };
         },
       );
+
+      queryClient.invalidateQueries({ queryKey: ['gatheringChatRooms', userId] });
     },
     onError: (error) => {
       console.error('모임 탈퇴 실패:', error);
