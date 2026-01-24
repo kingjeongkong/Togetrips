@@ -49,7 +49,7 @@ const ChatRoomMessage = ({ message, isOwnMessage, sender, onResend }: ChatRoomMe
           <div
             className={`rounded-2xl px-3 py-2 text-sm md:text-base break-words
               ${isOwnMessage ? 'bg-indigo-500 text-white' : 'bg-white text-gray-900'}
-              ${message.pending ? 'opacity-60' : ''}
+              ${message.pending ? 'opacity-60 dark:text-black' : ''}
               ${message.error ? 'bg-red-500 opacity-60' : ''}
             `}
             aria-label={`Message: ${message.content}`}
@@ -58,7 +58,7 @@ const ChatRoomMessage = ({ message, isOwnMessage, sender, onResend }: ChatRoomMe
           </div>
 
           <div
-            className={`text-xs pb-1 ${isOwnMessage ? 'order-1' : 'order-2'}`}
+            className={`text-xs pb-1 dark:text-black ${isOwnMessage ? 'order-1' : 'order-2'} `}
             aria-label={`Message sent at ${messageTime}`}
           >
             {message.pending ? (
