@@ -41,10 +41,11 @@ nextjs/
 │   │   │   ├── gatherings/
 │   │   │   ├── chat/
 │   │   │   ├── request/
-│   │   │   └── profile/
+│   │   │   ├── profile/
+│   │   │   └── layout.tsx
 │   │   ├── auth/
 │   │   └── api/
-│   ├── features/
+│   ├── features/                # Domain-specific feature modules
 │   │   ├── auth/
 │   │   ├── chat/
 │   │   ├── gatherings/
@@ -52,11 +53,12 @@ nextjs/
 │   │   ├── notifications/
 │   │   ├── profile/
 │   │   ├── request/
-│   │   └── shared/
-│   ├── components/
-│   ├── error/
-│   ├── lib/
-│   ├── stores/
-│   └── hooks/
-└── e2e/
+│   │   └── shared/            # Shared features
+│   ├── components/            # Common components
+│   ├── error/                 # Error handling system
+│   ├── lib/                   # Utilities and configurations
+│   ├── providers/             # Context providers
+│   ├── stores/                # State management
+│   └── hooks/                 # Common hooks
+├── e2e/                       # E2E tests
 ```
