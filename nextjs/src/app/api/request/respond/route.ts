@@ -72,8 +72,21 @@ export async function POST(nextRequest: NextRequest) {
       );
     }
 
-    // 거절 처리 등 추가 로직 필요시 여기에 작성
-    return NextResponse.json({ message: 'Request declined' }, { status: 200 });
+    // 거절 처리: request 상태를 'declined'로 업데이트
+    if (action === 'decline') {
+      const { error: updateError } = await supabase
+        .from('requests')
+        .update({ status: 'declined' })
+        .eq('id', requestID);
+
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+
+      return NextResponse.json({ message: 'Request declined' }, { status: 200 });
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
