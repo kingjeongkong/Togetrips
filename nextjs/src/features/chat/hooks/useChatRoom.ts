@@ -89,7 +89,7 @@ export const useChatRoom = ({ chatRoomId, userId }: UseChatRoomProps) => {
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }, [chatRoomData?.pages]);
 
-  const isGroupChat = roomType === 'group';
+  const isGroupChat = roomType === 'gathering';
 
   // 채팅방 진입/퇴장 시 상태 관리 및 읽음 처리
   useEffect(() => {

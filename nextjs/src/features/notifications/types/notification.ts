@@ -77,6 +77,6 @@ export interface InAppNotification {
   senderImage?: string;
   chatRoomId?: string;
   requestId?: string;
-  roomType?: 'direct' | 'group';
+  roomType?: 'direct' | 'gathering';
   timestamp: number;
 }

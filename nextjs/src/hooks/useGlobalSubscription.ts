@@ -21,7 +21,7 @@ export const useGlobalSubscription = () => {
     useRealtimeStore();
   const { showChatNotification, showRequestNotification } = useInAppNotification();
 
-  const chatRoomRef = useRef<Map<string, 'direct' | 'group'>>(new Map());
+  const chatRoomRef = useRef<Map<string, 'direct' | 'gathering'>>(new Map());
 
   /*
    * TODO: 향후 성능 최적화 방안

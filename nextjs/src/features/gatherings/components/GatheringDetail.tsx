@@ -33,7 +33,7 @@ export default function GatheringDetail({
     if (!gatheringDetail) return;
 
     if (gatheringDetail.chat_room_id) {
-      router.push(`/chat/${gatheringDetail.chat_room_id}?type=group`);
+      router.push(`/chat/${gatheringDetail.chat_room_id}?type=gathering`);
     } else {
       console.error('Chat room not found for this gathering');
       toast.error('Chat room not found');
