@@ -30,14 +30,14 @@ const RequestModal = ({ isOpen, onClose, onSubmit, receiverName }: RequestModalP
       >
         <div className="mb-4" id="modal-title">
           <span className="text-gray-500">Send Request to</span>
-          <span className="text-xl font-semibold ml-2">{receiverName}</span>
+          <span className="text-xl font-semibold ml-2 dark:text-black">{receiverName}</span>
         </div>
 
         <form onSubmit={handleSubmit}>
           <textarea
             id="request-message"
             aria-label="Message"
-            className="w-full h-32 p-3 border rounded-xl mb-2 resize-none focus:border-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full h-32 p-3 border rounded-xl mb-2 resize-none focus:border-none focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-black"
             placeholder="Write a message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
