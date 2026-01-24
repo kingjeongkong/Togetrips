@@ -65,7 +65,7 @@ export const useInAppNotification = () => {
       senderName?: string;
       senderImage?: string;
       chatRoomId: string;
-      roomType?: 'direct' | 'group';
+      roomType?: 'direct' | 'gathering';
     }) => {
       const notification = createInAppNotification('chat', {
         title: data.title,

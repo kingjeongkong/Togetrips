@@ -71,7 +71,7 @@ export const createInAppNotification = (
     senderImage?: string;
     chatRoomId?: string;
     requestId?: string;
-    roomType?: 'direct' | 'group';
+    roomType?: 'direct' | 'gathering';
   },
 ): InAppNotification => {
   return {

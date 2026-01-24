@@ -261,7 +261,7 @@ export const chatApiService = {
   },
 
   // 사용자가 참여한 채팅방 정보 조회 (중앙 구독용)
-  async getMyChatRoomInfo(): Promise<Map<string, 'direct' | 'group'>> {
+  async getMyChatRoomInfo(): Promise<Map<string, 'direct' | 'gathering'>> {
     try {
       const response = await fetch('/api/chat/my-rooms');
       if (!response.ok) {

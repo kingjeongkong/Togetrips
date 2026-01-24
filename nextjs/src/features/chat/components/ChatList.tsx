@@ -141,7 +141,7 @@ const ChatList = () => {
                       }
                       unreadCount={chatRoom.unreadCount}
                       participantCount={chatRoom.participantCount}
-                      onClick={() => router.push(`/chat/${chatRoom.id}?type=group`)}
+                      onClick={() => router.push(`/chat/${chatRoom.id}?type=gathering`)}
                     />
                   </div>
                 );
