@@ -256,8 +256,8 @@ export const useGlobalSubscription = () => {
 
             fetchRequestSenderInfo();
           }
-          // 내 요청이 수락/거절된 경우 카운트 감소
-          if (payload.eventType === 'UPDATE' && payload.old.receiver_id === userId) {
+          // 내가 받은 요청이 pending에서 다른 상태(accepted/declined)로 변경된 경우 카운트 감소
+          if (payload.eventType === 'UPDATE' && payload.new.receiver_id === userId) {
             decrementRequestCount();
           }
         },
