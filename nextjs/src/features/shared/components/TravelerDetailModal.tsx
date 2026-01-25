@@ -7,7 +7,7 @@ import { useSendRequest } from '@/features/home/hooks/useSendRequest';
 import { useUserLocation } from '@/features/home/hooks/useUserLocation';
 import { getDistanceText } from '@/features/home/utils/location';
 import UserInfoView from '@/features/shared/components/DetailInfoView';
-import UserLocationView from '@/features/shared/components/DetailLocationView';
+import DetailLocationView from '@/features/shared/components/DetailLocationView';
 import { useMyProfile } from '@/features/shared/hooks/useUserProfile';
 import { User } from '@/features/shared/types/User';
 import Image from 'next/image';
@@ -150,7 +150,7 @@ const TravelerDetailModal = ({
                 {activeTab === 'info' ? (
                   <UserInfoView bio={profile?.bio} tags={profile?.tags} />
                 ) : userLocation ? (
-                  <UserLocationView
+                  <DetailLocationView
                     otherUserLatitude={userLocation.latitude}
                     otherUserLongitude={userLocation.longitude}
                     userName={profile?.name}

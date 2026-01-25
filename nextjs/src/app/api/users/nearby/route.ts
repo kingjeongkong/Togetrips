@@ -1,4 +1,8 @@
-import { calculateDistanceKm, getExcludedUserIds } from '@/app/api/_utils/location';
+import {
+  calculateDistanceKm,
+  fuzzyCoordinate,
+  getExcludedUserIds,
+} from '@/app/api/_utils/location';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -91,9 +95,10 @@ export async function GET(request: NextRequest) {
             user.location_lng,
           );
         }
+        const fuzzed = fuzzyCoordinate(user.location_lat, user.location_lng);
         const location = {
-          lat: user.location_lat,
-          lng: user.location_lng,
+          lat: fuzzed.lat,
+          lng: fuzzed.lng,
           city: user.location_city,
           state: user.location_state,
           country: user.location_country,

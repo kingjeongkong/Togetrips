@@ -13,7 +13,7 @@ interface UserLocationViewProps {
   currentUserImageUrl?: string;
 }
 
-const UserLocationView = ({
+const DetailLocationView = ({
   otherUserLatitude,
   otherUserLongitude,
   userName,
@@ -129,4 +129,4 @@ const UserLocationView = ({
   );
 };
 
-export default UserLocationView;
+export default DetailLocationView;

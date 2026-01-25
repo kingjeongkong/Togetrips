@@ -1,6 +1,7 @@
 import {
   addDistanceErrorKm,
   calculateDistanceKm,
+  fuzzyCoordinate,
   getBoundingBox,
   getExcludedUserIds,
 } from '@/app/api/_utils/location';
@@ -85,10 +86,11 @@ export async function GET(request: NextRequest) {
       .map((u) => {
         const actualDistanceKm = calculateDistanceKm(lat, lng, u.location_lat, u.location_lng);
         const distance = addDistanceErrorKm(actualDistanceKm);
+        const fuzzed = fuzzyCoordinate(u.location_lat, u.location_lng);
         const location = {
           id: u.location_id,
-          lat: u.location_lat,
-          lng: u.location_lng,
+          lat: fuzzed.lat,
+          lng: fuzzed.lng,
           city: u.location_city,
           state: u.location_state,
           country: u.location_country,
