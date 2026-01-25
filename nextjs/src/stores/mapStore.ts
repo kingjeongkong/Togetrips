@@ -132,7 +132,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
           imageUrl = '/default-traveler.png';
         }
 
-        const radius = 1000;
+        const radius = 700;
         const position = new google.maps.LatLng(lat, lng);
 
         const overlay = new ProfileOverlay(map, position, imageUrl, radius, name, isCurrentUser);
