@@ -1,3 +1,4 @@
+import { fuzzyCoordinate } from '@/app/api/_utils/location';
 import { createServerSupabaseClient } from '@/lib/supabase-config';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -36,11 +37,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // location 필드 가공
+    // location 필드 가공 (타인 프로필일 때만 표시용 좌표 fuzzing)
     const { location_lat, location_lng, location_city, location_state, ...rest } = userData;
+    const isOwnProfile = userId === user.id;
+    const hasCoords = location_lat != null && location_lng != null;
+    const coords =
+      !isOwnProfile && hasCoords
+        ? fuzzyCoordinate(location_lat, location_lng)
+        : { lat: location_lat, lng: location_lng };
     const location = {
-      lat: location_lat,
-      lng: location_lng,
+      lat: coords.lat,
+      lng: coords.lng,
       city: location_city,
       state: location_state,
     };

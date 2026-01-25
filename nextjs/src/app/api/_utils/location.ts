@@ -17,6 +17,26 @@ export function calculateDistanceKm(
   return R * c;
 }
 
+/** 위·경도에 랜덤 fuzzing 적용 (표시용 좌표 난독화). 매 호출마다 다른 값 반환. */
+export function fuzzyCoordinate(
+  lat: number,
+  lng: number,
+  options?: { minMeters?: number; maxMeters?: number },
+): { lat: number; lng: number } {
+  const minM = options?.minMeters ?? 50;
+  const maxM = options?.maxMeters ?? 400;
+  const distanceMeters = minM + Math.random() * (maxM - minM);
+  const angleRad = Math.random() * 2 * Math.PI;
+  const latRad = (lat * Math.PI) / 180;
+  // 1도 lat ≈ 111km, 1도 lng ≈ 111*cos(lat) km
+  const deltaLat = (distanceMeters * Math.cos(angleRad)) / 111_000;
+  const deltaLng = (distanceMeters * Math.sin(angleRad)) / (111_000 * Math.cos(latRad));
+  return {
+    lat: lat + deltaLat,
+    lng: lng + deltaLng,
+  };
+}
+
 // 바운딩 박스 계산 (1도 ≈ 111km)
 export function getBoundingBox(lat: number, lng: number, radius: number) {
   const delta = radius / 111;
