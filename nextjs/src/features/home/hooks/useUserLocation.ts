@@ -8,7 +8,7 @@ import { getCurrentPosition } from '../utils/location';
 export const useUserLocation = (options?: { sameCityOnly?: boolean; radius?: number }) => {
   const { userId } = useSession();
   const sameCityOnly = options?.sameCityOnly ?? true;
-  const radius = options?.radius ?? 50;
+  const radius = options?.radius ?? 100;
 
   // 위치 정보 fetch + DB 업데이트 (Mapbox 기반)
   const {

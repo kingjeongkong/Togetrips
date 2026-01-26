@@ -20,7 +20,7 @@ const FilterModal = ({
   onApply,
   filterType: initialType,
   distanceFilter: initialFilter,
-  maxDistance = 50,
+  maxDistance = 100,
 }: FilterModalProps) => {
   const [filterType, setFilterType] = useState<'city' | 'radius'>(initialType);
   const [sliderValue, setSliderValue] = useState(0);
