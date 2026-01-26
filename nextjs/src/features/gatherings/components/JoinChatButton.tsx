@@ -18,8 +18,9 @@ export default function JoinChatButton({
   className = '',
 }: JoinChatButtonProps) {
   const getButtonText = () => {
+    // full인데 참가한 상태가 아니면 'Full' 표시 (참가했으면 채팅방으로 이동 가능하므로 View Chat Room)
+    if (isFull && !isJoined) return 'Full';
     if (isJoined) return 'View Chat Room';
-    if (isFull) return 'Full';
     return 'Join';
   };
 
@@ -33,7 +34,8 @@ export default function JoinChatButton({
     }
   };
 
-  const isDisabled = isLoading || isFull;
+  // full이어도 참가한 사용자는 채팅방 이동 가능
+  const isDisabled = isLoading || (isFull && !isJoined);
 
   return (
     <button
