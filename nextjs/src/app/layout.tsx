@@ -1,15 +1,6 @@
-'use client';
-
-import { AppInitializer } from '@/components/AppInitializer';
-import NotificationPermissionBanner from '@/components/NotificationPermissionBanner';
-import PwaInstallPrompt from '@/components/PwaInstallPrompt';
-import { SessionProvider } from '@/providers/SessionProvider';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Analytics } from '@vercel/analytics/next';
+import ClientProviders from '@/providers/ClientProviders';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { useState } from 'react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import type { Metadata } from 'next';
 import './globals.css';
 
 const geistSans = Geist({
@@ -22,64 +13,42 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+export const metadata: Metadata = {
+  title: 'Togetrips - Find Your Travel Buddy',
+  description: 'Discover travelers nearby and find your next companion with real-time chat.',
+  applicationName: 'Togetrips',
+  formatDetection: { telephone: false },
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180' },
+  },
+  manifest: '/site.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Togetrips',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'msapplication-config': '/browserconfig.xml',
+    'apple-touch-fullscreen': 'yes',
+    'msapplication-tap-highlight': 'no',
+  } as Record<string, string>,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <html lang="en">
-      <head>
-        <title>Togetrips - Find Your Travel Buddy</title>
-        <meta
-          name="description"
-          content="Discover travelers nearby and find your next companion with real-time chat."
-        />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-
-        {/* PWA 메타 태그 */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Togetrips" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
-
-        {/* iOS Safari 최적화 */}
-        <meta name="apple-touch-fullscreen" content="yes" />
-        <meta name="format-detection" content="telephone=no" />
-
-        {/* Android Chrome 최적화 */}
-        <meta name="application-name" content="Togetrips" />
-        <meta name="msapplication-tap-highlight" content="no" />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <QueryClientProvider client={queryClient}>
-          <SessionProvider>
-            <AppInitializer />
-            <NotificationPermissionBanner />
-            <PwaInstallPrompt />
-            {children}
-            <Analytics />
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={true}
-              newestOnTop={true}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-          </SessionProvider>
-        </QueryClientProvider>
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );
