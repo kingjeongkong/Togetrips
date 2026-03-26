@@ -3,7 +3,7 @@ import {
   fuzzyCoordinate,
   getExcludedUserIds,
 } from '@/app/api/_utils/location';
-import { createServerSupabaseClient } from '@/lib/supabase-config';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {

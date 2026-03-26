@@ -2,7 +2,7 @@
 
 import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
 import { useGlobalSubscription } from '@/hooks/useGlobalSubscription';
-import { createBrowserSupabaseClient } from '@/lib/supabase-config';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { useSession } from '@/providers/SessionProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';

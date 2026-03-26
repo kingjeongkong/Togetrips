@@ -1,5 +1,5 @@
 import { getLocationFromCoordinates } from '@/lib/mapbox';
-import { createServerSupabaseClient } from '@/lib/supabase-config';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {

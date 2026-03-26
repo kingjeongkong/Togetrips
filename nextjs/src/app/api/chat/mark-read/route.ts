@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase-config';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
 // 읽음 처리 REST API (함수 분리 없이 통합)
