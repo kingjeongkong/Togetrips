@@ -6,7 +6,7 @@ import {
   validateSignInForm,
   validateSignUpForm,
 } from '@/features/auth/utils/auth-validators';
-import { createBrowserSupabaseClient } from '@/lib/supabase-config';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';

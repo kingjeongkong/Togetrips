@@ -1,14 +1,6 @@
-import { createBrowserClient, createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import type { NextRequest, NextResponse } from 'next/server';
-
-// 브라우저용 Supabase 클라이언트 (Auth 포함)
-export const createBrowserSupabaseClient = () => {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-};
 
 // 서버 사이드용 Supabase 클라이언트 (SSR, 미들웨어에서 세션 인식)
 export const createServerSupabaseClient = (request?: NextRequest, response?: NextResponse) => {

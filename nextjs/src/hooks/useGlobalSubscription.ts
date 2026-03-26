@@ -7,7 +7,7 @@ import {
 } from '@/features/chat/types/chatTypes';
 import { useInAppNotification } from '@/features/notifications/hooks/useInAppNotification';
 import { profileService } from '@/features/shared/services/profileService';
-import { createBrowserSupabaseClient } from '@/lib/supabase-config';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { useSession } from '@/providers/SessionProvider';
 import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useQueryClient } from '@tanstack/react-query';
