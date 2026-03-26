@@ -1,3 +1,5 @@
+'use client';
+
 import { formatTimeForInput } from '@/utils/dateUtils';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { FiBell, FiHelpCircle, FiLogOut } from 'react-icons/fi';
 import NotificationModal from './NotificationModal';

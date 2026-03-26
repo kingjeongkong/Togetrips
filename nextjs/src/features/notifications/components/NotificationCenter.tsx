@@ -1,3 +1,5 @@
+'use client';
+
 import LoadingIndicator from '@/components/LoadingIndicator';
 import React from 'react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
