@@ -1,3 +1,5 @@
+'use client';
+
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { EditableProfileFields } from '@/features/shared/types/profileTypes';
 import { compressImage } from '@/features/shared/utils/imageCompression';

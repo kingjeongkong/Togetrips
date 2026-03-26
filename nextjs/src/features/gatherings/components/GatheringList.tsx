@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
 import { useGathering } from '../hooks/useGathering';

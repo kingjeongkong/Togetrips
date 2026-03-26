@@ -1,5 +1,3 @@
-'use client';
-
 import DataFetchErrorBoundary from '@/components/ErrorBoundary/DataFetchErrorBoundary';
 import CurrentLocationMap from '@/features/home/components/CurrentLocationMap';
 import HomeProfile from '@/features/home/components/HomeProfile';

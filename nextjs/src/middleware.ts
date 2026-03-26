@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 보호된 경로들
-  const protectedPaths = ['/home', '/profile', '/chat', '/request'];
+  const protectedPaths = ['/home', '/profile', '/chat', '/request', '/gatherings'];
   const isProtectedPath = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
   // 인증이 필요한 경로인데 user가 없으면 로그인 페이지로 리다이렉트
@@ -54,6 +54,7 @@ export const config = {
     '/request/:path*',
     '/profile/:path*',
     '/chat/:path*',
+    '/gatherings/:path*',
     '/auth/:path*',
     '/api/users/:path*',
     '/api/profile/:path*',

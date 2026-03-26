@@ -1,3 +1,5 @@
+'use client';
+
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
 import SettingsMenu from '@/features/shared/components/SettingsMenu';

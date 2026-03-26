@@ -1,3 +1,5 @@
+'use client';
+
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useDeleteChatRoom } from '@/features/chat/hooks/useDeleteChatRoom';
 import { useDeleteGathering, useLeaveGathering } from '@/features/shared/hooks/useSharedGathering';

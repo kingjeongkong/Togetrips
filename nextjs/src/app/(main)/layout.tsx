@@ -1,5 +1,3 @@
-'use client';
-
 import { MapInitializer } from '@/components/MapInitializer';
 import { MobileHeader } from '@/features/shared/components/MobileHeader';
 import Sidebar from '@/features/shared/components/Sidebar';

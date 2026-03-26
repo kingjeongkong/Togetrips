@@ -1,5 +1,3 @@
-'use client';
-
 import RequestCardList from '@/features/request/components/RequestCardList';
 
 export default function RequestPage() {

@@ -1,5 +1,3 @@
-'use client';
-
 import LoadingIndicator from '@/components/LoadingIndicator';
 import MainProfile from '@/features/profile/components/MainProfile';
 import { Suspense } from 'react';
